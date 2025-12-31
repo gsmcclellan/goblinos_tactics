@@ -1,0 +1,15 @@
+<Project Sdk="Godot.NET.Sdk/4.4.1">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Scripts\Data\" />
+    <Folder Include="Scripts\Input\" />
+    <Folder Include="Scripts\Overworld\" />
+    <Folder Include="Scripts\UI\HUD\" />
+    <Folder Include="Scripts\UI\Menus\" />
+    <Folder Include="Scripts\Units\" />
+    <Folder Include="Scripts\Util\" />
+  </ItemGroup>
+</Project>

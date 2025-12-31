@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3 uid="uid://ca0m0yth1c452"]
+
+[ext_resource type="Script" uid="uid://ces0301r6dopk" path="res://Scripts/Unit.cs" id="1_7fc2e"]
+[ext_resource type="Texture2D" uid="uid://bhsux83jnkgt2" path="res://Assets/4goblin4soldier.png" id="1_hm8sg"]
+[ext_resource type="Texture2D" uid="uid://brkn7mbdkgwpv" path="res://Assets/selection_square_32x32.png" id="3_0bfk6"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_hm8sg"]
+color = Color(0.384647, 3.91062e-07, 1.68458e-07, 1)
+grow_begin = 0.0
+grow_end = 0.0
+thickness = 2
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_68bfp"]
+color = Color(0, 0.509804, 0, 1)
+grow_begin = 0.0
+grow_end = 0.0
+thickness = 2
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7fc2e"]
+size = Vector2(30, 29)
+
+[node name="Unit" type="Area2D"]
+script = ExtResource("1_7fc2e")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = ExtResource("1_hm8sg")
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_left = -15.0
+offset_top = -15.0
+offset_right = 15.0
+offset_bottom = -13.0
+theme_override_styles/background = SubResource("StyleBoxLine_hm8sg")
+theme_override_styles/fill = SubResource("StyleBoxLine_68bfp")
+step = 1.0
+value = 75.0
+show_percentage = false
+
+[node name="SelectionNode" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("3_0bfk6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -0.5)
+shape = SubResource("RectangleShape2D_7fc2e")
+
+[connection signal="input_event" from="." to="." method="OnInputEvent"]
