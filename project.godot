@@ -12,8 +12,13 @@ config_version=5
 
 config/name="Goblinos"
 run/main_scene="uid://cgqx8chjq2ysw"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GlobalSettings="*res://Scripts/Core/GlobalSettings.cs"
+InputRouter="*res://Scripts/Core/InputRouter.cs"
 
 [dotnet]
 

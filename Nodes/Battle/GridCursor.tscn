@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://d2ovsrbkfw3yq"]
+
+[ext_resource type="Script" uid="uid://ce5bnsvwt1bhm" path="res://Scripts/Battle/GridCursor.cs" id="1_4i2j4"]
+[ext_resource type="Texture2D" uid="uid://cs4n8eu2sugv" path="res://Assets/cursor_square_white.png" id="2_c7vys"]
+
+[node name="GridCursor" type="Node2D"]
+script = ExtResource("1_4i2j4")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_c7vys")

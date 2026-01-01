@@ -5,14 +5,15 @@ namespace Goblinos.Scripts.Battle;
 public partial class Battle : Node2D
 {
     /** Signals */
-    
+
     /** Properties */
-    
+
     /** Component nodes */
+    public GridCursor Cursor;
     
     public override void _Ready()
     {
-        
+        Cursor = GetNode<GridCursor>("Overlays/GridCursor");
     }
 
     public void _Init()
