@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TerrainType" load_steps=2 format=3 uid="uid://c1f7toe7htnx0"]
+
+[ext_resource type="Script" uid="uid://241qvaojkv52" path="res://Scripts/Battle/Terrain/TerrainType.cs" id="1_uv2co"]
+
+[resource]
+script = ExtResource("1_uv2co")
+Id = "wheat"
+DisplayName = "Wheat Field"
+Description = "A field of tasty dry wheat. Heals a little bit."
+OverlayColor = Color(1, 1, 1, 1)
+MoveCost = 1.0
+DefenseBonus = 0
+BlocksLos = false
+Tags = Array[String]([])
+metadata/_custom_type_script = "uid://241qvaojkv52"

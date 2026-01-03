@@ -15,7 +15,7 @@ public partial class BattleController : Node, IInputHandler
     public BattleGrid Grid;
     
     private GridCursor _cursor;
-    private Unit _selectedUnit;
+    private BattleUnit _selectedUnit;
     // private GridTile
 
     /** Properties */
@@ -29,16 +29,19 @@ public partial class BattleController : Node, IInputHandler
     {
         _InitializeBattleComponents();
         _SetupSubscriptions();
-        _SetupInput();
+        
+        _Ready_Input();
+        _Ready_Actions();
         
         HandleStartOfBattle();
         
-        DebugUtil.Log("[BattleController] Ready", 1, DebugLogCategory.Initialization);
+        DebugUtil.Log("[BattleController] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
     }
 
     public override void _ExitTree()
     {
         _RemoveSubscriptions();
+        _ExitTree_Actions();
         base._ExitTree();
     }
 
@@ -58,7 +61,7 @@ public partial class BattleController : Node, IInputHandler
 
     public override void _Process(double delta)
     {
-        _ProcessInput(delta);
+        _Process_Input(delta);
     }
     private void DoEnemyTurn(bool isFirstTurn = false)
     {

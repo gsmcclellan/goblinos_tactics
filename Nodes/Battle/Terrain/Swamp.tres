@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TerrainType" load_steps=2 format=3 uid="uid://bma1e6msxm3n5"]
+
+[ext_resource type="Script" uid="uid://241qvaojkv52" path="res://Scripts/Battle/Terrain/TerrainType.cs" id="1_tgjfw"]
+
+[resource]
+script = ExtResource("1_tgjfw")
+Id = "swamp"
+DisplayName = "Swamp"
+Description = "A mucky swamp. Slows movement and lowers defense."
+OverlayColor = Color(1, 1, 1, 1)
+MoveCost = 1.5
+DefenseBonus = -20
+BlocksLos = false
+Tags = Array[String]([])
+metadata/_custom_type_script = "uid://241qvaojkv52"

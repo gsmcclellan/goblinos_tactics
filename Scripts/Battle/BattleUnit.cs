@@ -1,23 +1,27 @@
 using Godot;
-using System;
 
-public partial class Unit : Area2D
+namespace Goblinos.Scripts.Battle;
+
+public partial class BattleUnit : Area2D
 {
     // Unit properties
+    // UnitData class - TODO
     [Export] private string _unitName;
     [Export] private int _maxHealth;
     [Export] private int _strength;
     
-    // UI elements
-    private Sprite2D _selectionElement;
     
+    
+    // UI elements
+    private Sprite2D _selectionNode;
+    
+    // Realtime Properties
     private int _currentHealth;
-
     private bool _isSelected = false;
 
     public override void _Ready()
     {
-        this._selectionElement = GetNode<Sprite2D>("SelectionNode");
+        this._selectionNode = GetNode<Sprite2D>("SelectionNode");
     }
     public void Select()
     {
@@ -37,18 +41,7 @@ public partial class Unit : Area2D
 
     private void UpdateSelectionUi()
     {
-        _selectionElement.Visible = _isSelected;
-    }
-
-    private void OnInputEvent(Viewport viewport, InputEvent @event, int shape_idx)
-    {
-        if (@event is InputEventMouseButton mb &&
-            mb.ButtonIndex == MouseButton.Left &&
-            mb.Pressed)
-        {
-            GD.Print("Event clicked");
-            ToggleSelected();
-            viewport.SetInputAsHandled();
-        }
+        _selectionNode.Visible = _isSelected;
     }
 }
+

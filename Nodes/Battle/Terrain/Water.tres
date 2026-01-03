@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TerrainType" load_steps=2 format=3 uid="uid://ctkr8di20i0yw"]
+
+[ext_resource type="Script" uid="uid://241qvaojkv52" path="res://Scripts/Battle/Terrain/TerrainType.cs" id="1_6qfp3"]
+
+[resource]
+script = ExtResource("1_6qfp3")
+Id = "water"
+DisplayName = "Water"
+Description = "Calm fresh water. Blocks movement for land lubbers."
+OverlayColor = Color(1, 1, 1, 1)
+MoveCost = 0.0
+DefenseBonus = 0
+BlocksLos = false
+Tags = Array[String]([])
+metadata/_custom_type_script = "uid://241qvaojkv52"

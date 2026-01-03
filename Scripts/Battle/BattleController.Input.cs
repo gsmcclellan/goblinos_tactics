@@ -9,7 +9,6 @@ public partial class BattleController: IInputHandler
     /** Components, Node references */
     private InputRouter _inputRouter;
     
-
     /** Properties */
     public bool BlocksLowerInputHandlers => false;
 
@@ -22,16 +21,17 @@ public partial class BattleController: IInputHandler
     [Export] private double _repeatDelay = 0.32;    // initial delay before repeating
     [Export] private double _repeatInterval = 0.16; // time between repeated moves
     
-    private void _SetupInput()
+    private void _Ready_Input()
     {
         _inputRouter = GetNode<InputRouter>(GlobalSettings.InputRouterPath);
         _inputRouter.Push(this);
         
-        GD.Print("[BattleController.Input] Ready", 0, DebugLogCategory.Initialization);
+        DebugUtil.Log("[BattleController.Input] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
     }
 
-    private void _ProcessInput(double delta)
+    private void _Process_Input(double delta)
     {
+        DebugUtil.Log("[BattleController.Input] _Process_Input", DebugLogSeverity.Extra, DebugLogCategory.Input);
         // Holding direction to repeatedly move cursor
         if (_heldDirection == InputDirection.None) return;
 
@@ -48,7 +48,7 @@ public partial class BattleController: IInputHandler
     }
     public bool Handle(InputEvent e)
     {
-        DebugUtil.Log($"[BattleController.Input] Handle {e.GetType().Name} :: {e.AsText()}", -1, DebugLogCategory.Input);
+        DebugUtil.Log($"[BattleController.Input] Handle {e.GetType().Name} :: {e.AsText()}", DebugLogSeverity.Extra, DebugLogCategory.Input);
 
         // If user presses arrow / move buttons handle cursor action
         if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up); }
@@ -84,20 +84,20 @@ public partial class BattleController: IInputHandler
 
     private bool HandleAccept(InputEvent e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleAccept", 0, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleAccept", DebugLogSeverity.Info, DebugLogCategory.Input);
         return true;
     }
 
     private bool HandleCancel(InputEvent e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleCancel", 0, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleCancel", DebugLogSeverity.Info, DebugLogCategory.Input);
 
         return true;
     }
 
     private bool HandleDirection(InputDirection? dir)
     {
-        DebugUtil.Log("[BattleController.Input] HandleDirection", 0, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleDirection", DebugLogSeverity.Trace, DebugLogCategory.Input);
         if (!dir.HasValue)
             dir = ReadHeldDirection();
         if (dir == InputDirection.None)
@@ -114,7 +114,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleDirectionReleased()
     {
-        DebugUtil.Log("[BattleController.Input] HandleDirectionReleased", 0, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleDirectionReleased", DebugLogSeverity.Trace, DebugLogCategory.Input);
         _heldDirection = ReadHeldDirection();
         _repeatMoveTimer = 0.0;
         return true;
@@ -122,7 +122,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleMouseClick(InputEventMouseButton e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleMouseClick", 0, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleMouseClick", DebugLogSeverity.Trace, DebugLogCategory.Input);
         // Mouse click: set cursor to clicked tile, then confirm
         // TODO
         return true;
@@ -130,13 +130,13 @@ public partial class BattleController: IInputHandler
 
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleMouseMotion", -1, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] HandleMouseMotion", DebugLogSeverity.Extra, DebugLogCategory.Input);
         return TryMoveCursorTo(e.GlobalPosition);
     }
 
     private InputDirection ReadHeldDirection()
     {
-        DebugUtil.Log("[BattleController.Input] ReadHeldDirection", -1, DebugLogCategory.Input);
+        DebugUtil.Log("[BattleController.Input] ReadHeldDirection", DebugLogSeverity.Extra, DebugLogCategory.Input);
         
         // Priority order if multiple are held
         if (Godot.Input.IsActionPressed("ui_up")) return InputDirection.Up;

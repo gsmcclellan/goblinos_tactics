@@ -6,8 +6,9 @@
   <ItemGroup>
     <Folder Include="Scripts\Data\" />
     <Folder Include="Scripts\Overworld\" />
-    <Folder Include="Scripts\UI\HUD\" />
     <Folder Include="Scripts\UI\Menus\" />
-    <Folder Include="Scripts\Units\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="STYLE_GUIDE.md" />
   </ItemGroup>
 </Project>

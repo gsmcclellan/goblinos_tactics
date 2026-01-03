@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TerrainType" load_steps=2 format=3 uid="uid://co4xg8a5lil2"]
+
+[ext_resource type="Script" uid="uid://241qvaojkv52" path="res://Scripts/Battle/Terrain/TerrainType.cs" id="1_i5wk0"]
+
+[resource]
+script = ExtResource("1_i5wk0")
+Id = "grass"
+DisplayName = "Grass"
+Description = "A grassy field"
+OverlayColor = Color(1, 1, 1, 1)
+MoveCost = 1
+DefenseBonus = 0
+BlocksLos = false
+Tags = Array[String]([])
+metadata/_custom_type_script = "uid://241qvaojkv52"

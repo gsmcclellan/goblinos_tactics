@@ -1,0 +1,85 @@
+[gd_scene load_steps=3 format=3 uid="uid://ddrrh4301j2v6"]
+
+[ext_resource type="Script" uid="uid://bwsk4so2mnqfl" path="res://Scripts/UI/Battle/TerrainInfoPanel.cs" id="1_a0duy"]
+
+[sub_resource type="Theme" id="Theme_oq75t"]
+default_font_size = 12
+
+[node name="TerrainInfo" type="Panel" node_paths=PackedStringArray("TerrainNameLabel", "TerrainDescriptionLabel", "CellLabel", "DefenseBonusLabel", "MovementCostLabel")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -125.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_oq75t")
+script = ExtResource("1_a0duy")
+TerrainNameLabel = NodePath("MarginContainer/HBoxContainer/LeftColumn/VboxContainer/TerrainName")
+TerrainDescriptionLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/DescriptionBox/TerrainDescription")
+CellLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/Cell")
+DefenseBonusLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/DefenseBonus")
+MovementCostLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/MovementCost")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="LeftColumn" type="Control" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+
+[node name="VboxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+offset_left = 4.0
+offset_right = 84.0
+offset_bottom = 131.0
+
+[node name="TerrainName" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Terrain"
+
+[node name="Control" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+
+[node name="DefenseBonusLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Def:"
+
+[node name="MovementCostLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Mov:"
+
+[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="DescriptionBox" type="Control" parent="MarginContainer/HBoxContainer/RightColumn"]
+custom_minimum_size = Vector2(180, 38)
+layout_mode = 2
+
+[node name="TerrainDescription" type="Label" parent="MarginContainer/HBoxContainer/RightColumn/DescriptionBox"]
+layout_mode = 2
+offset_right = 127.0
+offset_bottom = 49.0
+text = "This terrain
+is blah blah blah"
+autowrap_mode = 2
+max_lines_visible = 2
+
+[node name="DefenseBonus" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "20%"
+
+[node name="MovementCost" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "100%"
+
+[node name="Cell" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "(0, 0)"

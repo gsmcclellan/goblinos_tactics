@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://0yqqd78jcaet"]
+
+[ext_resource type="Script" uid="uid://b1v83afs0nq7i" path="res://Scripts/UI/Battle/BattleHud.cs" id="1_8w1vy"]
+[ext_resource type="PackedScene" uid="uid://ddrrh4301j2v6" path="res://Nodes/UI/Battle/TerrainInfoPanel.tscn" id="2_at2nw"]
+
+[node name="BattleHud" type="CanvasLayer"]
+script = ExtResource("1_8w1vy")
+_panelsRootPath = NodePath("BattleHudPanels")
+
+[node name="BattleHudPanels" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TerrainInfo" parent="BattleHudPanels" instance=ExtResource("2_at2nw")]
+layout_mode = 1

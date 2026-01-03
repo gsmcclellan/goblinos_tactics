@@ -1,16 +1,17 @@
 using Godot;
-using System;
-using System.Collections.Generic;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
+using Godot.Collections;
 
 public partial class GridCursor : Node2D
 {
     /** Signals */
+    [Signal]
+    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);
     
     /** Events */
-    public event Action<GridCursorFocus> GridCursorFocusChanged;
 
     /** Nodes */
     [ExportGroup("Nodes")]
@@ -25,8 +26,6 @@ public partial class GridCursor : Node2D
 
     public override void _Ready()
     {
-        
-        
         _UpdateFocus();
     }
     
@@ -39,9 +38,14 @@ public partial class GridCursor : Node2D
 
     public void MoveTo(Vector2 globalPos)
     {
-        DebugUtil.Log("[GridCursor] Move To" + globalPos, 0, DebugLogCategory.UiNavigation);
+        DebugUtil.Log("[GridCursor] Move To" + globalPos, DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
-        if (cell == _lastCellFocused) return;
+        if (cell == _lastCellFocused)
+        {
+            DebugUtil.Log($"[GridCursor] MoveTo no move, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+            return;
+        }
+        
         
         GlobalPosition = cell * GlobalSettings.TileSize + new Vector2(GlobalSettings.TileSize * 0.5f, GlobalSettings.TileSize * 0.5f);
         _UpdateFocus();
@@ -52,29 +56,34 @@ public partial class GridCursor : Node2D
         var worldPos = GlobalPosition;
         var cell = Grid.GetCellAtGlobalPosition(worldPos);
 
-        if (cell == _lastCellFocused) return;
+        if (cell == _lastCellFocused)
+        {
+            DebugUtil.Log($"[GridCursor] _UpdateFocus no update, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+            return;
+        }
         
         var nextFocus = new GridCursorFocus
         {
             Cell = cell,
+            Terrain = Grid.GetTerrainAtCell(cell)
             // Unit = Grid.TryGetUnitAt(cell),   // or however you query units
             // TopNode = Grid.TryGetUnitAt(cell) // placeholder; later pick priority from Nodes
         };
         
         Focus = nextFocus;
         _lastCellFocused = cell;
-        DebugUtil.Log($"[GridCursor] _UpdateFocus [Focus]={nextFocus}", 0, DebugLogCategory.UiNavigation);
+        
+        EmitSignal(SignalName.GridCursorFocusChanged, nextFocus);
+        DebugUtil.Log($"[GridCursor] _UpdateFocus [Focus]={nextFocus}", DebugLogSeverity.Info, DebugLogCategory.UiNavigation);
     }
 }
 
-public sealed class GridCursorFocus
+public partial class GridCursorFocus: RefCounted
 {
     public Vector2I Cell { get; init; }
-    // public Tile Tile { get; init; }          // or TileData / your tile wrapper
-    public Unit? Unit { get; init; }
-    public Node? TopNode { get; init; }      // optional “best candidate”
-    public IReadOnlyList<Node> Nodes { get; init; } = Array.Empty<Node>();
-
-    // public bool HasTile => Tile != null;
+    public TerrainType Terrain { get; init; }
+    public Goblinos.Scripts.Battle.BattleUnit? Unit { get; init; }
+    public Node? TopNode { get; init; }
+    public Godot.Collections.Array<Node> Nodes { get; init; } = new();
     public bool HasUnit => Unit != null;
 }
