@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.UI.Battle;
@@ -67,12 +68,12 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
     {
         Cell = focus.Cell;
         Terrain = focus.Terrain;
-        DebugUtil.Log("[TerrainInfoPanel] OnCursorFocusChanged - Update labels", DebugLogSeverity.Info, DebugLogCategory.Signal);
+        LogManager.Log("[TerrainInfoPanel] OnCursorFocusChanged - Update labels", LogSeverity.Info, LogCategory.Signal);
     }
 
     public void OnSelectedUnitChanged(Goblinos.Scripts.Battle.BattleUnit selectedUnit)
     {
-        DebugUtil.Log("[TerrainInfoPanel] OnSelectedUnitChange - Unused", DebugLogSeverity.Trace, DebugLogCategory.Signal);
+        LogManager.Log("[TerrainInfoPanel] OnSelectedUnitChange - Unused", LogSeverity.Trace, LogCategory.Signal);
     }
 
     private void UpdateLabels()

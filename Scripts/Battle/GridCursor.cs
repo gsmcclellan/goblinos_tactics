@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Goblinos.Logging;
 using Godot;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
@@ -22,6 +23,8 @@ public partial class GridCursor : Node2D
     [Export] private NodePath _battleGridPath;
     [Export] private NodePath _battleUnitRegistryPath;
 
+    private Logger _logger = LogManager.For<GridCursor>();
+
     private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
     
     /** Properties */
@@ -40,30 +43,28 @@ public partial class GridCursor : Node2D
         Debug.Assert(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
         
         _UpdateFocus();
-        
-        DebugUtil.EnableOnlyCategories("UiNavigation", "Input");
     }
     
     public void MoveDirection(Vector2I dir)
     {
-        DebugUtil.Log("[GridCursor] Move " + dir, 0, DebugLogCategory.UiNavigation);
+        _logger.Log("Move " + dir, 0, LogCategory.UiNavigation);
         GlobalPosition += dir * InputUtil.TileSize;
         _UpdateFocus();
     }
 
     public void MoveToGlobalPosition(Vector2 globalPos)
     {
-        DebugUtil.Log("[GridCursor] Move To" + globalPos, DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+        _logger.Log("Move To" + globalPos, LogSeverity.Trace, LogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
         MoveTo(cell);
     }
 
     public void MoveTo(Vector2I gridCell)
     {
-        DebugUtil.Log("[GridCursor] Move To" + gridCell, DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+        _logger.Log("Move To" + gridCell, LogSeverity.Trace, LogCategory.UiNavigation);
         if (gridCell == _lastCellFocused)
         {
-            DebugUtil.Log($"[GridCursor] MoveTo no move, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+            _logger.Log($"MoveTo no move, _lastCellFocused", LogSeverity.Extra, LogCategory.UiNavigation);
             return;
         }
         
@@ -78,7 +79,7 @@ public partial class GridCursor : Node2D
 
         if (cell == _lastCellFocused)
         {
-            DebugUtil.Log($"[GridCursor] _UpdateFocus no update, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+            _logger.Log($"_UpdateFocus no update, _lastCellFocused", LogSeverity.Extra, LogCategory.UiNavigation);
             return;
         }
 
@@ -97,7 +98,7 @@ public partial class GridCursor : Node2D
         _lastCellFocused = cell;
         
         EmitSignal(SignalName.GridCursorFocusChanged, nextFocus);
-        DebugUtil.Log($"[GridCursor] _UpdateFocus [Focus]={nextFocus}", DebugLogSeverity.Info, DebugLogCategory.UiNavigation);
+        _logger.Log($"_UpdateFocus [Focus]={nextFocus}", LogSeverity.Info, LogCategory.UiNavigation);
     }
 }
 

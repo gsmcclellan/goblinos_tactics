@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -16,10 +17,10 @@ public partial class BattleController : Node, IInputHandler
     
     public Battle Battle;
     public BattleGrid Grid;
-    
+
+    private Logger _logger = LogManager.For<BattleController>();
     private GridCursor _cursor;
     private BattleUnit _selectedUnit;
-    // private GridTile
 
     /** Properties */
     
@@ -41,7 +42,7 @@ public partial class BattleController : Node, IInputHandler
         
         HandleStartOfBattle();
         
-        DebugUtil.Log("[BattleController] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
     public override void _ExitTree()
@@ -61,7 +62,7 @@ public partial class BattleController : Node, IInputHandler
         Debug.Assert(Grid != null, "[BattleController] BattleGrid must be initialized.");
         Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
         
-        DebugUtil.Log("[BattleController] Battle Components Initialized", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
     }
 
     private void _SetupSubscriptions()
@@ -88,6 +89,7 @@ public partial class BattleController : Node, IInputHandler
 
     public void HandleEndOfBattle(bool isVictory)
     {
+        _logger.Log("Battle End", LogSeverity.Info, LogCategory.Exit);
         // Show results screen
         // remove self from input router
         _inputRouter.Pop(this);

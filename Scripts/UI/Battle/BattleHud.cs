@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.UI.Battle;
 using Godot;
@@ -27,12 +28,12 @@ namespace Goblinos.Scripts.UI.Battle
             WirePanels();
             ConnectSignals();
             
-            DebugUtil.Log("[BattleHud] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+            LogManager.Log("[BattleHud] Ready", LogSeverity.Info, LogCategory.Initialization);
         }
 
         public override void _ExitTree()
         {
-            DebugUtil.Log("[BattleHud] _ExitTree", DebugLogSeverity.Info, DebugLogCategory.Exit);
+            LogManager.Log("[BattleHud] _ExitTree", LogSeverity.Info, LogCategory.Exit);
             DisconnectSignals();
         }
 
@@ -47,17 +48,17 @@ namespace Goblinos.Scripts.UI.Battle
                     _panels.Add(panel);
             }
             
-            DebugUtil.Log($"[BattleHud] CachePanels count={_panels.Count}", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+            LogManager.Log($"[BattleHud] CachePanels count={_panels.Count}", LogSeverity.Info, LogCategory.Initialization);
         }
 
         private void WirePanels()
         {
-            DebugUtil.Log("[BattleHud] WirePanels count=" + _panels.Count, DebugLogSeverity.Info, DebugLogCategory.Initialization);
+            LogManager.Log("[BattleHud] WirePanels count=" + _panels.Count, LogSeverity.Info, LogCategory.Initialization);
         }
 
         private void ConnectSignals()
         {
-            DebugUtil.Log("[BattleHud] ConnectSignals", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+            LogManager.Log("[BattleHud] ConnectSignals", LogSeverity.Info, LogCategory.Initialization);
 
             _battleController.Connect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
             // _battleController.Connect("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged))); TODO
@@ -65,7 +66,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void DisconnectSignals()
         {
-            DebugUtil.Log("[BattleHud] DisconnectSignals", DebugLogSeverity.Info, DebugLogCategory.Exit);
+            LogManager.Log("[BattleHud] DisconnectSignals", LogSeverity.Info, LogCategory.Exit);
 
             if (_battleController == null)
                 return;
@@ -79,7 +80,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void HandleCursorFocusChanged(GridCursorFocus focus)
         {
-            DebugUtil.Log("[BattleHud] HandleCursorFocusChanged", DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+            LogManager.Log("[BattleHud] HandleCursorFocusChanged", LogSeverity.Trace, LogCategory.UiNavigation);
 
             foreach (IBattleHudPanel panel in _panels)
                 panel.OnCursorFocusChanged(focus);
@@ -87,7 +88,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void HandleSelectedUnitChanged(Scripts.Battle.BattleUnit? selectedUnit)
         {
-            DebugUtil.Log("[BattleHud] SelectedUnitChanged", DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+            LogManager.Log("[BattleHud] SelectedUnitChanged", LogSeverity.Trace, LogCategory.UiNavigation);
 
             foreach (IBattleHudPanel panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit);

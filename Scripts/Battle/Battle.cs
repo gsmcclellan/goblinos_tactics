@@ -1,3 +1,4 @@
+using Goblinos.Logging;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -7,6 +8,9 @@ public partial class Battle : Node2D
 {
     /** Signals */
 
+    /** Fields */
+    private Logger _logger = LogManager.For<Battle>();
+
     /** Properties */
 
     /** Component nodes */
@@ -15,7 +19,7 @@ public partial class Battle : Node2D
     public override void _Ready()
     {
         Cursor = GetNode<GridCursor>("Overlays/GridCursor");
-        DebugUtil.Log("[Battle] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
     public void _Init()

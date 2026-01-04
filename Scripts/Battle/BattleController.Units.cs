@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -24,7 +25,7 @@ public partial class BattleController
 
         _registerExistingBattleUnitNodes();
         
-        DebugUtil.Log("[BattleController.Units] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
     /// <summary>
@@ -40,6 +41,6 @@ public partial class BattleController
                 UnitRegistry.RegisterUnit(bUnit, default);
         }
         
-        DebugUtil.Log($"[BattleController.Units] _registerExistingBattleUnitNodes count={UnitRegistry.Units.Count}", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log($"_registerExistingBattleUnitNodes count={UnitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
     }
 }

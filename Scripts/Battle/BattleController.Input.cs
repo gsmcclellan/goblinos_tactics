@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -31,12 +32,12 @@ public partial class BattleController: IInputHandler
         Debug.Assert(_inputRouter != null, "[BattleController.Input] unable to register input router");
         _inputRouter.Push(this);
         
-        DebugUtil.Log("[BattleController.Input] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
     private void _Process_Input(double delta)
     {
-        DebugUtil.Log("[BattleController.Input] _Process_Input", DebugLogSeverity.Extra, DebugLogCategory.Input);
+        _logger.Log("_Process_Input", LogSeverity.Extra, LogCategory.Input);
         
         // Holding direction to repeatedly move cursor
         if (_heldDirection == InputDirection.None) return;
@@ -63,7 +64,7 @@ public partial class BattleController: IInputHandler
     }
     public bool Handle(InputEvent e)
     {
-        DebugUtil.Log($"[BattleController.Input] Handle {e.GetType().Name} :: {e.AsText()}", DebugLogSeverity.Extra, DebugLogCategory.Input);
+        _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", LogSeverity.Extra, LogCategory.Input);
 
         // If user presses arrow / move buttons handle cursor action
         if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up); }
@@ -99,20 +100,20 @@ public partial class BattleController: IInputHandler
 
     private bool HandleAccept(InputEvent e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleAccept", DebugLogSeverity.Info, DebugLogCategory.Input);
+        _logger.Log("HandleAccept", LogSeverity.Info, LogCategory.Input);
         return true;
     }
 
     private bool HandleCancel(InputEvent e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleCancel", DebugLogSeverity.Info, DebugLogCategory.Input);
+        _logger.Log("HandleCancel", LogSeverity.Info, LogCategory.Input);
 
         return true;
     }
 
     private bool HandleDirection(InputDirection? dir)
     {
-        DebugUtil.Log("[BattleController.Input] HandleDirection", DebugLogSeverity.Trace, DebugLogCategory.Input);
+        _logger.Log("HandleDirection", LogSeverity.Trace, LogCategory.Input);
         if (!dir.HasValue)
             dir = ReadHeldDirection();
         if (dir == InputDirection.None)
@@ -129,7 +130,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleDirectionReleased()
     {
-        DebugUtil.Log("[BattleController.Input] HandleDirectionReleased", DebugLogSeverity.Trace, DebugLogCategory.Input);
+        _logger.Log("HandleDirectionReleased", LogSeverity.Trace, LogCategory.Input);
         _heldDirection = ReadHeldDirection();
         _repeatMoveTimer = 0.0;
         return true;
@@ -137,7 +138,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleMouseClick(InputEventMouseButton e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleMouseClick", DebugLogSeverity.Trace, DebugLogCategory.Input);
+        _logger.Log("HandleMouseClick", LogSeverity.Trace, LogCategory.Input);
         // Mouse click: attempt to select what is focused by cursor
         // TODO
         return true;
@@ -145,14 +146,14 @@ public partial class BattleController: IInputHandler
 
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
-        DebugUtil.Log("[BattleController.Input] HandleMouseMotion", DebugLogSeverity.Extra, DebugLogCategory.Input);
+        _logger.Log("HandleMouseMotion", LogSeverity.Extra, LogCategory.Input);
         TryMoveCursorToGlobalPosition(e.GlobalPosition);
         return true;
     }
 
     private InputDirection ReadHeldDirection()
     {
-        DebugUtil.Log("[BattleController.Input] ReadHeldDirection", DebugLogSeverity.Extra, DebugLogCategory.Input);
+        _logger.Log("ReadHeldDirection", LogSeverity.Extra, LogCategory.Input);
         // Priority order if multiple are held
         if (Godot.Input.IsActionPressed("ui_up")) return InputDirection.Up;
         if (Godot.Input.IsActionPressed("ui_down")) return InputDirection.Down;
@@ -163,7 +164,7 @@ public partial class BattleController: IInputHandler
     
     public void MoveCursorToCell(Vector2I cell)
     {
-        DebugUtil.Log($"[BattleController] MoveCursorTo [cell]={cell}", DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+        _logger.Log($"MoveCursorTo [cell]={cell}", LogSeverity.Trace, LogCategory.UiNavigation);
         _cursor.MoveTo(cell);
     }
 
@@ -176,7 +177,7 @@ public partial class BattleController: IInputHandler
     /// <returns>true if able to move</returns>
     public bool TryMoveCursor(InputDirection dir, out Vector2I cell)
     {
-        DebugUtil.Log("[BattleController] TryMoveCursor", DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+        _logger.Log("TryMoveCursor", LogSeverity.Trace, LogCategory.UiNavigation);
 
         cell = _cursor.Focus.Cell + InputUtil.InputDirectionToVector2I(dir);
         return TryMoveCursorToCell(cell);
@@ -192,7 +193,7 @@ public partial class BattleController: IInputHandler
     /// <returns>true if able to move</returns>
     public bool TryMoveCursorToCell(Vector2I cell)
     {
-        DebugUtil.Log($"[BattleController] TryMoveCursorTo [cell]={cell}", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+        _logger.Log($"TryMoveCursorTo [cell]={cell}", LogSeverity.Extra, LogCategory.UiNavigation);
 
         if (cell == FocusedCell || !Grid.CanFocusCell(cell))
             return false;
@@ -210,7 +211,7 @@ public partial class BattleController: IInputHandler
     /// <returns>true if able to move</returns>
     public bool TryMoveCursorToGlobalPosition(Vector2 globalPos, out Vector2I cell)
     {
-        DebugUtil.Log($"[BattleController] TryMoveCursorToGlobalPosition [globalPos]={globalPos}", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+        _logger.Log($"TryMoveCursorToGlobalPosition [globalPos]={globalPos}", LogSeverity.Extra, LogCategory.UiNavigation);
 
         if (!Grid.CanFocusGlobalPosition(globalPos, out cell) || cell == FocusedCell)
             return false;

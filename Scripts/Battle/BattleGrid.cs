@@ -3,6 +3,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Util;
 
@@ -11,6 +12,8 @@ public partial class BattleGrid : Node2D
     [ExportGroup("Tiles")]
     [Export] public TileMapLayer TerrainLayer;
     [Export(PropertyHint.Dir)] public string TerrainDbFolder = "res://Terrain";
+
+    private Logger _logger = LogManager.For<BattleGrid>();
     
     private readonly Dictionary<string, TerrainType> _terrainById = new(StringComparer.Ordinal);
     private TerrainType? _defaultTerrain;
@@ -26,7 +29,7 @@ public partial class BattleGrid : Node2D
         _defaultTerrain = _terrainById.TryGetValue("default", out var t) ? t
             : (_terrainById.Count > 0 ? FirstTerrain() : null);
         
-        DebugUtil.Log("[BattleGrid] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
     
     /// <summary>
@@ -40,7 +43,7 @@ public partial class BattleGrid : Node2D
         var dir = DirAccess.Open(folder);
         if (dir == null)
         {
-            GD.PushError($"[BattleGrid] Terrain folder not found: {folder}");
+            _logger.Error($"[BattleGrid] Terrain folder not found: {folder}");
             return;
         }
 
@@ -78,7 +81,7 @@ public partial class BattleGrid : Node2D
         } while (file != "");
         dir.ListDirEnd();
 
-        DebugUtil.Log($"[BattleGrid] Loaded TerrainTypes: {_terrainById.Count}", 0, DebugLogCategory.Initialization);
+        _logger.Log("Loaded TerrainTypes: {_terrainById.Count}", 0, LogCategory.Initialization);
     }
 
     /// <summary>Gets TerrainType for a cell (uses per-cell cache).</summary>
@@ -88,7 +91,7 @@ public partial class BattleGrid : Node2D
         var terrain = GetTerrainAtCell(cell);
         var canFocus = terrain is { BlocksCursor: false };
         
-        DebugUtil.Log($"[BattleGrid] CanFocusCell cell={cell} :: {canFocus}", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+        _logger.Log("CanFocusCell cell={cell} :: {canFocus}", LogSeverity.Extra, LogCategory.UiNavigation);
         return canFocus;
     }
 

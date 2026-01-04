@@ -1,0 +1,3 @@
+[submodule "External/goblinos-logging"]
+	path = External/goblinos-logging
+	url = https://github.com/ReallyGoodIdeas/goblinos-logging

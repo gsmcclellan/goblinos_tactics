@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -26,7 +27,7 @@ public partial class BattleController
         Debug.Assert(_cursor != null, "GridCursor not initialized. Unable to set up actions.");
         _cursor.GridCursorFocusChanged += OnGridCursorFocusChanged;
         
-        DebugUtil.Log("[BattleController.Actions] Ready", DebugLogSeverity.Info, DebugLogCategory.Initialization);
+        _logger.Log("Ready_Events", LogSeverity.Info, LogCategory.Initialization);
     }
 
     private void _ExitTree_Actions()
@@ -35,12 +36,12 @@ public partial class BattleController
         if (_cursor != null)
             _cursor.GridCursorFocusChanged -= OnGridCursorFocusChanged;
         
-        DebugUtil.Log("[BattleController.Actions] Exit", DebugLogSeverity.Info, DebugLogCategory.Exit);
+        _logger.Log("ExitTree_Actions", LogSeverity.Info, LogCategory.Exit);
     }
     
     private void OnGridCursorFocusChanged(GridCursorFocus focus)
     {
-        DebugUtil.Log($"[BattleController.Actions] OnGridCursorFocusChanged hasUnit={focus.HasUnit}", DebugLogSeverity.Info, DebugLogCategory.Signal);
+        _logger.Log($"OnGridCursorFocusChanged hasUnit={focus.HasUnit}", LogSeverity.Info, LogCategory.Signal);
         EmitSignal(SignalName.GridCursorFocusChanged, focus);
     }
 
