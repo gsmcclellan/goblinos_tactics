@@ -1,117 +1,238 @@
-﻿using System.Diagnostics;
-using Goblinos.Scripts.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Godot;
-using Godot.Collections;
-using CollectionExtensions = System.Collections.Generic.CollectionExtensions;
 
 namespace Goblinos.Scripts.Util;
 
 public class DebugUtil
 {
-    private static bool LoggingEnabled = true;
-    private static DebugLogSeverity LoggingSeverity = DebugLogSeverity.Trace;
+    public static bool LoggingEnabled { get; set; } = true;
+    public static DebugLogSeverity MinimumLoggingSeverity { get; set; } = DebugLogSeverity.Trace;
+    public static bool ShouldRegisterNewCategories { get; set; } = false;
+    public static bool ShouldEnableAutoRegisteredCategories { get; set; } = false;
     
-    private static readonly Dictionary<DebugLogCategory, bool> LoggingEnabledByCategory =
-        new()
+    private static readonly Dictionary<string, bool> LoggingEnabledByCategoryKey =
+        new(StringComparer.OrdinalIgnoreCase)
         {
             // Core & Engine-Level
-            { DebugLogCategory.None, true },
-            { DebugLogCategory.Initialization, true },
-            { DebugLogCategory.Exit, true },
-            { DebugLogCategory.Error, true },
-            { DebugLogCategory.Warning, true },
-            { DebugLogCategory.Signal, true },
+            { nameof(DebugLogCategory.None), true },
+            { nameof(DebugLogCategory.Initialization), true },
+            { nameof(DebugLogCategory.Exit), true },
+            { nameof(DebugLogCategory.Error), true },
+            { nameof(DebugLogCategory.Warning), true },
+            { nameof(DebugLogCategory.Signal), true },
 
             // Input & Cursor
-            { DebugLogCategory.Input, false },          // inputs - Very noisy
-            { DebugLogCategory.UiNavigation, false },   // Enable when debugging menus
+            { nameof(DebugLogCategory.Input), true },
+            { nameof(DebugLogCategory.UiNavigation), true },
 
             // Battle & Gameplay Flow
-            { DebugLogCategory.BattleState, true },     // High-value logs
-            { DebugLogCategory.CombatResolution, true },
+            { nameof(DebugLogCategory.BattleState), true },
+            { nameof(DebugLogCategory.CombatResolution), true },
 
             // Units & AI
-            { DebugLogCategory.UnitLifecycle, true },
-            { DebugLogCategory.UnitStats, false },      // Spammy during combat
-            { DebugLogCategory.AiDecision, true },
-            { DebugLogCategory.AiMovement, false },     // Extremely noisy
+            { nameof(DebugLogCategory.UnitLifecycle), true },
+            { nameof(DebugLogCategory.UnitStats), false },
+            { nameof(DebugLogCategory.AiDecision), true },
+            { nameof(DebugLogCategory.AiMovement), false },
 
             // Data & Resources
-            { DebugLogCategory.DataLoading, true },
-            { DebugLogCategory.Serialization, true },
-            { DebugLogCategory.Validation, true },
+            { nameof(DebugLogCategory.DataLoading), true },
+            { nameof(DebugLogCategory.Serialization), true },
+            { nameof(DebugLogCategory.Validation), true },
 
             // Performance / Diagnostics
-            { DebugLogCategory.Performance, false },    // Enable temporarily
-            { DebugLogCategory.DebugOnly, false }
+            { nameof(DebugLogCategory.Performance), false },
+            { nameof(DebugLogCategory.DebugOnly), false }
         };
+    
+    private static readonly Dictionary<Type, bool> LoggingEnabledByComponent =
+        new();
+    
+    private static readonly HashSet<string> WarnedUnregisteredCategories =
+        new(StringComparer.OrdinalIgnoreCase);
+    
+    /// <summary>
+    /// Creates a logger bound to a specific component class.
+    /// </summary>
+    public static DebugLogger For<T>()
+    {
+        return new DebugLogger(typeof(T), typeof(T).Name);
+    }
+
+    public static void Log(string str, DebugLogSeverity severity, string categoryKey)
+    {
+        LogInternal(typeof(DebugUtil), nameof(DebugUtil), str, severity, categoryKey);
+    }
     
     public static void Log(string str, DebugLogSeverity severity = DebugLogSeverity.Trace, DebugLogCategory category = DebugLogCategory.None)
     {
-        var categoryEnabled = IsCategoryEnabled(category);
-        if (!LoggingEnabled || severity < LoggingSeverity || !categoryEnabled)
+        LogInternal(typeof(DebugUtil), nameof(DebugUtil), str, severity, category);
+    }
+    
+    internal static void LogInternal(Type componentType, string componentName, string message, DebugLogSeverity severity, string categoryKey)
+    {
+        if (!LoggingEnabled || severity < MinimumLoggingSeverity)
             return;
-        
+
+        if (!IsCategoryEnabled(categoryKey))
+            return;
+
+        if (!IsComponentEnabled(componentType))
+            return;
+
+        var formatted = $"[{componentName}] {message}";
+
         switch (severity)
         {
             case >= DebugLogSeverity.Critical:
-                GD.PushError($"[CRITICAL] {str}");
+                GD.PushError($"[CRITICAL] {formatted}");
                 break;
             case >= DebugLogSeverity.Error:
-                GD.PushError(str);
+                GD.PushError(formatted);
                 break;
             case >= DebugLogSeverity.Warning:
-                GD.PushWarning(str);
+                GD.PushWarning(formatted);
                 break;
             default:
-                GD.Print(str);
+                GD.Print(formatted);
                 break;
         }
     }
     
-    public static void EnableOnly(params DebugLogCategory[] categories)
+    internal static void LogInternal(Type componentType, string componentName, string message, DebugLogSeverity severity, DebugLogCategory category)
     {
-        SetAllCategories(false);
-
-        foreach (var category in categories)
-            SetCategory(category, true);
+        LogInternal(componentType, componentName, message, severity, ToCategoryKey(category));
     }
     
-    public static void EnableAll()
+    public static void ClearComponentFilter()
+    {
+        LoggingEnabledByComponent.Clear();
+    }
+    
+    public static void DisableAllCategories()
+    {
+        SetAllCategories(false);
+    }
+    
+    public static void EnableAllCategories()
     {
         SetAllCategories(true);
     }
     
-    public static void DisableAll()
+    public static void EnableOnlyCategories(params string[] categories)
     {
         SetAllCategories(false);
+
+        foreach (var categoryKey in categories)
+        {
+            if (string.IsNullOrWhiteSpace(categoryKey))
+                continue;
+
+            SetCategoryEnabled(categoryKey, true);
+        }
+    }
+    
+    
+    public static void EnableOnlyCategories(params DebugLogCategory[] categories)
+    {
+        SetAllCategories(false);
+
+        foreach (var category in categories)
+            SetCategoryEnabled(category, true);
+    }
+    
+    public static void EnableOnlyComponents(params Type[] components)
+    {
+        LoggingEnabledByComponent.Clear();
+
+        foreach (var component in components)
+            LoggingEnabledByComponent[component] = true;
+    }
+
+    public static bool IsCategoryEnabled(string categoryKey)
+    {
+        bool exists = LoggingEnabledByCategoryKey.TryGetValue(categoryKey, out bool enabled);
+
+        if (!exists && !ShouldRegisterNewCategories)
+        {
+            if (WarnedUnregisteredCategories.Add(categoryKey))
+                GD.PushWarning($"[DebugUtil] Unregistered category [{categoryKey}]. Log will be hidden.");
+
+            return false;
+        }
+
+        if (!exists && ShouldRegisterNewCategories)
+        {
+            if (MinimumLoggingSeverity <= DebugLogSeverity.Trace)
+                GD.Print($"[DebugUtil] Unregistered category [{categoryKey}]. Auto registering.");
+            RegisterCategory(categoryKey, enabledByDefault: ShouldEnableAutoRegisteredCategories);
+            return ShouldEnableAutoRegisteredCategories;
+        }
+            
+        return enabled;
     }
     
     public static bool IsCategoryEnabled(DebugLogCategory category)
     {
-        var exists = LoggingEnabledByCategory.TryGetValue(category, out bool enabled);
-        Debug.Assert(exists, $"Unable to log, invalid [category]=[{category}]");
-        return enabled;
+        return IsCategoryEnabled(ToCategoryKey(category));
     }
-    
-    private static void SetAllCategories(bool enabled)
-    {
-        var keys = new Array<DebugLogCategory>(LoggingEnabledByCategory.Keys);
 
-        foreach (var key in keys)
-            LoggingEnabledByCategory[key] = enabled;
-    }
-    
-    public static void SetCategory(DebugLogCategory category, bool enabled)
+    public static bool IsComponentEnabled(Type componentType)
     {
-        bool exists = LoggingEnabledByCategory.ContainsKey(category);
+        if (LoggingEnabledByComponent.Count == 0)
+            return true;
+
+        return LoggingEnabledByComponent.TryGetValue(componentType, out bool enabled) && enabled;
+    }
+
+    public static void RegisterCategory(string categoryKey, bool enabledByDefault = true)
+    {
+        if (string.IsNullOrWhiteSpace(categoryKey))
+            throw new ArgumentException("Category key must be non-empty.", nameof(categoryKey));
+
+        LoggingEnabledByCategoryKey.TryAdd(categoryKey, enabledByDefault);
+    }
+
+    public static void RegisterCategory(DebugLogCategory category, bool enabledByDefault = true)
+    {
+        RegisterCategory(ToCategoryKey(category), enabledByDefault);
+    }
+
+    public static void SetCategoryEnabled(string categoryKey, bool enabled)
+    {
+        bool exists = LoggingEnabledByCategoryKey.ContainsKey(categoryKey);
         
-        Debug.Assert(exists, $"Unknown DebugLogCategory [{category}]");
+        // Debug.Assert(exists, $"Unregistered category [{categoryKey}]");
+        
+        if (!exists && !ShouldRegisterNewCategories)
+        {
+            if (WarnedUnregisteredCategories.Add(categoryKey))
+                GD.PushWarning($"[DebugUtil] Unregistered category [{categoryKey}]. Will not be enabled.");
 
-        if (!exists)
             return;
+        }
 
-        LoggingEnabledByCategory[category] = enabled;
+        if (!exists && ShouldRegisterNewCategories)
+        {
+            if (MinimumLoggingSeverity <= DebugLogSeverity.Trace)
+                GD.Print($"[DebugUtil] Unregistered category [{categoryKey}]. Auto registering.");
+            RegisterCategory(categoryKey, enabledByDefault: ShouldEnableAutoRegisteredCategories);
+            exists = true;
+        }
+
+        LoggingEnabledByCategoryKey[categoryKey] = enabled;
+    }
+    
+    public static void SetCategoryEnabled(DebugLogCategory category, bool enabled)
+    {
+        SetCategoryEnabled(ToCategoryKey(category), enabled);
+    }
+    
+    public static void SetComponentEnabled<T>(bool enabled)
+    {
+        LoggingEnabledByComponent[typeof(T)] = enabled;
     }
 
     public static void SetEnabled(bool en)
@@ -119,9 +240,22 @@ public class DebugUtil
         LoggingEnabled = en;
     }
 
-    public static void SetSeverity(DebugLogSeverity sev)
+    public static void SetMinimumSeverity(DebugLogSeverity sev)
     {
-        LoggingSeverity = sev;
+        MinimumLoggingSeverity= sev;
+    }
+
+    private static void SetAllCategories(bool enabled)
+    {
+        var keys = new List<string>(LoggingEnabledByCategoryKey.Keys);
+
+        foreach (var key in keys)
+            LoggingEnabledByCategoryKey[key] = enabled;
+    }
+
+    private static string ToCategoryKey(DebugLogCategory category)
+    {
+        return category.ToString();
     }
 }
 

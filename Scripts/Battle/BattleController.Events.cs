@@ -8,6 +8,11 @@ namespace Goblinos.Scripts.Battle;
 public partial class BattleController
 {
     /** Signals */
+    // Battle Level
+    [Signal] public delegate void BattleControllerInitializedEventHandler();
+    
+    // Components
+    // GridCursor
     [Signal]
     public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);
     
@@ -15,7 +20,7 @@ public partial class BattleController
     
     /** Event Listeners */
     
-    private void _Ready_Actions()
+    private void _Ready_Events()
     {
         // GridCursor
         Debug.Assert(_cursor != null, "GridCursor not initialized. Unable to set up actions.");
@@ -35,7 +40,12 @@ public partial class BattleController
     
     private void OnGridCursorFocusChanged(GridCursorFocus focus)
     {
-        DebugUtil.Log("[BattleController.Actions] OnGridCursorFocusChanged", DebugLogSeverity.Info, DebugLogCategory.Signal);
+        DebugUtil.Log($"[BattleController.Actions] OnGridCursorFocusChanged hasUnit={focus.HasUnit}", DebugLogSeverity.Info, DebugLogCategory.Signal);
         EmitSignal(SignalName.GridCursorFocusChanged, focus);
+    }
+
+    private void NotifyInitialized()
+    {
+        EmitSignal(SignalName.BattleControllerInitialized);
     }
 }

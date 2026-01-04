@@ -1,4 +1,5 @@
-﻿using Goblinos.Scripts.Core;
+﻿using System.Diagnostics;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -7,10 +8,12 @@ namespace Goblinos.Scripts.Battle;
 public partial class BattleController : Node, IInputHandler
 {
     /** Signals */
-    
+
     /** Actions */
-    
+
     /** Components */
+    [Export] private NodePath _battleGridPath;
+    
     public Battle Battle;
     public BattleGrid Grid;
     
@@ -31,7 +34,10 @@ public partial class BattleController : Node, IInputHandler
         _SetupSubscriptions();
         
         _Ready_Input();
-        _Ready_Actions();
+        _Ready_Events();
+        _Ready_Units();
+        
+        NotifyInitialized();
         
         HandleStartOfBattle();
         
@@ -48,7 +54,14 @@ public partial class BattleController : Node, IInputHandler
     private void _InitializeBattleComponents()
     {
         Battle = GetParent<Battle>();
+        Grid = GetNode<BattleGrid>(_battleGridPath);
         _cursor = Battle.Cursor;
+        
+        Debug.Assert(Battle != null, "[BattleController] Battle must be initialized.");
+        Debug.Assert(Grid != null, "[BattleController] BattleGrid must be initialized.");
+        Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
+        
+        DebugUtil.Log("[BattleController] Battle Components Initialized", DebugLogSeverity.Info, DebugLogCategory.Initialization);
     }
 
     private void _SetupSubscriptions()
@@ -80,39 +93,7 @@ public partial class BattleController : Node, IInputHandler
         _inputRouter.Pop(this);
     }
     
-    public void MoveCursor(Vector2I dir)
-    {
-        DebugUtil.Log("[BattleController] MoveCursor", 0, DebugLogCategory.UiNavigation);
-        _cursor.Move(dir);
-    }
-
-    public void MoveCursorTo(Vector2 globalPos)
-    {
-        DebugUtil.Log($"[BattleController] MoveCursorTo [globalPos]={globalPos}", 0, DebugLogCategory.UiNavigation);
-        _cursor.MoveTo(globalPos);
-    }
-
-    public bool TryMoveCursor(InputDirection dir)
-    {
-        DebugUtil.Log("[BattleController] TryMoveCursor", 0, DebugLogCategory.UiNavigation);
-
-        // TODO - check if able to move. Avoid going off map etc.
-        // if can't move return false
-        MoveCursor(InputUtil.InputDirectionToVector2I(dir));
-
-        return true;
-    }
-
-    public bool TryMoveCursorTo(Vector2 globalPos)
-    {
-        DebugUtil.Log($"[BattleController] TryMoveCursorTo [globalPos]={globalPos}", 0, DebugLogCategory.UiNavigation);
-
-        // TODO - check if able to move. Avoid going off map etc.
-        // if can't move return false
-        MoveCursorTo(globalPos);
-
-        return true;
-    }
+    
     
     
 }

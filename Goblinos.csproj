@@ -4,6 +4,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="Scripts\Battle\Controllers\" />
     <Folder Include="Scripts\Data\" />
     <Folder Include="Scripts\Overworld\" />
     <Folder Include="Scripts\UI\Menus\" />

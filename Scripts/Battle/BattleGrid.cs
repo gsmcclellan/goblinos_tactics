@@ -20,7 +20,7 @@ public partial class BattleGrid : Node2D
     
     public override void _Ready()
     {
-        LoadTerrainDb(TerrainDbFolder);
+        _loadTerrainDb(TerrainDbFolder);
         
         // Pick a default: either explicit ID (recommended) or first loaded
         _defaultTerrain = _terrainById.TryGetValue("default", out var t) ? t
@@ -33,7 +33,7 @@ public partial class BattleGrid : Node2D
     /// Loads all TerrainType resources in terrain folder
     /// </summary>
     /// <param name="folder"></param>
-    public void LoadTerrainDb(string folder)
+    public void _loadTerrainDb(string folder)
     {
         _terrainById.Clear();
 
@@ -80,36 +80,28 @@ public partial class BattleGrid : Node2D
 
         DebugUtil.Log($"[BattleGrid] Loaded TerrainTypes: {_terrainById.Count}", 0, DebugLogCategory.Initialization);
     }
-    
-    /// <summary>Add TerrainType associated with cell to cache for quick access when making many queries</summary>
-    /// <param name="cell">Vector2I position of terrain</param>
-    /// <param name="terrain">TerrainType object containing data</param>
-    /// <returns></returns>
-    private TerrainType? Cache(Vector2I cell, TerrainType? terrain)
+
+    /// <summary>Gets TerrainType for a cell (uses per-cell cache).</summary>
+
+    public bool CanFocusCell(Vector2I cell)
     {
-        if (terrain != null)
-            _terrainAtCellCache[cell] = terrain;
-        return terrain;
+        var terrain = GetTerrainAtCell(cell);
+        var canFocus = terrain is { BlocksCursor: false };
+        
+        DebugUtil.Log($"[BattleGrid] CanFocusCell cell={cell} :: {canFocus}", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
+        return canFocus;
     }
-    
-    /// <summary>If you change lots of tiles at once.</summary>
-    public void ClearTerrainCache()
+
+    public bool CanFocusGlobalPosition(Vector2 globalPos, out Vector2I cell)
     {
-        _terrainAtCellCache.Clear();
-    }
-    
-    private TerrainType? FirstTerrain()
-    {
-        foreach (var kv in _terrainById) return kv.Value;
-        return null;
+        cell = GetCellAtGlobalPosition(globalPos);
+        return CanFocusCell(cell);
     }
     
     public Vector2I GetCellAtGlobalPosition(Vector2 globalPos)
     {
         return TerrainLayer.LocalToMap(TerrainLayer.ToLocal(globalPos));
     }
-    
-    /// <summary>Gets TerrainType for a cell (uses per-cell cache).</summary>
     public TerrainType? GetTerrainAtCell(Vector2I cell)
     {
         if (_terrainAtCellCache.TryGetValue(cell, out var cached))
@@ -133,11 +125,37 @@ public partial class BattleGrid : Node2D
         return Cache(cell, _defaultTerrain);
     }
     
+    
     /// <summary>Call this if the tile at a cell changes, to refresh cached terrain.</summary>
     public void InvalidateTerrainCacheAt(Vector2I cell)
     {
         _terrainAtCellCache.Remove(cell);
     }
+    
+    /// <summary>Add TerrainType associated with cell to cache for quick access when making many queries</summary>
+    /// <param name="cell">Vector2I position of terrain</param>
+    /// <param name="terrain">TerrainType object containing data</param>
+    /// <returns></returns>
+    private TerrainType? Cache(Vector2I cell, TerrainType? terrain)
+    {
+        if (terrain != null)
+            _terrainAtCellCache[cell] = terrain;
+        return terrain;
+    }
+    
+    /// <summary>Clears terrain cache. Use if you change lots of tiles at once.</summary>
+    public void ClearTerrainCache()
+    {
+        _terrainAtCellCache.Clear();
+    }
+    
+    private TerrainType? FirstTerrain()
+    {
+        foreach (var kv in _terrainById) return kv.Value;
+        return null;
+    }
+    
+    
 
     
 }

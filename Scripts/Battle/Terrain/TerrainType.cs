@@ -20,6 +20,7 @@ public partial class TerrainType : Resource
     [Export] public float MoveCost { get; set; } = 1;
     [Export] public int DefenseBonus { get; set; } = 0;
     [Export] public bool BlocksLos { get; set; } = false;
+    [Export] public bool BlocksCursor { get; set; } = false;
 
     // Optional: lightweight tags (for logic like "flammable", "water", etc.)
     [Export] public Godot.Collections.Array<string> Tags { get; set; } = new();

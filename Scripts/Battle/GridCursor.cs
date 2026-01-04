@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Godot;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
@@ -7,47 +8,66 @@ using Godot.Collections;
 
 public partial class GridCursor : Node2D
 {
+    
+    
     /** Signals */
     [Signal]
     public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);
-    
+
     /** Events */
 
-    /** Nodes */
     [ExportGroup("Nodes")]
-    [Export] public BattleController Controller;
-    [Export] public BattleGrid Grid;
+    
+    /** Fields */
+    [Export] private NodePath _battleGridPath;
+    [Export] private NodePath _battleUnitRegistryPath;
+
+    private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
     
     /** Properties */
     public GridCursorFocus Focus;
-    
-    
-    private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
+    public BattleGrid Grid;
+    public BattleUnitRegistry UnitRegistry;
+
+    public Vector2I FocusedCell => Focus.Cell;
 
     public override void _Ready()
     {
+        Grid = GetNode<BattleGrid>(_battleGridPath);
+        UnitRegistry = GetNode<BattleUnitRegistry>(_battleUnitRegistryPath);
+        
+        Debug.Assert(Grid != null, "[GridCursor] Grid must be initialized");
+        Debug.Assert(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
+        
         _UpdateFocus();
+        
+        DebugUtil.EnableOnlyCategories("UiNavigation", "Input");
     }
     
-    public void Move(Vector2I dir)
+    public void MoveDirection(Vector2I dir)
     {
         DebugUtil.Log("[GridCursor] Move " + dir, 0, DebugLogCategory.UiNavigation);
         GlobalPosition += dir * InputUtil.TileSize;
         _UpdateFocus();
     }
 
-    public void MoveTo(Vector2 globalPos)
+    public void MoveToGlobalPosition(Vector2 globalPos)
     {
         DebugUtil.Log("[GridCursor] Move To" + globalPos, DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
-        if (cell == _lastCellFocused)
+        MoveTo(cell);
+    }
+
+    public void MoveTo(Vector2I gridCell)
+    {
+        DebugUtil.Log("[GridCursor] Move To" + gridCell, DebugLogSeverity.Trace, DebugLogCategory.UiNavigation);
+        if (gridCell == _lastCellFocused)
         {
             DebugUtil.Log($"[GridCursor] MoveTo no move, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
             return;
         }
         
-        
-        GlobalPosition = cell * GlobalSettings.TileSize + new Vector2(GlobalSettings.TileSize * 0.5f, GlobalSettings.TileSize * 0.5f);
+        GlobalPosition = gridCell * GlobalSettings.TileSize + new Vector2(GlobalSettings.TileSize * 0.5f, GlobalSettings.TileSize * 0.5f);
         _UpdateFocus();
     }
 
@@ -61,13 +81,16 @@ public partial class GridCursor : Node2D
             DebugUtil.Log($"[GridCursor] _UpdateFocus no update, _lastCellFocused", DebugLogSeverity.Extra, DebugLogCategory.UiNavigation);
             return;
         }
-        
+
+        var terrain = Grid.GetTerrainAtCell(cell);
+        UnitRegistry.TryGetUnitAtCell(cell, out var unit);
+            
         var nextFocus = new GridCursorFocus
         {
             Cell = cell,
-            Terrain = Grid.GetTerrainAtCell(cell)
-            // Unit = Grid.TryGetUnitAt(cell),   // or however you query units
-            // TopNode = Grid.TryGetUnitAt(cell) // placeholder; later pick priority from Nodes
+            Terrain = terrain,
+            Unit = unit,
+            TopNode = unit // placeholder; TODO pick priority from Nodes
         };
         
         Focus = nextFocus;
