@@ -12,7 +12,7 @@ namespace Goblinos.Scripts.Battle;
 /// Responsible for unit participation, spatial occupancy, and battle-scoped
 /// unit lifecycle events. Commits final results of movement events.
 /// </summary>
-public partial class BattleUnitRegistry: Node
+public partial class UnitRegistry: Node
 {
     /** Signals */
     [Signal]
@@ -21,11 +21,11 @@ public partial class BattleUnitRegistry: Node
     public delegate void UnitUnregisteredEventHandler(BattleUnit unit, Vector2I cell);
     [Signal]
     public delegate void UnitMoveResolvedEventHandler(BattleUnit unit, Vector2I fromCell, Vector2I toCell);
-    [Signal]
-    public delegate void UnitDiedEventHandler(BattleUnit unit, Vector2I cell);
+    // [Signal]
+    // public delegate void UnitDiedEventHandler(BattleUnit unit, Vector2I cell);
 
     /** Fields */
-    private Logger _logger = LogManager.For<BattleUnitRegistry>();
+    private Logger _logger = LogManager.For<UnitRegistry>();
 
     private readonly List<BattleUnit> _units = new();
     private readonly Dictionary<Vector2I, BattleUnit> _unitsByCell = new();
@@ -50,7 +50,6 @@ public partial class BattleUnitRegistry: Node
 
     private void _SetupSubscriptions()
     {
-        // Listen to unit death, update registry
     }
 
     private void _RemoveSubscriptions()
@@ -61,25 +60,29 @@ public partial class BattleUnitRegistry: Node
 
     /// <summary>
     /// Registers a unit as participating in the battle.
+    /// </summary>
     /// <param name="unit"></param>
     /// <param name="initialCell"></param>
-    /// </summary>
     public void RegisterUnit(BattleUnit unit, Vector2I initialCell)
     {
-        _logger.Log("RegisterUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"RegisterUnit unit={unit}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        if (!DebugUtil.Require(unit != null, "Cannot register null unit."))
+            return;
         
         // Check cell for existing unit & that unit isn't already registered
         var cellEmpty = !IsCellOccupied(initialCell);
         var isUnregistered = !Contains(unit);
-        Debug.Assert(cellEmpty, "Cannot register unit to non-empty cell.");
-        Debug.Assert(isUnregistered, "Unable to register unit, already registered.");
-        if (!cellEmpty || !isUnregistered)
+        if (!DebugUtil.Require(cellEmpty, "Cannot register unit to non-empty cell.") ||
+            !DebugUtil.Require(isUnregistered, "Unable to register unit, already registered."))
             return;
 
         // Add to both dicts
         _units.Add(unit);
         _unitsByCell[initialCell] = unit;
         _cellsByUnit[unit] = initialCell;
+
+        _AssertInvariants();
+        EmitSignal(SignalName.UnitRegistered, unit, initialCell);
     }
 
     /// <summary>
@@ -88,34 +91,47 @@ public partial class BattleUnitRegistry: Node
     public void UnregisterUnit(BattleUnit unit)
     {
         _logger.Log("UnregisterUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
-        var isRegistered = Contains(unit);
-        Debug.Assert(isRegistered, "Unable to unregister unit, not registered.");
-        if (!isRegistered)
+        if (!DebugUtil.Require(unit != null, "Cannot unregister null unit."))
             return;
-
+        
+        var isRegistered = Contains(unit);
+        if (!DebugUtil.Require(isRegistered, "[BattleUnitRegistry] Unable to unregister unit, not registered."))
+            return;
+        
         var cell = _cellsByUnit[unit];
+        _units.Remove(unit);
         _unitsByCell.Remove(cell);
         _cellsByUnit.Remove(unit);
+
+        _AssertInvariants();
+        EmitSignal(SignalName.UnitUnregistered, unit, cell);
     }
 
-    /// <summary>
-    /// Marks a unit as dead for the purposes of this battle.
-    /// </summary>
-    public void NotifyUnitDied(BattleUnit unit)
-    {
-        var containsUnit = Contains(unit);
-        Debug.Assert(containsUnit, "Unit died, already unregistered");
-        if (!containsUnit)
-            return;
-        
-        var cell = _cellsByUnit[unit];
-        
-        _logger.Log($"[Signal] UnitDied unit={unit} cell={cell}" + unit, LogSeverity.Trace, LogCategory.Signal);
-        _logger.Log("NotifyUnitDied " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
-        EmitSignal(SignalName.UnitDied, unit, cell);
-        
-        
-    }
+    // public void HandleUnitDeath(BattleUnit unit) TODO - unit death, finish here or move elsewhere to other battle controller
+    // {
+    //     // Unit has died
+    //     // kill unit
+    //     
+    //     // unregister unit
+    //     // send signal
+    // }
+    //
+    // /// <summary>
+    // /// Marks a unit as dead for the purposes of this battle.
+    // /// </summary>
+    // public void NotifyUnitDied(BattleUnit unit)
+    // {
+    //     var containsUnit = Contains(unit);
+    //     DebugUtil.Require(containsUnit, "Unit died, already unregistered");
+    //     if (!containsUnit)
+    //         return;
+    //     
+    //     var cell = _cellsByUnit[unit];
+    //     
+    //     _logger.Log($"[Signal] UnitDied unit={unit} cell={cell}" + unit, LogSeverity.Trace, LogCategory.Signal);
+    //     _logger.Log("NotifyUnitDied " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
+    //     EmitSignal(SignalName.UnitDied, unit, cell);
+    // }
 
     /// <summary>
     /// Clears all registered units. Intended for battle teardown.
@@ -137,7 +153,7 @@ public partial class BattleUnitRegistry: Node
     /// <returns>true if unit is registered</returns>
     public bool Contains(BattleUnit unit)
     {
-        var hasUnit = _units.Contains(unit);
+        var hasUnit = unit != null && _cellsByUnit.ContainsKey(unit);
 
         _logger.Log($"Contains [unit]={unit} :: {hasUnit}", LogSeverity.Extra, LogCategory.DebugOnly);
         return hasUnit;
@@ -171,7 +187,7 @@ public partial class BattleUnitRegistry: Node
     public bool IsCellOccupied(Vector2I cell)
     {
         var isOccupied = _unitsByCell.ContainsKey(cell);
-        _logger.Log($"IsCellOccupied [cell]={cell} :: {isOccupied}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"IsCellOccupied [cell]={cell} :: {isOccupied}", LogSeverity.Extra, LogCategory.DebugOnly);
 
         return isOccupied;
     }
@@ -185,7 +201,7 @@ public partial class BattleUnitRegistry: Node
     public bool TryGetCell(BattleUnit unit, out Vector2I cell)
     {
         var hasCell = _cellsByUnit.TryGetValue(unit, out cell);
-        _logger.Log($"TryGetCell [unit]={unit} [hasCell]={hasCell} :: [cell]={cell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"TryGetCell [unit]={unit} [hasCell]={hasCell} :: [cell]={cell}", LogSeverity.Extra, LogCategory.DebugOnly);
 
         return hasCell;
     }
@@ -200,7 +216,7 @@ public partial class BattleUnitRegistry: Node
     {
         var hasUnit = _unitsByCell.TryGetValue(cell, out unit);
         
-        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={unit}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={unit}", LogSeverity.Extra, LogCategory.DebugOnly);
         return hasUnit;
     }
     
@@ -211,6 +227,57 @@ public partial class BattleUnitRegistry: Node
     /// </summary>
     public void ApplyUnitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
+        // TODO - currently allows only move to empty cell, add additional functionality for shove, swap, etc.
         _logger.Log($"ApplyUnitMove [unit]={unit} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+
+        if (!DebugUtil.Require(unit != null, "[BattleUnitRegistry] Cannot move null unit."))
+            return;
+        
+        var isUnitRegistered = TryGetCell(unit, out var unitCell);
+        if (!DebugUtil.Require(isUnitRegistered, "[BattleUnitRegistry] Cannot move unregistered unit."))
+            return;
+        
+        var noOpMove = fromCell == toCell;
+        if (!DebugUtil.Require(!noOpMove, "[BattleUnitRegistry] No op move, fromCell == toCell"))
+            return;
+        
+        var fromCellMatches = unitCell == fromCell;
+        var isDestinationEmpty = !_unitsByCell.ContainsKey(toCell);
+
+        if (!DebugUtil.Require(fromCellMatches, "[BattleUnitRegistry] fromCell does not match existing location.") ||
+            !DebugUtil.Require(isDestinationEmpty, "[BattleUnitRegistry] toCell not empty"))
+            return;
+
+        _cellsByUnit[unit] = toCell;
+        _unitsByCell.Remove(fromCell);
+        _unitsByCell[toCell] = unit;
+
+        _logger.Info($"[Signal] UnitMoveResolved unit={unit}, fromCell={fromCell}, toCell={toCell}", LogCategory.UnitLifecycle);
+        _AssertInvariants();
+        EmitSignal(SignalName.UnitMoveResolved, unit, fromCell, toCell);
+    }
+    
+    
+    // ---------------------------------------------------------------------
+    // DEBUG
+    // ---------------------------------------------------------------------
+    
+    [Conditional("DEBUG")]
+    private void _AssertInvariants()
+    {
+        Debug.Assert(_units.Count == _cellsByUnit.Count, "Unit count mismatch");
+        Debug.Assert(_cellsByUnit.Count == _unitsByCell.Count, "Cell mapping mismatch");
+
+        foreach (var unit in _units)
+            Debug.Assert(_cellsByUnit.ContainsKey(unit), "Unit list contains unregistered unit");
+        
+        foreach (var (unit, cell) in _cellsByUnit)
+        {
+            Debug.Assert(_unitsByCell.TryGetValue(cell, out var mappedUnit),
+                "Cell missing from unitsByCell");
+
+            Debug.Assert(mappedUnit == unit,
+                "Roundtrip mapping mismatch");
+        }
     }
 }

@@ -21,8 +21,8 @@ namespace Goblinos.Scripts.UI.Battle
         {
             _battleController = GetNode<BattleController>(_battleControllerPath);
             _panelsRoot = GetNode(_panelsRootPath);
-            Debug.Assert(_battleController != null, "BattleController reference is required.");
-            Debug.Assert(_battleController != null, "_panelsRoot reference is required.");
+            DebugUtil.Require(_battleController != null, "[BattleHud] Not Initialized. BattleController reference is required.");
+            DebugUtil.Require(_battleController != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
 
             CachePanels();
             WirePanels();
@@ -74,8 +74,8 @@ namespace Goblinos.Scripts.UI.Battle
             if (_battleController.IsConnected("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged))))
                 _battleController.Disconnect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
 
-            if (_battleController.IsConnected("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged))))
-                _battleController.Disconnect("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged)));
+            // if (_battleController.IsConnected("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged))))
+            //     _battleController.Disconnect("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged)));
         }
 
         private void HandleCursorFocusChanged(GridCursorFocus focus)

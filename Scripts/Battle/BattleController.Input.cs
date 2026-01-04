@@ -29,7 +29,7 @@ public partial class BattleController: IInputHandler
     private void _Ready_Input()
     {
         _inputRouter = GetNode<InputRouter>(GlobalSettings.InputRouterPath);
-        Debug.Assert(_inputRouter != null, "[BattleController.Input] unable to register input router");
+        DebugUtil.Require(_inputRouter != null, "[BattleController.Input] Not Initialized. Unable to register input router");
         _inputRouter.Push(this);
         
         _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
@@ -162,7 +162,7 @@ public partial class BattleController: IInputHandler
         return InputDirection.None;
     }
     
-    public void MoveCursorToCell(Vector2I cell)
+    public void MoveCursorToCell(Vector2I cell) // TODO - move cursor movement logic to cursor with try functions, battle controller only triggers
     {
         _logger.Log($"MoveCursorTo [cell]={cell}", LogSeverity.Trace, LogCategory.UiNavigation);
         _cursor.MoveTo(cell);

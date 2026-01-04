@@ -58,9 +58,9 @@ public partial class BattleController : Node, IInputHandler
         Grid = GetNode<BattleGrid>(_battleGridPath);
         _cursor = Battle.Cursor;
         
-        Debug.Assert(Battle != null, "[BattleController] Battle must be initialized.");
-        Debug.Assert(Grid != null, "[BattleController] BattleGrid must be initialized.");
-        Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
+        DebugUtil.Require(Battle != null, "[BattleController] Battle must be initialized.");
+        DebugUtil.Require(Grid != null, "[BattleController] BattleGrid must be initialized.");
+        DebugUtil.Require(_cursor != null, "[BattleController] GridCursor must be initialized.");
         
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
     }

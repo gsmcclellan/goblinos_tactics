@@ -116,8 +116,7 @@ public partial class BattleGrid : Node2D
 
         // TileSet custom data key added to terrain in TileMapLayer
         var v = tileData.GetCustomData("terrain_id");
-        Debug.Assert(v.VariantType == Variant.Type.String, $"Tile at {cell} is missing a valid 'terrain_id' custom data.");
-        if (v.VariantType != Variant.Type.String)
+        if (!DebugUtil.Require(v.VariantType == Variant.Type.String, $"Tile at {cell} is missing a valid 'terrain_id' custom data."))
             return Cache(cell, _defaultTerrain);
 
         var id = v.AsString();

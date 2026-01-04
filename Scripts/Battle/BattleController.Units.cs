@@ -16,12 +16,12 @@ public partial class BattleController
     
     
     /** Properties */
-    public BattleUnitRegistry UnitRegistry;
+    public UnitRegistry UnitRegistry;
     
     private void _Ready_Units()
     {
-        UnitRegistry = GetNode<BattleUnitRegistry>(_battleUnitRegistryPath);
-        Debug.Assert(UnitRegistry != null, "[BattleController.Units] unable to register UnitRegistry.");
+        UnitRegistry = GetNode<UnitRegistry>(_battleUnitRegistryPath);
+        DebugUtil.Require(UnitRegistry != null, "[BattleController.Units] Not Initialized. Unable to register UnitRegistry.");
 
         _registerExistingBattleUnitNodes();
         

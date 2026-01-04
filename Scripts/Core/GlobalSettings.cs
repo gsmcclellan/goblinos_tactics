@@ -10,7 +10,7 @@ public partial class GlobalSettings : Node
 
     public const string InputRouterPath = "/root/InputRouter";
     public const string BattlePath = "/root/Battle";
-    public const string BattleControllerPath = "/root/Battle/BattleController";
+    public const string BattleControllerPath = "/root/Battle/Controllers/BattleController";
 
     public const string BattleLogScenePath = "res://Nodes/BattleLog.tscn";
     public const string BattleScenePath = "res://Nodes/Battle.tscn";

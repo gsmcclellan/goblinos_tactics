@@ -42,11 +42,11 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 
     public override void _Ready()
     {
-        Debug.Assert(TerrainNameLabel != null, "[TerrainInfoPanel]._Ready TerrainNameLabel not initialized.");
-        Debug.Assert(TerrainDescriptionLabel != null, "[TerrainInfoPanel]._Ready TerrainDescriptionLabel not initialized.");
-        Debug.Assert(CellLabel != null, "[TerrainInfoPanel]._Ready CellLabel not initialized.");
-        Debug.Assert(DefenseBonusLabel != null, "[TerrainInfoPanel]._Ready DefenseBonusLabel not initialized.");
-        Debug.Assert(MovementCostLabel != null, "[TerrainInfoPanel]._Ready MovementCostLabel not initialized.");
+        DebugUtil.Require(TerrainNameLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainNameLabel is required.");
+        DebugUtil.Require(TerrainDescriptionLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainDescriptionLabel is required.");
+        DebugUtil.Require(CellLabel != null, "[TerrainInfoPanel].  Not Initialized. CellLabel is required.");
+        DebugUtil.Require(DefenseBonusLabel != null, "[TerrainInfoPanel].  Not Initialized. DefenseBonusLabel is required.");
+        DebugUtil.Require(MovementCostLabel != null, "[TerrainInfoPanel].  Not Initialized. MovementCostLabel is required.");
         
         _SetupSubscriptions();
     }

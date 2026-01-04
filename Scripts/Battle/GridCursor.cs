@@ -13,7 +13,7 @@ public partial class GridCursor : Node2D
     
     /** Signals */
     [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);
+    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus); // TODO - move unit, terrain to SelectionController. Cursor only emits cell
 
     /** Events */
 
@@ -30,17 +30,17 @@ public partial class GridCursor : Node2D
     /** Properties */
     public GridCursorFocus Focus;
     public BattleGrid Grid;
-    public BattleUnitRegistry UnitRegistry;
+    public UnitRegistry UnitRegistry;
 
     public Vector2I FocusedCell => Focus.Cell;
 
     public override void _Ready()
     {
         Grid = GetNode<BattleGrid>(_battleGridPath);
-        UnitRegistry = GetNode<BattleUnitRegistry>(_battleUnitRegistryPath);
+        UnitRegistry = GetNode<UnitRegistry>(_battleUnitRegistryPath);
         
-        Debug.Assert(Grid != null, "[GridCursor] Grid must be initialized");
-        Debug.Assert(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
+        DebugUtil.Require(Grid != null, "[GridCursor] Grid must be initialized");
+        DebugUtil.Require(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
         
         _UpdateFocus();
     }
@@ -54,14 +54,14 @@ public partial class GridCursor : Node2D
 
     public void MoveToGlobalPosition(Vector2 globalPos)
     {
-        _logger.Log("Move To" + globalPos, LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log("Move To " + globalPos, LogSeverity.Trace, LogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
         MoveTo(cell);
     }
 
     public void MoveTo(Vector2I gridCell)
     {
-        _logger.Log("Move To" + gridCell, LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log("Move To " + gridCell, LogSeverity.Trace, LogCategory.UiNavigation);
         if (gridCell == _lastCellFocused)
         {
             _logger.Log($"MoveTo no move, _lastCellFocused", LogSeverity.Extra, LogCategory.UiNavigation);
@@ -98,7 +98,7 @@ public partial class GridCursor : Node2D
         _lastCellFocused = cell;
         
         EmitSignal(SignalName.GridCursorFocusChanged, nextFocus);
-        _logger.Log($"_UpdateFocus [Focus]={nextFocus}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"_UpdateFocus [Focus.Cell]={nextFocus.Cell}", LogSeverity.Info, LogCategory.UiNavigation);
     }
 }
 
@@ -106,7 +106,7 @@ public partial class GridCursorFocus: RefCounted
 {
     public Vector2I Cell { get; init; }
     public TerrainType Terrain { get; init; }
-    public Goblinos.Scripts.Battle.BattleUnit? Unit { get; init; }
+    public BattleUnit? Unit { get; init; }
     public Node? TopNode { get; init; }
     public Godot.Collections.Array<Node> Nodes { get; init; } = new();
     public bool HasUnit => Unit != null;

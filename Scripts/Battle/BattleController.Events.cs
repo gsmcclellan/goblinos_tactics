@@ -15,7 +15,7 @@ public partial class BattleController
     // Components
     // GridCursor
     [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);
+    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus); // TODO - change name to HoveredCellChanged or HoveredTerrainChanged
     
     /** Events */
     
@@ -24,7 +24,7 @@ public partial class BattleController
     private void _Ready_Events()
     {
         // GridCursor
-        Debug.Assert(_cursor != null, "GridCursor not initialized. Unable to set up actions.");
+        DebugUtil.Require(_cursor != null, "[GridCursor] not initialized. Unable to set up actions.");
         _cursor.GridCursorFocusChanged += OnGridCursorFocusChanged;
         
         _logger.Log("Ready_Events", LogSeverity.Info, LogCategory.Initialization);
