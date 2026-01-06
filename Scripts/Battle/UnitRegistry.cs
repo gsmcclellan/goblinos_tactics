@@ -95,7 +95,7 @@ public partial class UnitRegistry: Node
             return;
         
         var isRegistered = Contains(unit);
-        if (!DebugUtil.Require(isRegistered, "[BattleUnitRegistry] Unable to unregister unit, not registered."))
+        if (!DebugUtil.Require(isRegistered, "[UnitRegistry] Unable to unregister unit, not registered."))
             return;
         
         var cell = _cellsByUnit[unit];
@@ -230,22 +230,22 @@ public partial class UnitRegistry: Node
         // TODO - currently allows only move to empty cell, add additional functionality for shove, swap, etc.
         _logger.Log($"ApplyUnitMove [unit]={unit} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
 
-        if (!DebugUtil.Require(unit != null, "[BattleUnitRegistry] Cannot move null unit."))
+        if (!DebugUtil.Require(unit != null, "[UnitRegistry] Cannot move null unit."))
             return;
         
         var isUnitRegistered = TryGetCell(unit, out var unitCell);
-        if (!DebugUtil.Require(isUnitRegistered, "[BattleUnitRegistry] Cannot move unregistered unit."))
+        if (!DebugUtil.Require(isUnitRegistered, "[UnitRegistry] Cannot move unregistered unit."))
             return;
         
         var noOpMove = fromCell == toCell;
-        if (!DebugUtil.Require(!noOpMove, "[BattleUnitRegistry] No op move, fromCell == toCell"))
+        if (!DebugUtil.Require(!noOpMove, "[UnitRegistry] No op move, fromCell == toCell"))
             return;
         
         var fromCellMatches = unitCell == fromCell;
         var isDestinationEmpty = !_unitsByCell.ContainsKey(toCell);
 
-        if (!DebugUtil.Require(fromCellMatches, "[BattleUnitRegistry] fromCell does not match existing location.") ||
-            !DebugUtil.Require(isDestinationEmpty, "[BattleUnitRegistry] toCell not empty"))
+        if (!DebugUtil.Require(fromCellMatches, "[UnitRegistry] fromCell does not match existing location.") ||
+            !DebugUtil.Require(isDestinationEmpty, "[UnitRegistry] toCell not empty"))
             return;
 
         _cellsByUnit[unit] = toCell;

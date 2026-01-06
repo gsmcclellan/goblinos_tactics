@@ -13,7 +13,7 @@ public partial class GridCursor : Node2D
     
     /** Signals */
     [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus); // TODO - move unit, terrain to SelectionController. Cursor only emits cell
+    public delegate void GridCursorFocusChangedEventHandler(Vector2I newCell, Vector2I oldCell); // TODO - move unit, terrain to SelectionController. Cursor only emits cell
 
     /** Events */
 
@@ -21,47 +21,48 @@ public partial class GridCursor : Node2D
     
     /** Fields */
     [Export] private NodePath _battleGridPath;
-    [Export] private NodePath _battleUnitRegistryPath;
+    [Export] private NodePath _unitRegistryPath;
 
     private Logger _logger = LogManager.For<GridCursor>();
 
     private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
     
     /** Properties */
-    public GridCursorFocus Focus;
     public BattleGrid Grid;
     public UnitRegistry UnitRegistry;
 
-    public Vector2I FocusedCell => Focus.Cell;
+    public Vector2I FocusedCell { get; private set; }
 
     public override void _Ready()
     {
         Grid = GetNode<BattleGrid>(_battleGridPath);
-        UnitRegistry = GetNode<UnitRegistry>(_battleUnitRegistryPath);
+        UnitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
         
         DebugUtil.Require(Grid != null, "[GridCursor] Grid must be initialized");
         DebugUtil.Require(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
         
         _UpdateFocus();
+        
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
     
-    public void MoveDirection(Vector2I dir)
+    private void MoveDirection(Vector2I dir)
     {
         _logger.Log("Move " + dir, 0, LogCategory.UiNavigation);
         GlobalPosition += dir * InputUtil.TileSize;
         _UpdateFocus();
     }
 
-    public void MoveToGlobalPosition(Vector2 globalPos)
+    private void MoveToGlobalPosition(Vector2 globalPos)
     {
         _logger.Log("Move To " + globalPos, LogSeverity.Trace, LogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
-        MoveTo(cell);
+        MoveToCell(cell);
     }
 
-    public void MoveTo(Vector2I gridCell)
+    private void MoveToCell(Vector2I gridCell)
     {
-        _logger.Log("Move To " + gridCell, LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log("Move To " + gridCell, LogSeverity.Extra, LogCategory.UiNavigation);
         if (gridCell == _lastCellFocused)
         {
             _logger.Log($"MoveTo no move, _lastCellFocused", LogSeverity.Extra, LogCategory.UiNavigation);
@@ -71,6 +72,60 @@ public partial class GridCursor : Node2D
         GlobalPosition = gridCell * GlobalSettings.TileSize + new Vector2(GlobalSettings.TileSize * 0.5f, GlobalSettings.TileSize * 0.5f);
         _UpdateFocus();
     }
+
+    /// <summary>
+    /// Checks if cursor movement one space in a given direction is possible
+    /// according to BattleGrid, then moves cursor
+    /// </summary>
+    /// <param name="dir"></param>
+    /// <param name="cell">out property</param>
+    /// <returns>true if able to move</returns>
+    public bool TryMoveDirection(InputDirection dir, out Vector2I cell)
+    {
+        _logger.Log("TryMoveDirection", LogSeverity.Trace, LogCategory.UiNavigation);
+
+        cell = FocusedCell + InputUtil.InputDirectionToVector2I(dir);
+        return TryMoveToCell(cell);
+    }
+    
+    public bool TryMoveDirection(InputDirection dir) => TryMoveDirection(dir, out _);
+
+    /// <summary>
+    /// Checks if cursor movement to a cell is possible
+    /// according to BattleGrid, then moves cursor
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns>true if able to move</returns>
+    public bool TryMoveToCell(Vector2I cell)
+    {
+        _logger.Log($"TryMoveToCell [cell]={cell}", LogSeverity.Extra, LogCategory.UiNavigation);
+
+        if (cell == FocusedCell || !Grid.CanFocusCell(cell))
+            return false;
+        
+        MoveToCell(cell);
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if cursor movement to a given global position is possible
+    /// according to BattleGrid, then moves cursor
+    /// </summary>
+    /// <param name="globalPos"></param>
+    /// <param name="cell">out property, Vector2I grid cell associated with global pos</param>
+    /// <returns>true if able to move</returns>
+    public bool TryMoveToGlobalPosition(Vector2 globalPos, out Vector2I cell)
+    {
+        _logger.Log($"TryMoveToGlobalPosition [globalPos]={globalPos}", LogSeverity.Extra, LogCategory.UiNavigation);
+
+        if (!Grid.CanFocusGlobalPosition(globalPos, out cell) || cell == FocusedCell)
+            return false;
+        
+        MoveToCell(cell);
+        return true;
+    }
+
+    public bool TryMoveToGlobalPosition(Vector2 globalPos) => TryMoveToGlobalPosition(globalPos, out _);
 
     private void _UpdateFocus()
     {
@@ -83,31 +138,10 @@ public partial class GridCursor : Node2D
             return;
         }
 
-        var terrain = Grid.GetTerrainAtCell(cell);
-        UnitRegistry.TryGetUnitAtCell(cell, out var unit);
-            
-        var nextFocus = new GridCursorFocus
-        {
-            Cell = cell,
-            Terrain = terrain,
-            Unit = unit,
-            TopNode = unit // placeholder; TODO pick priority from Nodes
-        };
-        
-        Focus = nextFocus;
+        FocusedCell = cell;
+        EmitSignal(SignalName.GridCursorFocusChanged, cell, _lastCellFocused);
         _lastCellFocused = cell;
         
-        EmitSignal(SignalName.GridCursorFocusChanged, nextFocus);
-        _logger.Log($"_UpdateFocus [Focus.Cell]={nextFocus.Cell}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"_UpdateFocus [FocusedCell]={FocusedCell}", LogSeverity.Extra, LogCategory.UiNavigation);
     }
-}
-
-public partial class GridCursorFocus: RefCounted
-{
-    public Vector2I Cell { get; init; }
-    public TerrainType Terrain { get; init; }
-    public BattleUnit? Unit { get; init; }
-    public Node? TopNode { get; init; }
-    public Godot.Collections.Array<Node> Nodes { get; init; } = new();
-    public bool HasUnit => Unit != null;
 }

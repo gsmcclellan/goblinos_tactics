@@ -1,4 +1,6 @@
-﻿using System;
+﻿// DEPRECATED - using direct signals instead of re emiting here. If re emit, use sub node instead of BattleController partial.
+
+using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Util;
@@ -13,9 +15,6 @@ public partial class BattleController
     [Signal] public delegate void BattleControllerInitializedEventHandler();
     
     // Components
-    // GridCursor
-    [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus); // TODO - change name to HoveredCellChanged or HoveredTerrainChanged
     
     /** Events */
     
@@ -25,24 +24,14 @@ public partial class BattleController
     {
         // GridCursor
         DebugUtil.Require(_cursor != null, "[GridCursor] not initialized. Unable to set up actions.");
-        _cursor.GridCursorFocusChanged += OnGridCursorFocusChanged;
         
         _logger.Log("Ready_Events", LogSeverity.Info, LogCategory.Initialization);
     }
 
     private void _ExitTree_Actions()
     {
-        // GridCursor
-        if (_cursor != null)
-            _cursor.GridCursorFocusChanged -= OnGridCursorFocusChanged;
         
         _logger.Log("ExitTree_Actions", LogSeverity.Info, LogCategory.Exit);
-    }
-    
-    private void OnGridCursorFocusChanged(GridCursorFocus focus)
-    {
-        _logger.Log($"OnGridCursorFocusChanged hasUnit={focus.HasUnit}", LogSeverity.Info, LogCategory.Signal);
-        EmitSignal(SignalName.GridCursorFocusChanged, focus);
     }
 
     private void NotifyInitialized()

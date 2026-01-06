@@ -1,12 +1,16 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Goblinos.Scripts.Util;
 
-public class DebugUtil
+public static class DebugUtil
 {
-    public static bool Require(bool condition, string message)
+    public static bool Require(
+        [DoesNotReturnIf(false)] bool condition,        
+        string message)
     {
         Debug.Assert(condition, message);
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         return condition;
     }
 }

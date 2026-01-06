@@ -53,7 +53,7 @@ public partial class BattleController: IInputHandler
         while (_repeatMoveTimer >= _repeatInterval)
         {
             _repeatMoveTimer -= _repeatInterval;
-            if (!TryMoveCursor(_heldDirection))
+            if (!_cursor.TryMoveDirection(_heldDirection))
             {
                 // Can't move, stop repeat
                 _heldDirection = InputDirection.None;
@@ -120,7 +120,7 @@ public partial class BattleController: IInputHandler
             return false;
         
         // Controller/keyboard cursor movement
-        if (TryMoveCursor(dir.Value))
+        if (_cursor.TryMoveDirection(dir.Value))
         {
             _heldDirection = dir.Value;
             _repeatMoveTimer = -_repeatDelay;
@@ -147,7 +147,7 @@ public partial class BattleController: IInputHandler
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
         _logger.Log("HandleMouseMotion", LogSeverity.Extra, LogCategory.Input);
-        TryMoveCursorToGlobalPosition(e.GlobalPosition);
+        _cursor.TryMoveToGlobalPosition(e.GlobalPosition);
         return true;
     }
 
@@ -162,64 +162,6 @@ public partial class BattleController: IInputHandler
         return InputDirection.None;
     }
     
-    public void MoveCursorToCell(Vector2I cell) // TODO - move cursor movement logic to cursor with try functions, battle controller only triggers
-    {
-        _logger.Log($"MoveCursorTo [cell]={cell}", LogSeverity.Trace, LogCategory.UiNavigation);
-        _cursor.MoveTo(cell);
-    }
-
-    /// <summary>
-    /// Checks if cursor movement one space in a given direction is possible
-    /// according to BattleGrid, then moves cursor
-    /// </summary>
-    /// <param name="dir"></param>
-    /// <param name="cell">out property</param>
-    /// <returns>true if able to move</returns>
-    public bool TryMoveCursor(InputDirection dir, out Vector2I cell)
-    {
-        _logger.Log("TryMoveCursor", LogSeverity.Trace, LogCategory.UiNavigation);
-
-        cell = _cursor.Focus.Cell + InputUtil.InputDirectionToVector2I(dir);
-        return TryMoveCursorToCell(cell);
-    }
     
-    public bool TryMoveCursor(InputDirection dir) => TryMoveCursor(dir, out _);
-
-    /// <summary>
-    /// Checks if cursor movement to a cell is possible
-    /// according to BattleGrid, then moves cursor
-    /// </summary>
-    /// <param name="cell"></param>
-    /// <returns>true if able to move</returns>
-    public bool TryMoveCursorToCell(Vector2I cell)
-    {
-        _logger.Log($"TryMoveCursorTo [cell]={cell}", LogSeverity.Extra, LogCategory.UiNavigation);
-
-        if (cell == FocusedCell || !Grid.CanFocusCell(cell))
-            return false;
-        
-        MoveCursorToCell(cell);
-        return true;
-    }
-
-    /// <summary>
-    /// Checks if cursor movement to a given global position is possible
-    /// according to BattleGrid, then moves cursor
-    /// </summary>
-    /// <param name="globalPos"></param>
-    /// <param name="cell">out property, Vector2I grid cell associated with global pos</param>
-    /// <returns>true if able to move</returns>
-    public bool TryMoveCursorToGlobalPosition(Vector2 globalPos, out Vector2I cell)
-    {
-        _logger.Log($"TryMoveCursorToGlobalPosition [globalPos]={globalPos}", LogSeverity.Extra, LogCategory.UiNavigation);
-
-        if (!Grid.CanFocusGlobalPosition(globalPos, out cell) || cell == FocusedCell)
-            return false;
-        
-        MoveCursorToCell(cell);
-        return true;
-    }
-
-    public bool TryMoveCursorToGlobalPosition(Vector2 globalPos) => TryMoveCursorToGlobalPosition(globalPos, out _);
 }
 

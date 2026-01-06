@@ -64,12 +64,12 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
     {
     }
 
-    public void OnCursorFocusChanged(GridCursorFocus focus)
-    {
-        Cell = focus.Cell;
-        Terrain = focus.Terrain;
-        LogManager.Log("[TerrainInfoPanel] OnCursorFocusChanged - Update labels", LogSeverity.Info, LogCategory.Signal);
-    }
+    // public void OnCursorFocusChanged(GridCursorFocus focus)
+    // {
+    //     Cell = focus.Cell;
+    //     Terrain = focus.Terrain;
+    //     LogManager.Log("[TerrainInfoPanel] OnCursorFocusChanged - Update labels", LogSeverity.Info, LogCategory.Signal);
+    // }
 
     public void OnSelectedUnitChanged(Goblinos.Scripts.Battle.BattleUnit selectedUnit)
     {

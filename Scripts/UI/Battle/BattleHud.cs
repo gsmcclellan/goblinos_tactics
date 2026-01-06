@@ -60,7 +60,7 @@ namespace Goblinos.Scripts.UI.Battle
         {
             LogManager.Log("[BattleHud] ConnectSignals", LogSeverity.Info, LogCategory.Initialization);
 
-            _battleController.Connect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
+            // _battleController.Connect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
             // _battleController.Connect("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged))); TODO
         }
 
@@ -71,20 +71,20 @@ namespace Goblinos.Scripts.UI.Battle
             if (_battleController == null)
                 return;
 
-            if (_battleController.IsConnected("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged))))
-                _battleController.Disconnect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
+            // if (_battleController.IsConnected("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged))))
+            //     _battleController.Disconnect("GridCursorFocusChanged", new Callable(this, nameof(HandleCursorFocusChanged)));
 
             // if (_battleController.IsConnected("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged))))
             //     _battleController.Disconnect("SelectedUnitChanged", new Callable(this, nameof(HandleSelectedUnitChanged)));
         }
 
-        private void HandleCursorFocusChanged(GridCursorFocus focus)
-        {
-            LogManager.Log("[BattleHud] HandleCursorFocusChanged", LogSeverity.Trace, LogCategory.UiNavigation);
-
-            foreach (IBattleHudPanel panel in _panels)
-                panel.OnCursorFocusChanged(focus);
-        }
+        // private void HandleCursorFocusChanged(GridCursorFocus focus) TODO - change to SelectionController
+        // {
+        //     LogManager.Log("[BattleHud] HandleCursorFocusChanged", LogSeverity.Trace, LogCategory.UiNavigation);
+        //
+        //     foreach (IBattleHudPanel panel in _panels)
+        //         panel.OnCursorFocusChanged(focus);
+        // }
 
         private void HandleSelectedUnitChanged(Scripts.Battle.BattleUnit? selectedUnit)
         {

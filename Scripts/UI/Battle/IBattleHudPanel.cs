@@ -9,7 +9,7 @@ namespace Goblinos.Scripts.UI.Battle
     /// </summary>
     public interface IBattleHudPanel
     {
-        void OnCursorFocusChanged(GridCursorFocus focus);
+        // void OnCursorFocusChanged(GridCursorFocus focus); // TODO - change to SelectionController events
 
         void OnSelectedUnitChanged(Scripts.Battle.BattleUnit? selectedUnit);
     }

@@ -19,7 +19,7 @@ public partial class BattleGrid : Node2D
     private TerrainType? _defaultTerrain;
 
     // Optional per-cell cache (handy if you query a lot)
-    private readonly Dictionary<Vector2I, TerrainType> _terrainAtCellCache = new();
+    private readonly Dictionary<Vector2I, TerrainType?> _terrainAtCellCache = new();
     
     public override void _Ready()
     {
@@ -85,7 +85,6 @@ public partial class BattleGrid : Node2D
     }
 
     /// <summary>Gets TerrainType for a cell (uses per-cell cache).</summary>
-
     public bool CanFocusCell(Vector2I cell)
     {
         var terrain = GetTerrainAtCell(cell);
@@ -101,10 +100,21 @@ public partial class BattleGrid : Node2D
         return CanFocusCell(cell);
     }
     
+    /// <summary>
+    /// Returns cell coordinates for a given globalPos
+    /// </summary>
+    /// <param name="globalPos"></param>
+    /// <returns></returns>
     public Vector2I GetCellAtGlobalPosition(Vector2 globalPos)
     {
         return TerrainLayer.LocalToMap(TerrainLayer.ToLocal(globalPos));
     }
+    
+    /// <summary>
+    /// Returns TerrainType data for a given Vector2I cell
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns></returns>
     public TerrainType? GetTerrainAtCell(Vector2I cell)
     {
         if (_terrainAtCellCache.TryGetValue(cell, out var cached))
@@ -112,7 +122,7 @@ public partial class BattleGrid : Node2D
 
         var tileData = TerrainLayer.GetCellTileData(cell);
         if (tileData == null)
-            return Cache(cell, _defaultTerrain);
+            return Cache(cell, null);
 
         // TileSet custom data key added to terrain in TileMapLayer
         var v = tileData.GetCustomData("terrain_id");
@@ -125,6 +135,25 @@ public partial class BattleGrid : Node2D
 
         // If the tile is painted but missing terrain_id, use default
         return Cache(cell, _defaultTerrain);
+    }
+
+    /// <summary>
+    /// Returns true if TerrainType terrain exists at given cell coordindates, out var terrain
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <param name="terrain"></param>
+    /// <returns></returns>
+    public bool TryGetTerrainAtCell(Vector2I cell, out TerrainType terrain)
+    {
+        var t = GetTerrainAtCell(cell);
+        if (t == null)
+        {
+            terrain = null!;
+            return false;
+        }
+
+        terrain = t;
+        return true;
     }
     
     
@@ -140,8 +169,7 @@ public partial class BattleGrid : Node2D
     /// <returns></returns>
     private TerrainType? Cache(Vector2I cell, TerrainType? terrain)
     {
-        if (terrain != null)
-            _terrainAtCellCache[cell] = terrain;
+        _terrainAtCellCache[cell] = terrain;
         return terrain;
     }
     
@@ -151,6 +179,10 @@ public partial class BattleGrid : Node2D
         _terrainAtCellCache.Clear();
     }
     
+    /// <summary>
+    /// Returns first TerrainType from file in directory
+    /// </summary>
+    /// <returns></returns>
     private TerrainType? FirstTerrain()
     {
         foreach (var kv in _terrainById) return kv.Value;

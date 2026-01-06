@@ -13,13 +13,27 @@ public partial class BattleController : Node, IInputHandler
     /** Actions */
 
     /** Components */
-    [Export] private NodePath _battleGridPath;
     
-    public Battle Battle;
-    public BattleGrid Grid;
-
-    private Logger _logger = LogManager.For<BattleController>();
+    [Export] private NodePath _cursorPath;
+    [Export] private NodePath _gridPath;
+    [Export] private NodePath _selectionControllerPath;
+    [Export] private NodePath _unitRegistryPath;
+    
+    private Battle _battle;
     private GridCursor _cursor;
+    private BattleGrid _grid;
+    private SelectionController _selectionController;
+    private UnitRegistry _unitRegistry;
+
+    /** Fields */
+    
+    
+    /** Properties */
+    
+    
+    
+    private Logger _logger = LogManager.For<BattleController>();
+    
     private BattleUnit _selectedUnit;
 
     /** Properties */
@@ -32,6 +46,7 @@ public partial class BattleController : Node, IInputHandler
     private void _DeferredInit()
     {
         _InitializeBattleComponents();
+        _BindBattleComponents();
         _SetupSubscriptions();
         
         _Ready_Input();
@@ -54,15 +69,24 @@ public partial class BattleController : Node, IInputHandler
 
     private void _InitializeBattleComponents()
     {
-        Battle = GetParent<Battle>();
-        Grid = GetNode<BattleGrid>(_battleGridPath);
-        _cursor = Battle.Cursor;
+        _battle = GetParent<Battle>();
+        _cursor = _battle.Cursor;
+        _grid = GetNode<BattleGrid>(_gridPath);
+        _selectionController = GetNode<SelectionController>(_selectionControllerPath);
+        _unitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
         
-        DebugUtil.Require(Battle != null, "[BattleController] Battle must be initialized.");
-        DebugUtil.Require(Grid != null, "[BattleController] BattleGrid must be initialized.");
-        DebugUtil.Require(_cursor != null, "[BattleController] GridCursor must be initialized.");
+        Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
+        Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
+        Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
+        Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
+        Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
         
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
+    }
+
+    private void _BindBattleComponents()
+    {
+        _selectionController.Bind(_cursor, _grid, _unitRegistry);
     }
 
     private void _SetupSubscriptions()

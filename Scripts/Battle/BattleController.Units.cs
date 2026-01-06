@@ -7,21 +7,17 @@ namespace Goblinos.Scripts.Battle;
 
 public partial class BattleController
 {
-    [ExportGroup("Units")]
+    // [ExportGroup("Units")]
     /** Components */
-    [Export]
-    private NodePath _battleUnitRegistryPath;
 
     /** Fields */
     
     
     /** Properties */
-    public UnitRegistry UnitRegistry;
     
     private void _Ready_Units()
     {
-        UnitRegistry = GetNode<UnitRegistry>(_battleUnitRegistryPath);
-        DebugUtil.Require(UnitRegistry != null, "[BattleController.Units] Not Initialized. Unable to register UnitRegistry.");
+        Debug.Assert(_unitRegistry != null, "[BattleController.Units] Not Initialized. Unable to register UnitRegistry.");
 
         _registerExistingBattleUnitNodes();
         
@@ -33,14 +29,14 @@ public partial class BattleController
     /// </summary>
     private void _registerExistingBattleUnitNodes()
     {
-        var units = Battle.GetNode("Units").GetChildren();
+        var units = _battle.GetNode("Units").GetChildren();
 
         foreach (var unit in units)
         {
             if (unit is BattleUnit bUnit)
-                UnitRegistry.RegisterUnit(bUnit, default);
+                _unitRegistry.RegisterUnit(bUnit, default);
         }
         
-        _logger.Log($"_registerExistingBattleUnitNodes count={UnitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
     }
 }
