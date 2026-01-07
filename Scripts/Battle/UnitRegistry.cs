@@ -40,19 +40,19 @@ public partial class UnitRegistry: Node
 
     public override void _Ready()
     {
-        _SetupSubscriptions();
+        _SubscribeToEvents();
     }
 
     public override void _ExitTree()
     {
-        _RemoveSubscriptions();
+        _UnsubscribeFromEvents();
     }
 
-    private void _SetupSubscriptions()
+    private void _SubscribeToEvents()
     {
     }
 
-    private void _RemoveSubscriptions()
+    private void _UnsubscribeFromEvents()
     {
     }
 

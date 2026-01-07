@@ -17,7 +17,7 @@ public partial class GlobalSettings : Node
     public const string BattleResultsScreenScenePath = "res://Nodes/BattleResultsScreen.tscn";
 
     public const bool AllowInputModeSwitching = true; // TODO move to user settings
-    public const InputMode DefaultInputMode = InputMode.Controller; // TODO move to user settings
+    public const InputDeviceMode DefaultInputMode = InputDeviceMode.MouseAndKeyboard; // TODO move to user settings
 
     public static readonly Random Random = new Random();
 }

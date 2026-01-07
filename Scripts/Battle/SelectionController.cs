@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Util;
@@ -38,8 +37,8 @@ public partial class SelectionController : Node
     private TerrainType? _hoveredTerrain;
     private BattleUnit? _hoveredUnit;
 
-    private Vector2I _selectedCell;
-    private TerrainType _selectedTerrain;
+    // private Vector2I _selectedCell;
+    // private TerrainType _selectedTerrain;
     private BattleUnit? _selectedUnit;
 
     /** Properties */
@@ -101,9 +100,44 @@ public partial class SelectionController : Node
     // Public Methods
     // ---------------------------------------------------------------------
 
-    // SelectHovered()
-    // ClearSelection()
-
+    public void SelectCell(Vector2I cell)
+    {
+        if (_unitRegistry.TryGetUnitAtCell(cell, out var unit))
+        {
+            SelectUnit(unit);
+        }
+    }
+    
+    public void SelectUnit(BattleUnit unit)
+    {
+        unit.Select();
+        _selectedUnit = unit;
+        _logger.Log("Unit Selected", LogSeverity.Info, LogCategory.UiNavigation);
+        EmitSignalSelectedUnitChanged(_selectedUnit);
+    }
+    
+    public void TriggerClearSelection()
+    {
+        _logger.Log("TriggerSelection", LogSeverity.Trace, LogCategory.Input);
+        DeselectUnit();
+    }
+    
+    public void TriggerSelection()
+    {
+        _logger.Log("TriggerSelection", LogSeverity.Trace, LogCategory.Input);
+        
+        // TODO - add deselection rules / other types of selection
+        if (_hoveredUnit == null)
+        {
+            _logger.Log("TriggerSelection - No Hovered Unit, return", LogSeverity.Trace, LogCategory.Input);
+            return;
+        }
+        
+        if (_hoveredUnit != _selectedUnit)
+            SelectUnit(_hoveredUnit);
+        else
+            DeselectUnit();
+    }
     // ---------------------------------------------------------------------
     // Event Handlers
     // ---------------------------------------------------------------------
@@ -114,26 +148,23 @@ public partial class SelectionController : Node
         UpdateHoveredFromCell(newCell);
     }
 
+    
+
     // ---------------------------------------------------------------------
     // Private Methods
     // ---------------------------------------------------------------------
 
-    private void UpdateHoveredFromCell(Vector2I cell)
+    private void DeselectUnit()
     {
-        // cell -> unit, terrain
-        _hoveredCell = cell;
-        var hasTerrain = _grid.TryGetTerrainAtCell(cell, out var hoveredTerrain);
-        var hasUnit = _unitRegistry.TryGetUnitAtCell(cell, out var hoveredUnit);
-
-        if (hasTerrain && hoveredTerrain != _hoveredTerrain)
-            SetHoveredTerrain(hoveredTerrain);
-
-        if (hasUnit && hoveredUnit != _hoveredUnit)
-            SetHoveredUnit(hoveredUnit);
+        if (_selectedUnit == null)
+            return;
         
-        _logger.Log($"Update hovered from cell={cell}, terrain={hoveredTerrain?.Id}, unit={hoveredUnit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _selectedUnit.Deselect();
+        _selectedUnit = null;
+        _logger.Log("Unit Deselected", LogSeverity.Info, LogCategory.UiNavigation);
+        EmitSignalSelectedUnitChanged(_selectedUnit);
     }
-
+    
     private void SetHoveredTerrain(TerrainType? terrain)
     {
         _logger.Log($"Update hovered terrain={terrain?.Id}", LogSeverity.Extra, LogCategory.UiNavigation);
@@ -143,8 +174,29 @@ public partial class SelectionController : Node
 
     private void SetHoveredUnit(BattleUnit? unit)
     {
-        _logger.Log($"Update hovered terrain={unit?.Name}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"Update hovered unit={unit?.Name}", LogSeverity.Info, LogCategory.UiNavigation);
         _hoveredUnit = unit;
         EmitSignalHoveredUnitChanged(unit);
+    }
+
+    private void TryMoveSelectedUnitTo(Vector2I cell)
+    {
+        
+    }
+    
+    private void UpdateHoveredFromCell(Vector2I cell)
+    {
+        // cell -> unit, terrain
+        _hoveredCell = cell;
+        var hasTerrain = _grid.TryGetTerrainAtCell(cell, out var hoveredTerrain);
+        var hasUnit = _unitRegistry.TryGetUnitAtCell(cell, out var hoveredUnit);
+
+        if (hoveredTerrain != _hoveredTerrain)
+            SetHoveredTerrain(hoveredTerrain);
+
+        if (hoveredUnit != _hoveredUnit)
+            SetHoveredUnit(hoveredUnit);
+        
+        _logger.Log($"Update hovered from cell={cell}, terrain={hoveredTerrain?.Id}, unit={hoveredUnit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
     }
 }

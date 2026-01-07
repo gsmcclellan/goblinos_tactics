@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://ckjgg67grrl4p"]
+[gd_scene load_steps=11 format=3 uid="uid://ckjgg67grrl4p"]
 
 [ext_resource type="Script" uid="uid://cqpcxwyad48vv" path="res://Scripts/Battle/Battle.cs" id="1_7xgak"]
 [ext_resource type="Script" uid="uid://c1h3o8qhaoubx" path="res://Scripts/Battle/BattleController.cs" id="2_2qpgi"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://4vdeogyls6pq" path="res://Scripts/Battle/UnitRegistry.cs" id="3_sx5ws"]
 [ext_resource type="Texture2D" uid="uid://bhsux83jnkgt2" path="res://Assets/4goblin4soldier.png" id="4_2o8ig"]
 [ext_resource type="Script" uid="uid://brlge3s1bs64r" path="res://Scripts/Battle/SelectionController.cs" id="4_ko8gk"]
+[ext_resource type="Script" uid="uid://m03nd4f33xra" path="res://Scripts/Battle/MovementController.cs" id="4_sl1sn"]
 [ext_resource type="PackedScene" uid="uid://dsm2xuioevf8o" path="res://Nodes/Battle/BattleGrid.tscn" id="5_43edm"]
 [ext_resource type="PackedScene" uid="uid://d2ovsrbkfw3yq" path="res://Nodes/Battle/GridCursor.tscn" id="6_7spev"]
 [ext_resource type="PackedScene" uid="uid://0yqqd78jcaet" path="res://Nodes/UI/Battle/BattleHud.tscn" id="7_7spev"]
@@ -17,11 +18,16 @@ script = ExtResource("1_7xgak")
 script = ExtResource("2_2qpgi")
 _cursorPath = NodePath("../Overlays/GridCursor")
 _gridPath = NodePath("../BattleGrid")
+_hudPath = NodePath("../Overlays/BattleHud")
+_movementControllerPath = NodePath("../MovementController")
 _selectionControllerPath = NodePath("../SelectionController")
 _unitRegistryPath = NodePath("../UnitRegistry")
 
 [node name="UnitRegistry" type="Node" parent="."]
 script = ExtResource("3_sx5ws")
+
+[node name="MovementController" type="Node" parent="."]
+script = ExtResource("4_sl1sn")
 
 [node name="SelectionController" type="Node" parent="."]
 script = ExtResource("4_ko8gk")
@@ -47,9 +53,8 @@ position = Vector2(16, 16)
 z_index = 2
 
 [node name="GridCursor" parent="Overlays" instance=ExtResource("6_7spev")]
-position = Vector2(80, 48)
+position = Vector2(16, 15)
 _battleGridPath = NodePath("../../BattleGrid")
 _unitRegistryPath = NodePath("../../UnitRegistry")
 
 [node name="BattleHud" parent="Overlays" instance=ExtResource("7_7spev")]
-_battleControllerPath = NodePath("../../BattleController")

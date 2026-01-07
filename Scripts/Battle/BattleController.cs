@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Core;
+using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
 
-public partial class BattleController : Node, IInputHandler
+public partial class BattleController : Node
 {
     /** Signals */
 
@@ -16,12 +17,16 @@ public partial class BattleController : Node, IInputHandler
     
     [Export] private NodePath _cursorPath;
     [Export] private NodePath _gridPath;
+    [Export] private NodePath _hudPath;
+    [Export] private NodePath _movementControllerPath;
     [Export] private NodePath _selectionControllerPath;
     [Export] private NodePath _unitRegistryPath;
     
     private Battle _battle;
     private GridCursor _cursor;
     private BattleGrid _grid;
+    private BattleHud _hud;
+    private MovementController _movementController;
     private SelectionController _selectionController;
     private UnitRegistry _unitRegistry;
 
@@ -47,7 +52,7 @@ public partial class BattleController : Node, IInputHandler
     {
         _InitializeBattleComponents();
         _BindBattleComponents();
-        _SetupSubscriptions();
+        _SubscribeToEvents();
         
         _Ready_Input();
         _Ready_Events();
@@ -62,7 +67,6 @@ public partial class BattleController : Node, IInputHandler
 
     public override void _ExitTree()
     {
-        _RemoveSubscriptions();
         _ExitTree_Actions();
         base._ExitTree();
     }
@@ -72,12 +76,16 @@ public partial class BattleController : Node, IInputHandler
         _battle = GetParent<Battle>();
         _cursor = _battle.Cursor;
         _grid = GetNode<BattleGrid>(_gridPath);
+        _hud = GetNode<BattleHud>(_hudPath);
+        _movementController = GetNode<MovementController>(_movementControllerPath);
         _selectionController = GetNode<SelectionController>(_selectionControllerPath);
         _unitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
         
         Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
-        Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
         Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
+        Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
+        Debug.Assert(_hud != null, "[BattleController] BattleHud must be initialized.");
+        Debug.Assert(_movementController != null, "[BattleController] MovementController must be initialized.");
         Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
         
@@ -86,15 +94,9 @@ public partial class BattleController : Node, IInputHandler
 
     private void _BindBattleComponents()
     {
+        _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
-    }
-
-    private void _SetupSubscriptions()
-    {
-    }
-
-    private void _RemoveSubscriptions()
-    {
+        _hud.Bind(_selectionController);
     }
 
     public override void _Process(double delta)

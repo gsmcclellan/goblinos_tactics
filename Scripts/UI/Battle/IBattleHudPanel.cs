@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Terrain;
 using Godot;
 
 namespace Goblinos.Scripts.UI.Battle
@@ -9,8 +10,8 @@ namespace Goblinos.Scripts.UI.Battle
     /// </summary>
     public interface IBattleHudPanel
     {
-        // void OnCursorFocusChanged(GridCursorFocus focus); // TODO - change to SelectionController events
+        void OnHoveredTerrainChanged(TerrainType? terrain);
 
-        void OnSelectedUnitChanged(Scripts.Battle.BattleUnit? selectedUnit);
+        void OnSelectedUnitChanged(BattleUnit? selectedUnit);
     }
 }

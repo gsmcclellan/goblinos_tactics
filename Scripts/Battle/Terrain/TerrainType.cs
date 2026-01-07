@@ -17,7 +17,7 @@ public partial class TerrainType : Resource
     [Export] public Color OverlayColor { get; set; } = Colors.White;
 
     // Core rules
-    [Export] public float MoveCost { get; set; } = 1;
+    [Export] public int MoveCost { get; set; } = 2;
     [Export] public int DefenseBonus { get; set; } = 0;
     [Export] public bool BlocksLos { get; set; } = false;
     [Export] public bool BlocksCursor { get; set; } = false;

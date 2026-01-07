@@ -32,8 +32,17 @@ public enum InputDirection
     None = 4
 }
 
-public enum InputMode
+public enum InputDeviceMode
 {
-    Mouse,
-    Controller
+    AutoDetect,
+    Controller,
+    MouseAndKeyboard
+    
+}
+
+public enum BattleInputState
+{
+    FreeSelect,
+    MoveTargeting,
+    AttackTargeting
 }

@@ -2,9 +2,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 
 public partial class BattleGrid : Node2D
@@ -100,6 +100,21 @@ public partial class BattleGrid : Node2D
         return CanFocusCell(cell);
     }
     
+    public Vector2 GetGlobalCenterPositionForCell(Vector2I cell)
+    {
+        var localPos = TerrainLayer.MapToLocal(cell);
+        var tileSize = TerrainLayer.TileSet.TileSize;
+        localPos += tileSize / 2;
+
+        return TerrainLayer.ToGlobal(localPos);
+    }
+
+    public Vector2 GetGlobalPositionForCell(Vector2I cell)
+    {
+        var localPos = TerrainLayer.MapToLocal(cell);
+        return TerrainLayer.ToGlobal(localPos);
+    }
+    
     /// <summary>
     /// Returns cell coordinates for a given globalPos
     /// </summary>
@@ -107,7 +122,8 @@ public partial class BattleGrid : Node2D
     /// <returns></returns>
     public Vector2I GetCellAtGlobalPosition(Vector2 globalPos)
     {
-        return TerrainLayer.LocalToMap(TerrainLayer.ToLocal(globalPos));
+        var localPos = TerrainLayer.ToLocal(globalPos);
+        return TerrainLayer.LocalToMap(localPos);
     }
     
     /// <summary>
@@ -194,3 +210,11 @@ public partial class BattleGrid : Node2D
     
 }
 
+public enum GridOverlayType
+{
+    MoveRange,
+    AttackRange,
+    MoveAndAttackRange,
+    EnemyAttackRange,
+    AbilityRange
+}

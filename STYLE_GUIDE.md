@@ -62,6 +62,10 @@ When writing or editing code, follow these rules unless explicitly told otherwis
     - `public event Action<GridCursorFocus> GridCursorFocusChanged;`
 - Godot signals: `PascalCase` signal name in C#:
     - `[Signal] public delegate void GridCursorFocusChangedEventHandler(GridCursorFocus focus);`
+- Event Handlers: `OnXChanged` signal/event callbacks
+    - `private void OnCursorFocusChanged(Vector2I cell)`
+- Internal Distribution Logic: `HandleXChanged`
+    - `private void HandleSelectedUnitCHanged(BattleUnit? unit)`
 
 ### 3.4 Naming Clarity
 - Prefer descriptive, explicit names over abbreviations or initialisms
@@ -176,8 +180,9 @@ private void UpdateFocus()
 ## 7) Logging
 
 ### 7.1 Logging rule
-
-- Every method should include at least one call to `DebugUtil.Log`.
+- Every class should instantiate a Goblinos.Logging.Logger instance
+  - `Logger _logger = LogManager.For<Type>()`
+- Every method should include at least one call to `_logger.Log`.
     - Entry logs for public methods
     - State-change logs for private helpers
     - Ready callbacks log `"[NodeName] Ready"` at end of ready function
@@ -186,21 +191,23 @@ private void UpdateFocus()
 Example:
 
 ```
-DebugUtil.Log("[GridCursor] Move " + direction, 0, DebugLogCategory.UiNavigation);
+_logger.Log("[GridCursor] Move " + direction, 0, DebugLogCategory.UiNavigation);
 ```
 
 ## 7.2 DebugUtil Configuration & Usage Rules
 
-The project uses a centralized logging utility (`DebugUtil`) to control log verbosity and signal-to-noise during development.
+The project uses a centralized logging utility (`Goblinos.Logging`) to control log verbosity and signal-to-noise during development.
 
 ---
 
 ### 7.2.1 Global Logging Controls
 
-`DebugUtil` exposes two global configuration fields:
+`Goblinos.Logging` exposes two global configuration fields:
 
 - `LoggingEnabled` - Acts as a *master kill-switch* for all logging.
-- `LoggingSeverity` - Defines the *minimum severity* that will be emitted.
+- `MinimumLoggingSeverity` - Defines the *minimum severity* that will be emitted.
+- `ShouldRegisterNewCategories` - Defines whether to register an unknown string category
+- `ShouldEnableAutoRegisteredCategories` - Defines whether to enable an auto-registered string category
 
 - Severity ordering is defined by `DebugLogSeverity`
 - All logs **should** specify an appropriate `DebugLogCategory`, but None can be used if no suitable category is available
@@ -257,7 +264,7 @@ public enum DebugLogSeverity
 
 ### 8.1 Debug.Assert usage
 
-- Use `Debug.Assert` to enforce required invariants:
+- Use `Debug.Assert` to enforce required invariants or `DebugUtil.Require` when it should also return on failure:
     - Required node references
     - Assumptions that must always hold in a valid state
 
@@ -265,6 +272,9 @@ Example:
 
 ```
 Debug.Assert(_cursor != null, "GridCursor not initialized.");
+
+if (!DebugUtil.Require(_cursor != null, "GridCursor not initialized."))
+  return;
 ```
 
 ### 8.2 Guard clauses

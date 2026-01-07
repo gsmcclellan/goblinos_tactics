@@ -42,34 +42,18 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 
     public override void _Ready()
     {
-        DebugUtil.Require(TerrainNameLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainNameLabel is required.");
-        DebugUtil.Require(TerrainDescriptionLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainDescriptionLabel is required.");
-        DebugUtil.Require(CellLabel != null, "[TerrainInfoPanel].  Not Initialized. CellLabel is required.");
-        DebugUtil.Require(DefenseBonusLabel != null, "[TerrainInfoPanel].  Not Initialized. DefenseBonusLabel is required.");
-        DebugUtil.Require(MovementCostLabel != null, "[TerrainInfoPanel].  Not Initialized. MovementCostLabel is required.");
-        
-        _SetupSubscriptions();
+        Debug.Assert(TerrainNameLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainNameLabel is required.");
+        Debug.Assert(TerrainDescriptionLabel != null, "[TerrainInfoPanel].  Not Initialized. TerrainDescriptionLabel is required.");
+        Debug.Assert(CellLabel != null, "[TerrainInfoPanel].  Not Initialized. CellLabel is required.");
+        Debug.Assert(DefenseBonusLabel != null, "[TerrainInfoPanel].  Not Initialized. DefenseBonusLabel is required.");
+        Debug.Assert(MovementCostLabel != null, "[TerrainInfoPanel].  Not Initialized. MovementCostLabel is required.");
     }
 
-    public override void _ExitTree()
+    public void OnHoveredTerrainChanged(TerrainType terrain)
     {
-        _RemoveSubscriptions();
+        _terrain = terrain;
+        UpdateTerrainLabels();
     }
-
-    private void _SetupSubscriptions()
-    {
-    }
-
-    private void _RemoveSubscriptions()
-    {
-    }
-
-    // public void OnCursorFocusChanged(GridCursorFocus focus)
-    // {
-    //     Cell = focus.Cell;
-    //     Terrain = focus.Terrain;
-    //     LogManager.Log("[TerrainInfoPanel] OnCursorFocusChanged - Update labels", LogSeverity.Info, LogCategory.Signal);
-    // }
 
     public void OnSelectedUnitChanged(Goblinos.Scripts.Battle.BattleUnit selectedUnit)
     {

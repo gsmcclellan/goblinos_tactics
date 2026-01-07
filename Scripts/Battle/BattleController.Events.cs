@@ -18,7 +18,10 @@ public partial class BattleController
     
     /** Events */
     
-    /** Event Listeners */
+    
+    // ---------------------------------------------------------------------
+    // Lifecycle / Setup Methods
+    // ---------------------------------------------------------------------
     
     private void _Ready_Events()
     {
@@ -30,10 +33,33 @@ public partial class BattleController
 
     private void _ExitTree_Actions()
     {
-        
+        _UnsubscribeFromEvents();
         _logger.Log("ExitTree_Actions", LogSeverity.Info, LogCategory.Exit);
     }
 
+    private void _SubscribeToEvents()
+    {
+        _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
+    }
+
+    private void _UnsubscribeFromEvents()
+    {
+        _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Event Methods
+    // ---------------------------------------------------------------------
+
+    private void OnSelectedUnitChanged(Node? selectedNode)
+    {
+        if (selectedNode is BattleUnit bu)
+            EnterMoveTargetingMode();
+        else if (selectedNode == null)
+            ExitTargetingMode();
+        else
+            throw new Exception("[BattleController.Events] Selected node invalid type.");
+    }
     private void NotifyInitialized()
     {
         EmitSignal(SignalName.BattleControllerInitialized);

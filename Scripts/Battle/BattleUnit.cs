@@ -4,16 +4,16 @@ namespace Goblinos.Scripts.Battle;
 
 public partial class BattleUnit : Area2D
 {
-    // Unit properties
-    // UnitData class - TODO
-    [Export] private string _unitName;
-    [Export] private int _maxHealth;
-    [Export] private int _strength;
-    
-    
-    
     // UI elements
     private Sprite2D _selectionNode;
+    
+    // Unit properties
+    // UnitData class - TODO
+    [Export] public string UnitName { get; private set; }
+    [Export] public int MaxHealth { get; private set; }
+    [Export] public int Power { get; private set; }
+
+    public bool IsFriendly => true;
     
     // Realtime Properties
     private int _currentHealth;
@@ -21,7 +21,7 @@ public partial class BattleUnit : Area2D
 
     public override void _Ready()
     {
-        this._selectionNode = GetNode<Sprite2D>("SelectionNode");
+        _selectionNode = GetNode<Sprite2D>("SelectionNode");
     }
     public void Select()
     {
