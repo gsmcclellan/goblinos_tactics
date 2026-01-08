@@ -13,12 +13,13 @@ public partial class BattleController
     /** Signals */
     // Battle Level
     [Signal] public delegate void BattleControllerInitializedEventHandler();
-    
     // Components
-    
+
     /** Events */
-    
-    
+    private event Action<BattleInputState> InputStateChanged;
+
+
+
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
@@ -63,5 +64,10 @@ public partial class BattleController
     private void NotifyInitialized()
     {
         EmitSignal(SignalName.BattleControllerInitialized);
+    }
+
+    private void NotifyInputStateChanged()
+    {
+        InputStateChanged?.Invoke(_inputState);
     }
 }

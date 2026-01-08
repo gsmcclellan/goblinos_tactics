@@ -12,6 +12,9 @@ namespace Goblinos.Scripts.Battle;
 /// </summary>
 public static class GridNavigationUtil
 {
+    public const int BasicGroundTilesAtlasId = 0;
+    public const int ActionOverlayTilesAtlasId = 1;
+    
     /// <summary>
     /// Canonical cardinal direction order used across the project.
     /// Pick one and never change it unless you're OK with path "feel" changing everywhere.

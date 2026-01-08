@@ -25,8 +25,18 @@ public partial class BattleController: IInputHandler
 
     public Vector2I FocusedCell => _cursor.FocusedCell;
     
-    private InputDeviceMode _inputDeviceMode = GlobalSettings.DefaultInputMode;
+    public InputDeviceMode InputDeviceMode = GlobalSettings.DefaultInputMode;
     private BattleInputState _inputState = BattleInputState.FreeSelect;
+    public BattleInputState InputState
+    {
+        get => _inputState;
+        private set
+        {
+            if (value == _inputState) return; 
+            _inputState = value;
+            NotifyInputStateChanged();
+        }
+    }
 
     private BattleUnit? ActiveMover => _selectionController.SelectedUnit;
     
@@ -166,8 +176,8 @@ public partial class BattleController: IInputHandler
 
         if (ActiveMover == null)
         {
-            _logger.Log("No active mover in MoveTargeting", LogSeverity.Warning, LogCategory.Input);
-            _inputState = BattleInputState.FreeSelect;
+            _logger.Log("No active mover in MoveTargeting", LogSeverity.Warn, LogCategory.Input);
+            InputState = BattleInputState.FreeSelect;
             return true;
         }
 
@@ -181,8 +191,8 @@ public partial class BattleController: IInputHandler
 
         if (_selectionController.SelectedUnit == null)
         {
-            _logger.Log("No selected attacker in AttackTargeting", LogSeverity.Warning, LogCategory.Input);
-            _inputState = BattleInputState.FreeSelect;
+            _logger.Log("No selected attacker in AttackTargeting", LogSeverity.Warn, LogCategory.Input);
+            InputState = BattleInputState.FreeSelect;
             return true;
         }
 
@@ -265,14 +275,23 @@ public partial class BattleController: IInputHandler
     private void EnterMoveTargetingMode()
     {
         _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
+        InputState = BattleInputState.MoveTargeting;
 
-        _inputState = BattleInputState.MoveTargeting;
+        var cell = _selectionController.SelectedCell;
+        var movement = _selectionController.SelectedUnit?.Movement;
+        if (!DebugUtil.Require(cell != null, "[BattleController.Input] failed to enter MovementMode, no selected cell") ||
+            !DebugUtil.Require(movement != null, "[BattleController.Input] failed to enter MovementMode, no movement value")
+            )
+            return;
+        
+        var movementPreview = _moveRangeService.BuildMovementPreview(cell.Value, movement.Value);
+        _grid.SetMovementPreview(movementPreview);
     }
     private void ExitTargetingMode()
     {
         _logger.Log("ExitTargetingMode", LogSeverity.Trace, LogCategory.Input);
 
-        _inputState = BattleInputState.FreeSelect;
+        InputState = BattleInputState.FreeSelect;
         _selectionController.TriggerClearSelection();
     }
     

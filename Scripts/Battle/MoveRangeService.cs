@@ -68,6 +68,7 @@ public sealed class MoveRangeService
         
         return new MovementPreviewResults()
         {
+            Cells = [..bestCost.Keys],
             CostByCell = bestCost,
             ParentCells = parentCells,
             StartCell = startCell
@@ -116,6 +117,7 @@ public sealed class MoveRangeService
 
 public sealed class MovementPreviewResults
 {
+    public required HashSet<Vector2I> Cells { get; init; }
     public required IReadOnlyDictionary<Vector2I, int> CostByCell { get; init; }
     public required IReadOnlyDictionary<Vector2I, Vector2I> ParentCells { get; init; }
     public required Vector2I StartCell { get; init; }

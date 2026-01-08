@@ -9,9 +9,10 @@ public partial class BattleUnit : Area2D
     
     // Unit properties
     // UnitData class - TODO
-    [Export] public string UnitName { get; private set; }
-    [Export] public int MaxHealth { get; private set; }
-    [Export] public int Power { get; private set; }
+    [Export] public string UnitName { get; private set; } = "Goblino";
+    [Export] public int MaxHealth { get; private set; } = 20;
+    [Export] public int Movement { get; private set; } = 4;
+    [Export] public int Power { get; private set; } = 10;
 
     public bool IsFriendly => true;
     

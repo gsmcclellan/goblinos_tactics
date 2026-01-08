@@ -44,6 +44,17 @@ public partial class SelectionController : Node
     /** Properties */
     public BattleUnit? HoveredUnit => _hoveredUnit;
 
+    public Vector2I? SelectedCell { 
+        get 
+        {
+            if (_selectedUnit == null) return null;
+            
+            if (_unitRegistry.TryGetCell(_selectedUnit, out var cell))
+                return cell;
+
+            return null;
+        }
+    }
     public BattleUnit? SelectedUnit => _selectedUnit;
 
     public bool IsUnitHovered => _hoveredUnit != null;
@@ -63,6 +74,9 @@ public partial class SelectionController : Node
     public void Bind(GridCursor cursor, BattleGrid grid, UnitRegistry unitRegistry)
     {
         _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
+        if (_cursor != null || _grid != null || _unitRegistry != null)
+            _UnsubscribeFromEvents();
+        
         _cursor = cursor;
         _grid = grid;
         _unitRegistry = unitRegistry;
@@ -72,26 +86,28 @@ public partial class SelectionController : Node
             !DebugUtil.Require(_unitRegistry != null, "[SelectionController] requires SelectionController binding"))
             return;
 
-        _SetupSubscriptions();
+        _SubscribeToEvents();
 
         UpdateHoveredFromCell(_cursor.FocusedCell);
     }
 
     public override void _ExitTree()
     {
+        _UnsubscribeFromEvents();
         base._ExitTree();
     }
 
-    private void _SetupSubscriptions()
+    private void _SubscribeToEvents()
     {
-        _cursor.GridCursorFocusChanged += OnCursorFocusChanged;
+        if (_cursor != null)
+            _cursor.GridCursorFocusChanged += OnCursorFocusChanged;
         
         _logger.Log("Subscriptions Initialized", LogSeverity.Info, LogCategory.Initialization);
     }
 
-    private void _RemoveSubscriptions()
-    {
-        _cursor.GridCursorFocusChanged -= OnCursorFocusChanged;
+    private void _UnsubscribeFromEvents()
+    {   if (_cursor != null)
+            _cursor.GridCursorFocusChanged -= OnCursorFocusChanged;
         
         _logger.Log("Subscriptions Removed", LogSeverity.Info, LogCategory.Initialization);
     }
@@ -110,9 +126,11 @@ public partial class SelectionController : Node
     
     public void SelectUnit(BattleUnit unit)
     {
+        if (unit == _selectedUnit) return;
+        
         unit.Select();
         _selectedUnit = unit;
-        _logger.Log("Unit Selected", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"Unit Selected unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         EmitSignalSelectedUnitChanged(_selectedUnit);
     }
     
@@ -174,7 +192,7 @@ public partial class SelectionController : Node
 
     private void SetHoveredUnit(BattleUnit? unit)
     {
-        _logger.Log($"Update hovered unit={unit?.Name}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"Update hovered unit={unit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
         _hoveredUnit = unit;
         EmitSignalHoveredUnitChanged(unit);
     }

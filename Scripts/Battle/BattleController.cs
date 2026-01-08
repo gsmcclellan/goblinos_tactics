@@ -14,7 +14,6 @@ public partial class BattleController : Node
     /** Actions */
 
     /** Components */
-    
     [Export] private NodePath _cursorPath;
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
@@ -29,19 +28,14 @@ public partial class BattleController : Node
     private MovementController _movementController;
     private SelectionController _selectionController;
     private UnitRegistry _unitRegistry;
+    
+    private readonly Logger _logger = LogManager.For<BattleController>();
+    private MoveRangeService _moveRangeService;
 
     /** Fields */
     
-    
     /** Properties */
     
-    
-    
-    private Logger _logger = LogManager.For<BattleController>();
-    
-    private BattleUnit _selectedUnit;
-
-    /** Properties */
     
     public override void _Ready()
     {
@@ -88,6 +82,9 @@ public partial class BattleController : Node
         Debug.Assert(_movementController != null, "[BattleController] MovementController must be initialized.");
         Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
+        
+        // Non-Node Components
+        _moveRangeService = new MoveRangeService(_grid);
         
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
     }
