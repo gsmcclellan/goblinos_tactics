@@ -274,6 +274,7 @@ public partial class BattleGrid : Node2D
 
     private void RedrawOverlay()
     {
+        ClearOverlays();
         // Attack cells
         // Movement cells
         // Interaction cells

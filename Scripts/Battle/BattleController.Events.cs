@@ -55,7 +55,7 @@ public partial class BattleController
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
         if (selectedNode is BattleUnit bu)
-            EnterMoveTargetingMode();
+            EnterMoveTargetingMode(bu);
         else if (selectedNode == null)
             ExitTargetingMode();
         else

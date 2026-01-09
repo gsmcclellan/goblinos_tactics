@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
+﻿#nullable enable
+using System.Diagnostics;
 using Goblinos.Logging;
-using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Battle;
-using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
@@ -14,6 +13,7 @@ public partial class BattleController : Node
     /** Actions */
 
     /** Components */
+    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [Export] private NodePath _cursorPath;
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
@@ -31,8 +31,10 @@ public partial class BattleController : Node
     
     private readonly Logger _logger = LogManager.For<BattleController>();
     private MoveRangeService _moveRangeService;
-
+    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    
     /** Fields */
+    private UnitActivationContext? _unitActivation;
     
     /** Properties */
     
@@ -107,7 +109,6 @@ public partial class BattleController : Node
     
     public void HandleStartOfBattle()
     {
-        
     }
 
     public void HandleEndOfBattle(bool isVictory)
@@ -117,8 +118,15 @@ public partial class BattleController : Node
         // remove self from input router
         _inputRouter.Pop(this);
     }
-    
-    
-    
-    
+
+    /// <summary>
+    /// Resolved all pending actions, move + attack/ability/wait
+    /// </summary>
+    /// This can be refactored into own class - ActionResolver
+    /// If many actions or becomes complex, refactor into one class per Action Type
+    /// with shared interface containing TryExecute.
+    private void ResolveUnitActions()
+    {
+        
+    }
 }

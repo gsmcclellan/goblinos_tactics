@@ -272,7 +272,7 @@ public partial class BattleController: IInputHandler
         return true;
     }
 
-    private void EnterMoveTargetingMode()
+    private void EnterMoveTargetingMode(BattleUnit unit)
     {
         _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
         InputState = BattleInputState.MoveTargeting;
@@ -293,6 +293,7 @@ public partial class BattleController: IInputHandler
 
         InputState = BattleInputState.FreeSelect;
         _selectionController.TriggerClearSelection();
+        _grid.ClearOverlays();
     }
     
     private InputDirection ReadHeldDirection()
