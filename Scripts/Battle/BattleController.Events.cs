@@ -1,6 +1,4 @@
-﻿// DEPRECATED - using direct signals instead of re emiting here. If re emit, use sub node instead of BattleController partial.
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Util;
@@ -13,10 +11,12 @@ public partial class BattleController
     /** Signals */
     // Battle Level
     [Signal] public delegate void BattleControllerInitializedEventHandler();
+
+    [Signal]
+    public delegate void InputStateChangedEventHandler(int state);
     // Components
 
     /** Events */
-    private event Action<BattleInputState> InputStateChanged;
 
 
 
@@ -52,6 +52,7 @@ public partial class BattleController
     // Event Methods
     // ---------------------------------------------------------------------
 
+    // TODO - on Hovered unit change, show move & attack preview
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
         if (selectedNode is BattleUnit bu)
@@ -66,8 +67,8 @@ public partial class BattleController
         EmitSignal(SignalName.BattleControllerInitialized);
     }
 
-    private void NotifyInputStateChanged()
+    private void NotifyInputStateChanged(BattleInputState state)
     {
-        InputStateChanged?.Invoke(_inputState);
+        EmitSignal(SignalName.InputStateChanged, (int)state);
     }
 }

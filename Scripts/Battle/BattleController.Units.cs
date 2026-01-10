@@ -34,7 +34,7 @@ public partial class BattleController
         foreach (var unit in units)
         {
             if (unit is BattleUnit bUnit)
-                _unitRegistry.RegisterUnit(bUnit, default);
+                _unitRegistry.RegisterUnit(bUnit, _grid.GetCellAtGlobalPosition(bUnit.GlobalPosition));
         }
         
         _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);

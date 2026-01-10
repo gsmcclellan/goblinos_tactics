@@ -128,6 +128,7 @@ public partial class SelectionController : Node
     {
         if (unit == _selectedUnit) return;
         
+        _selectedUnit?.Deselect();
         unit.Select();
         _selectedUnit = unit;
         _logger.Log($"Unit Selected unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);

@@ -9,6 +9,7 @@
     <Folder Include="Scripts\UI\Menus\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BATTLE_INPUT_FLOW.md" />
     <Content Include="STYLE_GUIDE.md" />
   </ItemGroup>
 </Project>

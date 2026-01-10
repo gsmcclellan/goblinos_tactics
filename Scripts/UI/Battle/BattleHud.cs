@@ -17,7 +17,8 @@ namespace Goblinos.Scripts.UI.Battle
 
         private Node _panelsRoot;
         private SelectionController _selectionController;
-
+        private BattleController _battleController;
+        
         private Logger _logger = LogManager.For<BattleHud>();
         
         
@@ -26,13 +27,15 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         // Lifecycle / Setup Methods
         // ---------------------------------------------------------------------
-        public void Bind(SelectionController selectionController)
+        public void Bind(SelectionController selectionController, BattleController battleController)
         {
             _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
             
             _selectionController = selectionController;
+            _battleController = battleController;
             
-            if (!DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding"))
+            if (!DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding") ||
+                !DebugUtil.Require(_battleController != null, "[BattleHud] requires BattleController binding") )
                 return;
             
             _SubscribeToEvents();
@@ -60,6 +63,8 @@ namespace Goblinos.Scripts.UI.Battle
             
             _selectionController.HoveredTerrainChanged += OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
+
+            _battleController.InputStateChanged += OnBattleControllerInputStateChanged;
         }
 
         private void _UnsubscribeFromEvents()
@@ -68,6 +73,8 @@ namespace Goblinos.Scripts.UI.Battle
 
             _selectionController.HoveredTerrainChanged -= OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
+            
+            _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
         }
 
         private void CachePanels()
@@ -108,6 +115,14 @@ namespace Goblinos.Scripts.UI.Battle
 
             foreach (IBattleHudPanel panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
+        }
+
+        private void OnBattleControllerInputStateChanged(int s)
+        {
+            var state = (BattleInputState) s;
+            _logger.Log("OnBattleControllerInputStateChanged", LogSeverity.Info, LogCategory.UiNavigation);
+            var node = GetNode<Label>("BattleControllerInputState");
+            node.Text = state.ToString();
         }
     }
 }

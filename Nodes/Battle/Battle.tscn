@@ -49,6 +49,9 @@ region_rect = Rect2(112, 0, 16, 16)
 [node name="Unit" parent="Units" instance=ExtResource("3_o62pt")]
 position = Vector2(16, 16)
 
+[node name="Unit2" parent="Units" instance=ExtResource("3_o62pt")]
+position = Vector2(143, 145)
+
 [node name="Overlays" type="Node2D" parent="."]
 z_index = 2
 

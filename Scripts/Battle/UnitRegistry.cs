@@ -65,7 +65,7 @@ public partial class UnitRegistry: Node
     /// <param name="initialCell"></param>
     public void RegisterUnit(BattleUnit unit, Vector2I initialCell)
     {
-        _logger.Log($"RegisterUnit unit={unit}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"RegisterUnit unit={unit}", LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "Cannot register null unit."))
             return;
         
@@ -228,7 +228,7 @@ public partial class UnitRegistry: Node
     public void ApplyUnitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         // TODO - currently allows only move to empty cell, add additional functionality for shove, swap, etc.
-        _logger.Log($"ApplyUnitMove [unit]={unit} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"ApplyUnitMove [unit]={unit.UnitName} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
 
         if (!DebugUtil.Require(unit != null, "[UnitRegistry] Cannot move null unit."))
             return;
@@ -252,7 +252,7 @@ public partial class UnitRegistry: Node
         _unitsByCell.Remove(fromCell);
         _unitsByCell[toCell] = unit;
 
-        _logger.Info($"[Signal] UnitMoveResolved unit={unit}, fromCell={fromCell}, toCell={toCell}", LogCategory.UnitLifecycle);
+        _logger.Info($"[Signal] UnitMoveResolved unit={unit.UnitName}, fromCell={fromCell}, toCell={toCell}", LogCategory.Signal);
         _AssertInvariants();
         EmitSignal(SignalName.UnitMoveResolved, unit, fromCell, toCell);
     }

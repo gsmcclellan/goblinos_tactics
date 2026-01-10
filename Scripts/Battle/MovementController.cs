@@ -25,6 +25,7 @@ public partial class MovementController: Node
 
     public bool TryMoveToCell(BattleUnit unit, Vector2I targetCell)
     {
+        _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "[MovementController] Unable to move, no unit."))
             return false;
 
@@ -48,6 +49,7 @@ public partial class MovementController: Node
 
     public void CommitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
+        _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
         // TODO - animations & stuff
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
         _unitRegistry.ApplyUnitMove(unit, fromCell, toCell);

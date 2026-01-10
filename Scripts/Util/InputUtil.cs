@@ -44,5 +44,7 @@ public enum BattleInputState
 {
     FreeSelect,
     MoveTargeting,
-    AttackTargeting
+    PrimaryActionSelect,
+    PrimaryActionTargeting,
+    PrimaryActionConfirm
 }

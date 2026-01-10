@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Core;
@@ -26,17 +27,7 @@ public partial class BattleController: IInputHandler
     public Vector2I FocusedCell => _cursor.FocusedCell;
     
     public InputDeviceMode InputDeviceMode = GlobalSettings.DefaultInputMode;
-    private BattleInputState _inputState = BattleInputState.FreeSelect;
-    public BattleInputState InputState
-    {
-        get => _inputState;
-        private set
-        {
-            if (value == _inputState) return; 
-            _inputState = value;
-            NotifyInputStateChanged();
-        }
-    }
+    
 
     private BattleUnit? ActiveMover => _selectionController.SelectedUnit;
     
@@ -103,7 +94,7 @@ public partial class BattleController: IInputHandler
             if (mbe.ButtonIndex == MouseButton.Left && mbe.Pressed)
                 return HandleAcceptAtFocusedCell(mbe);
             else if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
-                return HandleMouseRightClick(mbe);
+                return HandleCancel(e);
         }
         
         // Mouse - Motion
@@ -114,15 +105,6 @@ public partial class BattleController: IInputHandler
         
         return false;
     }
-    // private bool HandleAccept(InputEvent e)
-    // {
-    //     _logger.Log("HandleAccept", LogSeverity.Info, LogCategory.Input);
-    //     // attempt to select via SelectionController
-    //     _selectionController.TriggerSelection();
-    //     return true;
-    // }
-
-    
     
     /// <summary>
     /// Routes a confirm/click intent based on the current battle input state.
@@ -142,10 +124,13 @@ public partial class BattleController: IInputHandler
             case BattleInputState.MoveTargeting:
                 return HandleAccept_MoveTargeting(targetCell, unitAtCell);
 
-            case BattleInputState.AttackTargeting:
-                return HandleAccept_AttackTargeting(targetCell, unitAtCell);
+            case BattleInputState.PrimaryActionSelect:
+                return HandleAccept_PrimaryActionSelect(targetCell, unitAtCell);
+            case BattleInputState.PrimaryActionConfirm:
+                return HandleAccept_PrimaryActionConfirm(targetCell, unitAtCell);
 
             default:
+                _logger.Warn($"HandleAcceptAtFocusedCell - unhandled BattleInputState={_inputState}");
                 return false;
         }
     }
@@ -160,6 +145,7 @@ public partial class BattleController: IInputHandler
             return true;
         }
 
+        // TODO - not sure what happens here.
         _selectionController.SelectCell(targetCell);
         return true;
     }
@@ -167,6 +153,9 @@ public partial class BattleController: IInputHandler
     private bool HandleAccept_MoveTargeting(Vector2I targetCell, BattleUnit? unitAtCell)
     {
         _logger.Log("HandleAccept_MoveTargeting", LogSeverity.Trace, LogCategory.Input);
+        if (!DebugUtil.Require(_unitActivation != null,
+                "[BattleController.Input].HandleAccept_MoveTargeting - No UnitActivationContext"))
+            return true;
 
         if (unitAtCell != null && unitAtCell.IsFriendly)
         {
@@ -181,11 +170,22 @@ public partial class BattleController: IInputHandler
             return true;
         }
 
-        _movementController.TryMoveToCell(ActiveMover, targetCell);
+        if (_movementController.TryMoveToCell(ActiveMover, targetCell))
+        {
+            // TODO - add to unit activation context
+            _unitActivation.SetMoveTargetCell(targetCell);
+            EnterPrimaryActionSelectMode(_selectionController.SelectedUnit);
+        }
+        else
+        {
+            // Try selection instead
+            
+        }
+        
         return true;
     }
 
-    private bool HandleAccept_AttackTargeting(Vector2I targetCell, BattleUnit? unitAtCell)
+    private bool HandleAccept_PrimaryActionSelect(Vector2I targetCell, BattleUnit? unitAtCell)
     {
         _logger.Log("HandleAccept_AttackTargeting", LogSeverity.Trace, LogCategory.Input);
 
@@ -205,6 +205,12 @@ public partial class BattleController: IInputHandler
         // _attackController.TryAttack(_selectionController.SelectedUnit, unitAtCell); TODO
         return true;
     }
+
+    private bool HandleAccept_PrimaryActionConfirm(Vector2I targetCell, BattleUnit? unitAtCell)
+    {
+        throw new NotImplementedException();
+        return true;
+    }
     
     private bool HandleCancel(InputEvent e)
     {
@@ -212,20 +218,52 @@ public partial class BattleController: IInputHandler
         switch (_inputState)
         {
             case BattleInputState.FreeSelect:
-                _selectionController.TriggerClearSelection();
-                return true;
-
+                return HandleCancel_FreeSelect();
             case BattleInputState.MoveTargeting:
-            case BattleInputState.AttackTargeting:
-                ExitTargetingMode();
-                return true;
-
+                return HandleCancel_MoveTargeting();
+            case BattleInputState.PrimaryActionSelect:
+                return HandleCancel_PrimaryActionSelect();
+            case BattleInputState.PrimaryActionConfirm:
+                return HandleCancel_PrimaryActionConfirm();
             default:
                 ExitTargetingMode();
                 return true;
         }
+    }        // TODO - investigate this. These probably not needed.
+
+
+    private bool HandleCancel_FreeSelect()
+    {
+        _logger.Log("HandleCancel_FreeSelect", LogSeverity.Info, LogCategory.UiNavigation);
+        _selectionController.TriggerClearSelection();
+        _grid.ClearOverlays();
+        ResetUnitActivation();
+        return true;
     }
 
+    private bool HandleCancel_MoveTargeting()
+    {
+        _logger.Log("HandleCancel_MoveTargeting", LogSeverity.Trace, LogCategory.UiNavigation);
+        ExitTargetingMode();
+        return true;
+    }
+    
+    private bool HandleCancel_PrimaryActionSelect()
+    {
+        _logger.Log("HandleCancel_PrimaryActionSelect", LogSeverity.Trace, LogCategory.UiNavigation);
+        // TODO - exit attack target mode, but go back to move target
+        ExitPrimaryActionSelectMode();
+        // ExitTargetingMode();
+        return true;
+    }
+    
+    private bool HandleCancel_PrimaryActionConfirm()
+    {
+        _logger.Log("HandleCancel_PrimaryActionConfirm", LogSeverity.Trace, LogCategory.UiNavigation);
+        throw new NotImplementedException();
+        return true;
+    }
+    
     private bool HandleDirection(InputDirection? dir)
     {
         _logger.Log("HandleDirection", LogSeverity.Trace, LogCategory.Input);
@@ -261,7 +299,7 @@ public partial class BattleController: IInputHandler
     private bool HandleMouseRightClick(InputEventMouseButton e)
     {
         _logger.Log("HandleMouseRightClick", LogSeverity.Trace, LogCategory.Input);
-        _selectionController.TriggerClearSelection();
+        HandleCancel(e);
         return true;
     }
 
@@ -270,30 +308,6 @@ public partial class BattleController: IInputHandler
         _logger.Log("HandleMouseMotion", LogSeverity.Extra, LogCategory.Input);
         _cursor.TryMoveToGlobalPosition(e.GlobalPosition);
         return true;
-    }
-
-    private void EnterMoveTargetingMode(BattleUnit unit)
-    {
-        _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
-        InputState = BattleInputState.MoveTargeting;
-
-        var cell = _selectionController.SelectedCell;
-        var movement = _selectionController.SelectedUnit?.Movement;
-        if (!DebugUtil.Require(cell != null, "[BattleController.Input] failed to enter MovementMode, no selected cell") ||
-            !DebugUtil.Require(movement != null, "[BattleController.Input] failed to enter MovementMode, no movement value")
-            )
-            return;
-        
-        var movementPreview = _moveRangeService.BuildMovementPreview(cell.Value, movement.Value);
-        _grid.SetMovementPreview(movementPreview);
-    }
-    private void ExitTargetingMode()
-    {
-        _logger.Log("ExitTargetingMode", LogSeverity.Trace, LogCategory.Input);
-
-        InputState = BattleInputState.FreeSelect;
-        _selectionController.TriggerClearSelection();
-        _grid.ClearOverlays();
     }
     
     private InputDirection ReadHeldDirection()
@@ -306,6 +320,4 @@ public partial class BattleController: IInputHandler
         if (Godot.Input.IsActionPressed("ui_right")) return InputDirection.Right;
         return InputDirection.None;
     }
-    
-    
 }

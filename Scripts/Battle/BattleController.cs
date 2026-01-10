@@ -34,7 +34,7 @@ public partial class BattleController : Node
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     
     /** Fields */
-    private UnitActivationContext? _unitActivation;
+    
     
     /** Properties */
     
@@ -95,7 +95,7 @@ public partial class BattleController : Node
     {
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
-        _hud.Bind(_selectionController);
+        _hud.Bind(_selectionController, this);
     }
 
     public override void _Process(double delta)
@@ -117,16 +117,5 @@ public partial class BattleController : Node
         // Show results screen
         // remove self from input router
         _inputRouter.Pop(this);
-    }
-
-    /// <summary>
-    /// Resolved all pending actions, move + attack/ability/wait
-    /// </summary>
-    /// This can be refactored into own class - ActionResolver
-    /// If many actions or becomes complex, refactor into one class per Action Type
-    /// with shared interface containing TryExecute.
-    private void ResolveUnitActions()
-    {
-        
     }
 }

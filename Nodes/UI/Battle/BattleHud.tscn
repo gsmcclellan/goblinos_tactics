@@ -18,3 +18,10 @@ mouse_filter = 2
 
 [node name="TerrainInfo" parent="BattleHudPanels" instance=ExtResource("2_at2nw")]
 layout_mode = 1
+
+[node name="BattleControllerInputState" type="Label" parent="."]
+offset_left = 965.0
+offset_top = 497.0
+offset_right = 1049.0
+offset_bottom = 520.0
+text = "Free Select"
