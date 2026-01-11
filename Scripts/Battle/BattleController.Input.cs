@@ -103,6 +103,13 @@ public partial class BattleController: IInputHandler
         {
             return HandleMouseMotion(mme);
         }
+
+        if (e.IsActionPressed("TEST"))
+        {
+            _logger.Log("DEBUG button pressed - TEST", LogSeverity.Warn, LogCategory.DebugOnly);
+            ClearActivationPreviews();
+            return true;
+        }
         
         return false;
     }
@@ -121,10 +128,8 @@ public partial class BattleController: IInputHandler
         {
             case BattleInputState.FreeSelect:
                 return HandleAccept_FreeSelect(targetCell, unitAtCell);
-
             case BattleInputState.MoveTargeting:
                 return HandleAccept_MoveTargeting(targetCell, unitAtCell);
-
             case BattleInputState.PrimaryActionSelect:
                 return HandleAccept_PrimaryActionSelect(targetCell, unitAtCell);
             case BattleInputState.PrimaryActionConfirm:
@@ -158,7 +163,7 @@ public partial class BattleController: IInputHandler
                 "[BattleController.Input].HandleAccept_MoveTargeting - No UnitActivationContext"))
             return true;
 
-        if (unitAtCell != null && unitAtCell.IsFriendly)
+        if (unitAtCell is { IsFriendly: true })
         {
             _selectionController.SelectUnit(unitAtCell);
             ResetActivationPreview();
@@ -176,7 +181,7 @@ public partial class BattleController: IInputHandler
         {
             // TODO - add to unit activation context
             _unitActivation.SetMoveTargetCell(targetCell);
-            EnterPrimaryActionSelectMode(_selectionController.SelectedUnit);
+            EnterPrimaryActionSelectMode(ActiveMover);
         }
         else
         {

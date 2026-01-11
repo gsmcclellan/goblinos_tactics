@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
+using Godot;
 
 namespace Goblinos.Scripts.Battle;
 
@@ -104,7 +105,6 @@ public partial class BattleController
             return;
         
         InputState = BattleInputState.PrimaryActionSelect;
-        _grid.ClearOverlays();
         // TODO - show action menu
     }
 
@@ -124,39 +124,43 @@ public partial class BattleController
         _selectionController.TriggerClearSelection();
         _grid.ClearOverlays();
     }
-
     
-
-    private void GenerateMovementPreviewForHoveredCell()
+    /// <summary>
+    /// Generates move & attack preview for hovered cell.
+    /// </summary>
+    private void GeneratePreviewForHoveredCell()
     {
-        
         var cell = _selectionController.HoveredCell;
         var isHoveredUnit = _unitRegistry.TryGetUnitAtCell(cell, out var registeredUnit);
         var unit = _selectionController.HoveredUnit;
         Debug.Assert(unit == registeredUnit, "Hovered unit does not match UnitRegistry record for unit at cell.");
         
-        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"GeneratePreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         if (unit == null)
             return;
         
         var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit.Movement);
+        var attackPreview = _attackRangeService.BuildAttackThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
         _unitActivation = new UnitActivationContext(unit, cell);
-        _grid.SetMovementPreview(movementPreview);
+        _grid.SetPreviews(movementPreview, attackPreview);
     }
     
-    private void GenerateMovementPreviewForSelectedUnit()
+    private void GeneratePreviewForSelectedUnit()
     {
-        if (!DebugUtil.Require(IsUnitSelected, "[BattleController.State].GenerateMovementPreviewForSelectedUnit - Unable to generate, no selected unit"))
+        if (!DebugUtil.Require(IsUnitSelected, "[BattleController.State].GeneratePreviewForSelectedUnit - Unable to generate, no selected unit"))
             return;
         var unit = _selectionController.SelectedUnit;
         if (!DebugUtil.Require(_unitRegistry.TryGetCell(unit, out var cell), "[BattleController.State].GenerateMovementPreviewForSelectedUnit - Unable to generate, no selected unit"))
             return;
         
-        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"GeneratePreviewForSelectedUnit cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit!.Movement);
+        var attackPreview = _attackRangeService.BuildAttackThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
+
+        GD.Print($"movementPreview.Cells.Count={movementPreview.Cells.Count}");
         _unitActivation = new UnitActivationContext(unit, cell);
-        _grid.SetMovementPreview(movementPreview);
+        _grid.SetPreviews(movementPreview, attackPreview);
     }
     
     private void ResetActivationPreview()
@@ -164,11 +168,11 @@ public partial class BattleController
         ClearActivationPreviews();
         if (IsUnitSelected)
         {
-            GenerateMovementPreviewForSelectedUnit();
+            GeneratePreviewForSelectedUnit();
             // TODO - center cursor/camera on 
         }
         else
-            GenerateMovementPreviewForHoveredCell();
+            GeneratePreviewForHoveredCell();
     }
     
     /// <summary>

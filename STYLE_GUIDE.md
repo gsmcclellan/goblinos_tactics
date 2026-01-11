@@ -32,6 +32,7 @@ When writing or editing code, follow these rules unless explicitly told otherwis
     - `Goblinos.Scripts.Battle`
       - `Goblinos.Scripts.Terrain`
     - `Goblinos.Scripts.Core`
+    - `Goblinos.Scripts.Combat`
     - `Goblinos.Scripts.Data`
     - `Goblinos.Scirpt.Input`
     - `Goblinos.Scirpt.Overworld`

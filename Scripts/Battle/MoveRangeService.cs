@@ -21,6 +21,7 @@ public sealed class MoveRangeService
     /// Computes all reachable cells within the given movement budget using Dijkstra.
     /// </summary>
     /// TODO - block movement through enemy units.
+    /// TODO - add function that takes multiple starting cells (for enemy threat range)
     public MovementPreviewResults BuildMovementPreview(Vector2I startCell, int movePoints)
     {
         _logger.Log("GetReachableCells", LogSeverity.Trace, LogCategory.UiNavigation);

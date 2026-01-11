@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;

@@ -33,7 +33,7 @@ public partial class BattleGrid : Node2D
     
     // Preview Data
     private MovementPreviewResults? _movementPreview;
-    // private AttackPreviewResults? _attackPreview;
+    private HashSet<Vector2I>? _attackPreview;
     // private HashSet<Vector2I> _interactCells = new();
     private static readonly HashSet<Vector2I> EmptyCells = new();
     
@@ -207,6 +207,19 @@ public partial class BattleGrid : Node2D
         RedrawOverlay();
     }
 
+    public void SetAttackPreview(HashSet<Vector2I> preview)
+    {
+        _attackPreview = preview;
+        RedrawOverlay();
+    }
+
+    public void SetPreviews(MovementPreviewResults movePreview, HashSet<Vector2I> attackPreview)
+    {
+        _movementPreview = movePreview;
+        _attackPreview = attackPreview;
+        RedrawOverlay();
+    }
+
     /// <summary>
     /// Returns true if TerrainType terrain exists at given cell coordindates, out var terrain
     /// </summary>
@@ -291,7 +304,7 @@ public partial class BattleGrid : Node2D
         _actionPreviewLayer.Visible = true;
         
         var moveCells = _movementPreview?.Cells ?? EmptyCells;
-        var attackCells = /*_attackPreview?.Cells ?? */EmptyCells; // TODO
+        var attackCells = _attackPreview ?? EmptyCells;
         
         // Movement takes priority - cell legal for move & attack show as movement
         var attackOnly = new HashSet<Vector2I>(attackCells);
@@ -299,7 +312,7 @@ public partial class BattleGrid : Node2D
         
         // Combined set of cells to draw
         var renderedCells = new HashSet<Vector2I>(moveCells);
-        renderedCells.UnionWith(moveCells);
+        renderedCells.UnionWith(attackCells);
         // renderedCells.UnionWith(_interactCells); TODO
         
         ClearOverlays(); // TODO - clear selectively by passing renderedCells & ignoring everything else
@@ -327,7 +340,7 @@ public partial class BattleGrid : Node2D
         if (renderedCells.Count == 0)
             _actionPreviewLayer.Visible = false; // hide empty overlay
         
-        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", LogSeverity.Trace, LogCategory.BattleState);
+        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", LogSeverity.Info, LogCategory.BattleState);
     }
 }
 
