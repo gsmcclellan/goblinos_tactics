@@ -3,6 +3,8 @@ using Godot;
 
 namespace Goblinos.Scripts.Battle;
 
+// TODO - investigate. Undo maybe not needed on primary action because it is not resolved until confirmation which then 
+// can't be undone.
 public sealed class UnitActivationContext
 {
     public BattleUnit Unit { get; }
@@ -29,15 +31,15 @@ public sealed class UnitActivationContext
     public bool BlockUndoPrimaryAction; // set true after damage roll or something blocking undo
 
     public bool CanReset =>
-        (!HasPlannedPrimaryAction || !BlockUndoPrimaryAction) && (!HasPlannedMove || !BlockUndoMove);
-    public bool CanUndo => (HasPlannedPrimaryAction && !BlockUndoPrimaryAction) || (!HasPlannedPrimaryAction && HasPlannedMove && !BlockUndoMove);
+        (!HasSelectedPrimaryAction || !BlockUndoPrimaryAction) && (!HasMoved || !BlockUndoMove);
+    public bool CanUndo => (HasSelectedPrimaryAction && !BlockUndoPrimaryAction) || (!HasSelectedPrimaryAction && HasMoved && !BlockUndoMove);
 
     /// <summary>No primary action & undo move is not blocked</summary>
-    public bool CanUndoMove => !HasPlannedPrimaryAction && HasPlannedMove && !BlockUndoMove;
+    public bool CanUndoMove => !HasSelectedPrimaryAction && HasMoved && !BlockUndoMove;
     /// <summary>Primary action queued, undo is not blocked</summary>
-    public bool CanUndoPrimaryAction => HasPlannedPrimaryAction && !BlockUndoPrimaryAction;
-    public bool HasPlannedMove => MoveTargetCell.HasValue;
-    public bool HasPlannedPrimaryAction => PrimaryActionType != PrimaryActionType.None;
+    public bool CanUndoPrimaryAction => HasSelectedPrimaryAction && !BlockUndoPrimaryAction;
+    public bool HasMoved => MoveTargetCell.HasValue;
+    public bool HasSelectedPrimaryAction => PrimaryActionType != PrimaryActionType.None;
     public bool HasRequiredTarget =>
         !RequiresTarget || PrimaryActionTargetCell.HasValue;
     public bool RequiresTarget =>
@@ -45,9 +47,9 @@ public sealed class UnitActivationContext
     public UnitActivationPhase UndoTarget {
         get
         {
-            if (HasPlannedPrimaryAction)
+            if (HasSelectedPrimaryAction)
                 return UnitActivationPhase.PrimaryAction;
-            if (HasPlannedMove)
+            if (HasMoved)
                 return UnitActivationPhase.Movement;
             return UnitActivationPhase.None;
         }

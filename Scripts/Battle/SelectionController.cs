@@ -42,6 +42,7 @@ public partial class SelectionController : Node
     private BattleUnit? _selectedUnit;
 
     /** Properties */
+    public Vector2I HoveredCell => _hoveredCell;
     public BattleUnit? HoveredUnit => _hoveredUnit;
 
     public Vector2I? SelectedCell { 
@@ -156,6 +157,12 @@ public partial class SelectionController : Node
             SelectUnit(_hoveredUnit);
         else
             DeselectUnit();
+    }
+
+    public void UpdateHovered()
+    {
+        var cell = _cursor.FocusedCell;
+        UpdateHoveredFromCell(cell);
     }
     // ---------------------------------------------------------------------
     // Event Handlers

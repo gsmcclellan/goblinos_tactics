@@ -40,11 +40,13 @@ public partial class BattleController
 
     private void _SubscribeToEvents()
     {
+        _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
     }
 
     private void _UnsubscribeFromEvents()
     {
+        _selectionController.HoveredUnitChanged -= OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
     }
     
@@ -53,6 +55,16 @@ public partial class BattleController
     // ---------------------------------------------------------------------
 
     // TODO - on Hovered unit change, show move & attack preview
+    private void OnHoveredUnitChanged(Node? hoveredNode)
+    {
+        // In FreeSelect, change move preview when hovered unit changes.
+        
+        
+        if (hoveredNode is BattleUnit && InputState == BattleInputState.FreeSelect)
+            ResetActivationPreview();
+        else if (hoveredNode == null && InputState == BattleInputState.FreeSelect)
+            ClearActivationPreviews();
+    }
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
         if (selectedNode is BattleUnit bu)

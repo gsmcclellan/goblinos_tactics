@@ -28,26 +28,33 @@ public partial class BattleController
         
     }
 
-    private void SetInputState(BattleInputState state, BattleUnit? unit)
+    private void AbortActivationToFreeSelect()
     {
-        switch (state)
-        {
-            case BattleInputState.FreeSelect:
-                ExitTargetingMode();
-                break;
-            case BattleInputState.MoveTargeting:
-                if (DebugUtil.Require(unit != null, "[BattleController.State].SetInputState Require unit to enter move state."))
-                    return;
-                EnterMoveTargetingMode(unit);
-                break;
-            case BattleInputState.PrimaryActionSelect:
-                if (DebugUtil.Require(unit != null, "[BattleController.State].SetInputState Require unit to enter move state."))
-                    return;
-                EnterPrimaryActionSelectMode(unit);
-                break;
-            default:
-                throw new NotImplementedException();
-        }
+        _logger.Log("AbortActivationToFreeSelect", LogSeverity.Info, LogCategory.UnitLifecycle);
+        // Cancel unit activation, go back to free select.
+        if (!TryUndoMove())
+            throw new Exception("Try undo move failed, can't reset.");
+        
+        ExitTargetingMode();
+        // TODO - update cursor
+        // add enum for different beaviors AbortBehavior { KeepCursor, RecenterOnOrigin }
+        ClearUnitActivation();
+        ResetActivationPreview();
+    }
+
+    private void ClearActivationPreviews()
+    {
+        _grid.ClearOverlays();
+    }
+    
+    private void ClearUnitActivation()
+    {
+        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
+
+        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
+            return;
+        
+        _unitActivation.Reset();
     }
     
     private void EnterMoveTargetingMode(BattleUnit unit)
@@ -61,11 +68,6 @@ public partial class BattleController
             return;
         
         InputState = BattleInputState.MoveTargeting;
-        
-        var movementPreview = _moveRangeService.BuildMovementPreview(cell.Value, unit.Movement);
-        _unitActivation = new UnitActivationContext(unit, cell.Value);
-        
-        _grid.SetMovementPreview(movementPreview);
     }
 
     private void EnterPrimaryActionSelectMode(BattleUnit unit)
@@ -99,6 +101,28 @@ public partial class BattleController
         _selectionController.TriggerClearSelection();
         _grid.ClearOverlays();
     }
+
+    private void GenerateMovementPreviewForHoveredCell()
+    {
+        
+        var cell = _selectionController.HoveredCell;
+        var isHoveredUnit = _unitRegistry.TryGetUnitAtCell(cell, out var regUnit);
+        var unit = _selectionController.HoveredUnit;
+        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={regUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        if (unit == null)
+            return;
+        
+        var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit.Movement);
+        _unitActivation = new UnitActivationContext(unit, cell);
+        _grid.SetMovementPreview(movementPreview);
+    }
+    
+    private void ResetActivationPreview()
+    {
+        ClearActivationPreviews();
+        GenerateMovementPreviewForHoveredCell();
+        // TODO - add attack preview
+    }
     
     /// <summary>
     /// Resolved all pending actions, move + attack/ability/wait
@@ -110,13 +134,35 @@ public partial class BattleController
     {
         
     }
+    
+    private void SetInputState(BattleInputState state, BattleUnit? unit)
+    {
+        switch (state)
+        {
+            case BattleInputState.FreeSelect:
+                ExitTargetingMode();
+                break;
+            case BattleInputState.MoveTargeting:
+                if (DebugUtil.Require(unit != null, "[BattleController.State].SetInputState Require unit to enter move state."))
+                    return;
+                EnterMoveTargetingMode(unit);
+                break;
+            case BattleInputState.PrimaryActionSelect:
+                if (DebugUtil.Require(unit != null, "[BattleController.State].SetInputState Require unit to enter move state."))
+                    return;
+                EnterPrimaryActionSelectMode(unit);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
 
     private bool TryUndoMove()
     {
         if (!DebugUtil.Require(_unitActivation != null, "[BattleController.Input].TryUndoMove - Unable to undo move action, no UnitActivationContext"))
             return false;
 
-        if (!_unitActivation.HasPlannedMove)
+        if (!_unitActivation.HasMoved)
             return true;
         if (!_unitActivation.CanUndoMove)
             return false;
@@ -124,10 +170,11 @@ public partial class BattleController
             return false;
 
         _unitActivation.ClearMoveTargetCell();
+        _selectionController.UpdateHovered();
         return true;
     }
 
-    private bool TryUndoUnitActivation()
+    private bool TryClearUnitActivation()
     {
         if (DebugUtil.Require(_unitActivation != null, "Unable to undo move action, no UnitActivationContext"))
             return false;
@@ -135,52 +182,7 @@ public partial class BattleController
         if (!_unitActivation.CanReset)
             return false;
 
-        ResetUnitActivation();
-        return true;
-    }
-
-    private void ResetUnitActivation()
-    {
-        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
-
-        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
-            return;
-        
-        _unitActivation.Reset();
-    }
-
-    private bool TryClearUnitActivationMove() // Future / unused. Maybe useful if actions block undo.
-    {
-        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] UndoMove failed. No UnitActivationContext."))
-            return false;
-        
-        // If undo not required return true
-        if (!_unitActivation.HasPlannedMove)
-            return true;
-        
-        // If move exists but unable to undo, return false
-        if (!_unitActivation.CanUndoMove)
-            return false;
-
-        // Clear the target
-        _unitActivation.ClearMoveTargetCell();
-        return true;
-    }
-
-    private bool TryClearUnitActivationPrimaryAction() // Future / unused. Maybe useful if actions block undo.
-    {
-        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] UndoPrimaryAction failed. No UnitActivationContext."))
-            return false;
-        
-        // If undo not required return true
-        if (!_unitActivation.HasPlannedPrimaryAction)
-            return true;
-        
-        // If primary action exists but unable to undo, return false
-        if (!_unitActivation.CanUndoPrimaryAction)
-            return false;
-
-        _unitActivation.ClearPrimaryAction();
+        ClearUnitActivation();
         return true;
     }
 }

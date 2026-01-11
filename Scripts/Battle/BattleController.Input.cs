@@ -215,52 +215,22 @@ public partial class BattleController: IInputHandler
     private bool HandleCancel(InputEvent e)
     {
         _logger.Log("HandleCancel", LogSeverity.Info, LogCategory.Input);
-        switch (_inputState)
-        {
-            case BattleInputState.FreeSelect:
-                return HandleCancel_FreeSelect();
-            case BattleInputState.MoveTargeting:
-                return HandleCancel_MoveTargeting();
-            case BattleInputState.PrimaryActionSelect:
-                return HandleCancel_PrimaryActionSelect();
-            case BattleInputState.PrimaryActionConfirm:
-                return HandleCancel_PrimaryActionConfirm();
-            default:
-                ExitTargetingMode();
-                return true;
-        }
-    }        // TODO - investigate this. These probably not needed.
-
-
-    private bool HandleCancel_FreeSelect()
-    {
-        _logger.Log("HandleCancel_FreeSelect", LogSeverity.Info, LogCategory.UiNavigation);
-        _selectionController.TriggerClearSelection();
-        _grid.ClearOverlays();
-        ResetUnitActivation();
-        return true;
-    }
-
-    private bool HandleCancel_MoveTargeting()
-    {
-        _logger.Log("HandleCancel_MoveTargeting", LogSeverity.Trace, LogCategory.UiNavigation);
-        ExitTargetingMode();
-        return true;
-    }
-    
-    private bool HandleCancel_PrimaryActionSelect()
-    {
-        _logger.Log("HandleCancel_PrimaryActionSelect", LogSeverity.Trace, LogCategory.UiNavigation);
-        // TODO - exit attack target mode, but go back to move target
-        ExitPrimaryActionSelectMode();
-        // ExitTargetingMode();
-        return true;
-    }
-    
-    private bool HandleCancel_PrimaryActionConfirm()
-    {
-        _logger.Log("HandleCancel_PrimaryActionConfirm", LogSeverity.Trace, LogCategory.UiNavigation);
-        throw new NotImplementedException();
+        // switch (_inputState)
+        // {
+        //     case BattleInputState.FreeSelect:
+        //         return HandleCancel_FreeSelect();
+        //     case BattleInputState.MoveTargeting:
+        //         return HandleCancel_MoveTargeting();
+        //     case BattleInputState.PrimaryActionSelect:
+        //         return HandleCancel_PrimaryActionSelect();
+        //     case BattleInputState.PrimaryActionConfirm:
+        //         return HandleCancel_PrimaryActionConfirm();
+        //     default:
+        //         ExitTargetingMode();
+        //         return true;
+        // }
+        AbortActivationToFreeSelect();
+        
         return true;
     }
     
