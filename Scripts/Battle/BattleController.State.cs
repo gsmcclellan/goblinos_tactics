@@ -1,6 +1,8 @@
 ﻿#nullable enable
 using System;
+using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 
 namespace Goblinos.Scripts.Battle;
@@ -23,9 +25,30 @@ public partial class BattleController
         }
     }
 
+    public bool IsUnitSelected => _selectionController.IsUnitSelected;
+
     private void _Ready_State()
     {
+        Debug.Assert(_unitRegistry != null, "[BattleController.Units] Not Initialized. Unable to register UnitRegistry.");
+        _registerExistingBattleUnitNodes();
         
+        _logger.Log("_Ready_State", LogSeverity.Info, LogCategory.Initialization);
+    }
+    
+    /// <summary>
+    /// Test function - registers Units in node path. Will be replaced with loading from UnitData.
+    /// </summary>
+    private void _registerExistingBattleUnitNodes()
+    {
+        var units = _battle.GetNode("Units").GetChildren();
+
+        foreach (var unit in units)
+        {
+            if (unit is BattleUnit bUnit)
+                _unitRegistry.RegisterUnit(bUnit, _grid.GetCellAtGlobalPosition(bUnit.GlobalPosition));
+        }
+        
+        _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
     }
 
     private void AbortActivationToFreeSelect()
@@ -37,7 +60,7 @@ public partial class BattleController
         
         ExitTargetingMode();
         // TODO - update cursor
-        // add enum for different beaviors AbortBehavior { KeepCursor, RecenterOnOrigin }
+        // add enum for different behaviors AbortBehavior { KeepCursor, RecenterOnOrigin }
         ClearUnitActivation();
         ResetActivationPreview();
     }
@@ -102,13 +125,17 @@ public partial class BattleController
         _grid.ClearOverlays();
     }
 
+    
+
     private void GenerateMovementPreviewForHoveredCell()
     {
         
         var cell = _selectionController.HoveredCell;
-        var isHoveredUnit = _unitRegistry.TryGetUnitAtCell(cell, out var regUnit);
+        var isHoveredUnit = _unitRegistry.TryGetUnitAtCell(cell, out var registeredUnit);
         var unit = _selectionController.HoveredUnit;
-        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={regUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        Debug.Assert(unit == registeredUnit, "Hovered unit does not match UnitRegistry record for unit at cell.");
+        
+        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         if (unit == null)
             return;
         
@@ -117,11 +144,31 @@ public partial class BattleController
         _grid.SetMovementPreview(movementPreview);
     }
     
+    private void GenerateMovementPreviewForSelectedUnit()
+    {
+        if (!DebugUtil.Require(IsUnitSelected, "[BattleController.State].GenerateMovementPreviewForSelectedUnit - Unable to generate, no selected unit"))
+            return;
+        var unit = _selectionController.SelectedUnit;
+        if (!DebugUtil.Require(_unitRegistry.TryGetCell(unit, out var cell), "[BattleController.State].GenerateMovementPreviewForSelectedUnit - Unable to generate, no selected unit"))
+            return;
+        
+        _logger.Log($"GenerateMovementPreviewForHoveredCell cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        
+        var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit!.Movement);
+        _unitActivation = new UnitActivationContext(unit, cell);
+        _grid.SetMovementPreview(movementPreview);
+    }
+    
     private void ResetActivationPreview()
     {
         ClearActivationPreviews();
-        GenerateMovementPreviewForHoveredCell();
-        // TODO - add attack preview
+        if (IsUnitSelected)
+        {
+            GenerateMovementPreviewForSelectedUnit();
+            // TODO - center cursor/camera on 
+        }
+        else
+            GenerateMovementPreviewForHoveredCell();
     }
     
     /// <summary>

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.UI.Battle;
 using Godot;
 using Goblinos.Scripts.Util;

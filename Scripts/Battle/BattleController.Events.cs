@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 

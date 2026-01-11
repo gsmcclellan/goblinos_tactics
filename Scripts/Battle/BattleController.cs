@@ -52,7 +52,7 @@ public partial class BattleController : Node
         
         _Ready_Input();
         _Ready_Events();
-        _Ready_Units();
+        _Ready_State();
         
         NotifyInitialized();
         

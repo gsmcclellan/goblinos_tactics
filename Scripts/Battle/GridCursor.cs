@@ -28,14 +28,14 @@ public partial class GridCursor : Node2D
     private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
     
     /** Properties */
-    public BattleGrid Grid;
+    public Goblinos.Scripts.Battle.BattleGrid Grid;
     public UnitRegistry UnitRegistry;
 
     public Vector2I FocusedCell { get; private set; }
 
     public override void _Ready()
     {
-        Grid = GetNode<BattleGrid>(_battleGridPath);
+        Grid = GetNode<Goblinos.Scripts.Battle.BattleGrid>(_battleGridPath);
         UnitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
         
         DebugUtil.Require(Grid != null, "[GridCursor] Grid must be initialized");

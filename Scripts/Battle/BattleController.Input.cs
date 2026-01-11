@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -160,6 +161,7 @@ public partial class BattleController: IInputHandler
         if (unitAtCell != null && unitAtCell.IsFriendly)
         {
             _selectionController.SelectUnit(unitAtCell);
+            ResetActivationPreview();
             return true;
         }
 
@@ -187,22 +189,16 @@ public partial class BattleController: IInputHandler
 
     private bool HandleAccept_PrimaryActionSelect(Vector2I targetCell, BattleUnit? unitAtCell)
     {
-        _logger.Log("HandleAccept_AttackTargeting", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleAccept_PrimaryActionSelect", LogSeverity.Trace, LogCategory.Input);
 
-        if (_selectionController.SelectedUnit == null)
+        if (!DebugUtil.Require(IsUnitSelected, "[BattleController.Input].HandleAccept_PrimaryActionSelect - No selected attacker"))
         {
-            _logger.Log("No selected attacker in AttackTargeting", LogSeverity.Warn, LogCategory.Input);
             InputState = BattleInputState.FreeSelect;
             return true;
         }
 
-        if (unitAtCell == null || unitAtCell.IsFriendly)
-        {
-            _logger.Log("Invalid attack target", LogSeverity.Trace, LogCategory.Input);
-            return true;
-        }
-
-        // _attackController.TryAttack(_selectionController.SelectedUnit, unitAtCell); TODO
+        // TODO - select menu item
+        
         return true;
     }
 

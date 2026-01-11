@@ -6,13 +6,12 @@ namespace Goblinos.Scripts.Util;
 
 public class InputUtil
 {
-    private static readonly Vector2I[] DirectionVectors =
+    public static readonly Vector2I[] DirectionVectors =
     [
         Vector2I.Up,
         Vector2I.Right,
         Vector2I.Down,
-        Vector2I.Left,
-        Vector2I.Zero
+        Vector2I.Left
     ];
     
     public static int TileSize = GlobalSettings.TileSize;
@@ -38,13 +37,4 @@ public enum InputDeviceMode
     Controller,
     MouseAndKeyboard
     
-}
-
-public enum BattleInputState
-{
-    FreeSelect,
-    MoveTargeting,
-    PrimaryActionSelect,
-    PrimaryActionTargeting,
-    PrimaryActionConfirm
 }

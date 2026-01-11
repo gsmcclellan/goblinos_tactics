@@ -12,20 +12,13 @@ namespace Goblinos.Scripts.Battle;
 /// </summary>
 public static class GridNavigationUtil
 {
-    public const int BasicGroundTilesAtlasId = 0;
-    public const int ActionOverlayTilesAtlasId = 1;
-    
+
+
     /// <summary>
     /// Canonical cardinal direction order used across the project.
     /// Pick one and never change it unless you're OK with path "feel" changing everywhere.
     /// </summary>
-    public static readonly Vector2I[] CardinalDirections =
-    {
-        Vector2I.Up,
-        Vector2I.Right,
-        Vector2I.Down,
-        Vector2I.Left
-    };
+    public static readonly Vector2I[] CardinalDirections = InputUtil.DirectionVectors;
 
     /// <summary>
     /// Enumerates the four neighbors of a cell in canonical order.

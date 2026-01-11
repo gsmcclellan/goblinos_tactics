@@ -1,23 +1,29 @@
 #nullable enable
-using Godot;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Goblinos.Logging;
-using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
-using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
+using Godot;
+
+namespace Goblinos.Scripts.Battle;
 
 public partial class BattleGrid : Node2D
 {
+    /** Components */
     [ExportGroup("Tiles")]
+    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [Export] private TileMapLayer _terrainLayer;
     [Export] private TileMapLayer _actionPreviewLayer;
     [Export(PropertyHint.Dir)] public string TerrainDbFolder = "res://Terrain";
+    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    private Logger _logger = LogManager.For<BattleGrid>();
+    private readonly Logger _logger = LogManager.For<BattleGrid>();
+    
+    /** Fields */
+    private const int BasicGroundTilesAtlasId = 0;
+    private const int ActionOverlayTilesAtlasId = 1;
     
     private readonly Dictionary<string, TerrainType> _terrainById = new(StringComparer.Ordinal);
     private TerrainType? _defaultTerrain;
@@ -29,8 +35,9 @@ public partial class BattleGrid : Node2D
     private MovementPreviewResults? _movementPreview;
     // private AttackPreviewResults? _attackPreview;
     // private HashSet<Vector2I> _interactCells = new();
-    private static readonly HashSet<Vector2I> _emptyCells = new();
+    private static readonly HashSet<Vector2I> EmptyCells = new();
     
+    /** Properties */
     
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -55,7 +62,7 @@ public partial class BattleGrid : Node2D
     /// Loads all TerrainType resources in terrain folder
     /// </summary>
     /// <param name="folder"></param>
-    public void _loadTerrainDb(string folder)
+    private void _loadTerrainDb(string folder)
     {
         _terrainById.Clear();
 
@@ -67,7 +74,7 @@ public partial class BattleGrid : Node2D
         }
 
         dir.ListDirBegin();
-        var file = "";
+        string file;
         do
         {
             file = dir.GetNext();
@@ -283,8 +290,8 @@ public partial class BattleGrid : Node2D
 
         _actionPreviewLayer.Visible = true;
         
-        var moveCells = _movementPreview?.Cells ?? _emptyCells;
-        var attackCells = /*_attackPreview?.Cells ?? */_emptyCells; // TODO
+        var moveCells = _movementPreview?.Cells ?? EmptyCells;
+        var attackCells = /*_attackPreview?.Cells ?? */EmptyCells; // TODO
         
         // Movement takes priority - cell legal for move & attack show as movement
         var attackOnly = new HashSet<Vector2I>(attackCells);
@@ -314,7 +321,7 @@ public partial class BattleGrid : Node2D
             } 
             
             if (overlayType.HasValue)
-                _actionPreviewLayer.SetCell(cell, GridNavigationUtil.ActionOverlayTilesAtlasId, OverlayTypeToVector2I(overlayType.Value));
+                _actionPreviewLayer.SetCell(cell, ActionOverlayTilesAtlasId, OverlayTypeToVector2I(overlayType.Value));
         }
 
         if (renderedCells.Count == 0)
