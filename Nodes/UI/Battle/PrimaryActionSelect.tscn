@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://cixx1r5qwd8im"]
+
+[ext_resource type="Script" uid="uid://bxcmmdemklc7l" path="res://Scripts/UI/Battle/PrimaryActionSelect.cs" id="1_ye3in"]
+
+[node name="PrimaryActionSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 951.0
+offset_top = 295.0
+offset_right = 991.0
+offset_bottom = 335.0
+script = ExtResource("1_ye3in")
+
+[node name="ButtonContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="AttackButton" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Attack"
+
+[node name="AbilityButton" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Ability"
+
+[node name="ItemButton" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Item"
+
+[node name="TradeButton" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Trade"
+
+[node name="WaitButton" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Wait"

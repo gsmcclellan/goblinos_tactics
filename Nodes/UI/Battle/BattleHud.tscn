@@ -1,11 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://0yqqd78jcaet"]
+[gd_scene load_steps=4 format=3 uid="uid://0yqqd78jcaet"]
 
 [ext_resource type="Script" uid="uid://b1v83afs0nq7i" path="res://Scripts/UI/Battle/BattleHud.cs" id="1_8w1vy"]
 [ext_resource type="PackedScene" uid="uid://ddrrh4301j2v6" path="res://Nodes/UI/Battle/TerrainInfoPanel.tscn" id="2_at2nw"]
+[ext_resource type="PackedScene" uid="uid://cixx1r5qwd8im" path="res://Nodes/UI/Battle/PrimaryActionSelect.tscn" id="3_rfvvm"]
 
 [node name="BattleHud" type="CanvasLayer"]
 script = ExtResource("1_8w1vy")
 _panelsRootPath = NodePath("BattleHudPanels")
+_primaryActionSelectPath = NodePath("PrimaryActionSelect")
 
 [node name="BattleHudPanels" type="Control" parent="."]
 layout_mode = 3
@@ -25,3 +27,5 @@ offset_top = 497.0
 offset_right = 1049.0
 offset_bottom = 520.0
 text = "Free Select"
+
+[node name="PrimaryActionSelect" parent="." instance=ExtResource("3_rfvvm")]

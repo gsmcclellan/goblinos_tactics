@@ -1,4 +1,6 @@
-﻿using Goblinos.Scripts.Units;
+﻿using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Units;
+using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
@@ -24,7 +26,7 @@ public sealed class UnitActivationRecord
         );
         OriginCell = c.OriginCell;
         MoveTargetCell = c.MoveTargetCell;
-        PrimaryActionType = c.PrimaryActionType;
+        PrimaryActionType = c.PrimaryAction;
         PrimaryActionTargetCell = c.PrimaryActionTargetCell;
 
         TargetUnitSnapshot = c.PrimaryActionTargetUnit != null
@@ -34,15 +36,4 @@ public sealed class UnitActivationRecord
             )
             : null;
     }
-}
-
-
-
-public enum PrimaryActionType
-{
-    None, // (planning stage / not chosen yet)
-    Attack,
-    Spell,
-    Ability,
-    Wait
 }

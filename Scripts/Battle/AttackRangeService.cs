@@ -29,11 +29,8 @@ public sealed class AttackRangeService
     {
         var offsets = GetAttackPattern(minRange, maxRange);
 
-        var count = 0;
         foreach (var originCell in originCells)
         {
-            GD.Print($"originCell: {count}");
-            count++;
             for (var i = 0; i < offsets.Length; i++)
                 AddIfValidAttackableCell(originCell + offsets[i], output);
         }
@@ -74,7 +71,7 @@ public sealed class AttackRangeService
     {
         var results = new HashSet<Vector2I>();
         AddAttackThreatUnionFromCells(originCells, minRange, maxRange, results);
-        _logger.Log($"BuildAttackThreatUnionFromCells - results.Count={results.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"BuildAttackThreatUnionFromCells - results.Count={results.Count}", LogSeverity.Extra, LogCategory.UiNavigation);
         return results;
     }
     

@@ -42,47 +42,87 @@ public partial class BattleController
 
     private void _SubscribeToEvents()
     {
+        _hud.PrimaryActionFocused += OnPrimaryActionFocused;
+        _hud.PrimaryActionSelected += OnPrimaryActionSelected;
+        
         _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
     }
 
     private void _UnsubscribeFromEvents()
     {
+        _hud.PrimaryActionFocused -= OnPrimaryActionFocused;
+        _hud.PrimaryActionSelected -= OnPrimaryActionSelected;
+        
         _selectionController.HoveredUnitChanged -= OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
     }
     
     // ---------------------------------------------------------------------
-    // Event Methods
+    // Event Handlers
     // ---------------------------------------------------------------------
 
-    // TODO - on Hovered unit change, show move & attack preview
     private void OnHoveredUnitChanged(Node? hoveredNode)
     {
-        // In FreeSelect, change move preview when hovered unit changes.
-        
-        
-        if (hoveredNode is BattleUnit && InputState == BattleInputState.FreeSelect)
-            ResetActivationPreview();
-        else if (hoveredNode == null && InputState == BattleInputState.FreeSelect)
-            ClearActivationPreviews();
+        _logger.Log($"OnHoveredUnitChanged - node={hoveredNode}", LogSeverity.Trace, LogCategory.Signal);
+        switch (hoveredNode)
+        {
+            // In FreeSelect, change move preview when hovered unit changes.
+            case BattleUnit when InputState == BattleInputState.FreeSelect:
+                ResetActivationPreview();
+                break;
+            case null when InputState == BattleInputState.FreeSelect:
+                ClearActivationPreviews();
+                break;
+        }
     }
+
+    private void OnPrimaryActionFocused(int actionIndex)
+    {
+        var action = (PrimaryActionType)actionIndex;
+        _logger.Log($"OnPrimaryActionFocused - action={action}", LogSeverity.Info, LogCategory.Signal);
+        
+        // TODO - check based on type if requires target - update target preview
+    }
+
+    private void OnPrimaryActionSelected(int actionIndex)
+    {
+        var action = (PrimaryActionType)actionIndex;
+        _logger.Log($"OnPrimaryActionSelected - action={action}", LogSeverity.Info, LogCategory.Signal);
+        // Transition to next phase based on if it requires target -> targeting phase, else confirm phase
+        // TODO - check based on type if requires target.
+        EnterPrimaryActionTargetMode(action);
+    }
+    
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
-        if (selectedNode is BattleUnit bu)
-            EnterMoveTargetingMode(bu);
-        else if (selectedNode == null)
-            ExitTargetingMode();
-        else
-            throw new Exception("[BattleController.Events] Selected node invalid type.");
+        _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", LogSeverity.Trace, LogCategory.Signal);
+        switch (selectedNode)
+        {
+            case BattleUnit bu:
+                EnterMoveTargetingMode(bu);
+                break;
+            case null:
+                ExitTargetingMode();
+                break;
+            default:
+                throw new Exception("[BattleController.Events] Selected node invalid type.");
+        }
     }
+    
+    
+    // ---------------------------------------------------------------------
+    // Event Triggers
+    // ---------------------------------------------------------------------
+    
     private void NotifyInitialized()
     {
         EmitSignal(SignalName.BattleControllerInitialized);
     }
-
+    
     private void NotifyInputStateChanged(BattleInputState state)
     {
+        // TODO - hide / show cursor (maybe do somewhere else, possibly on cursor with event handler).
         EmitSignal(SignalName.InputStateChanged, (int)state);
     }
 }

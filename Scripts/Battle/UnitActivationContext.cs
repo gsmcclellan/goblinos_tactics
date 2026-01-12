@@ -1,4 +1,6 @@
 ﻿#nullable enable
+using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
@@ -7,6 +9,7 @@ namespace Goblinos.Scripts.Battle;
 // can't be undone.
 public sealed class UnitActivationContext
 {
+    private readonly Logger _logger = LogManager.For<UnitActivationContext>();
     public BattleUnit Unit { get; }
     public Vector2I OriginCell { get; }
 
@@ -18,7 +21,7 @@ public sealed class UnitActivationContext
     /// <summary>
     /// The primary action such as attack, null means has not acted.
     /// </summary>
-    public PrimaryActionType PrimaryActionType { get; private set; } = PrimaryActionType.None;
+    public PrimaryActionType PrimaryAction { get; private set; } = PrimaryActionType.None;
 
     /// <summary>
     /// Optional target cell for the primary action.
@@ -35,15 +38,11 @@ public sealed class UnitActivationContext
     public bool CanUndo => (HasSelectedPrimaryAction && !BlockUndoPrimaryAction) || (!HasSelectedPrimaryAction && HasMoved && !BlockUndoMove);
 
     /// <summary>No primary action & undo move is not blocked</summary>
-    public bool CanUndoMove => !HasSelectedPrimaryAction && HasMoved && !BlockUndoMove;
+    public bool CanUndoMove => HasMoved && !BlockUndoMove;
     /// <summary>Primary action queued, undo is not blocked</summary>
     public bool CanUndoPrimaryAction => HasSelectedPrimaryAction && !BlockUndoPrimaryAction;
     public bool HasMoved => MoveTargetCell.HasValue;
-    public bool HasSelectedPrimaryAction => PrimaryActionType != PrimaryActionType.None;
-    public bool HasRequiredTarget =>
-        !RequiresTarget || PrimaryActionTargetCell.HasValue;
-    public bool RequiresTarget =>
-        PrimaryActionType is PrimaryActionType.Attack or PrimaryActionType.Spell or PrimaryActionType.Ability;
+    public bool HasSelectedPrimaryAction => PrimaryAction != PrimaryActionType.None;
     public UnitActivationPhase UndoTarget {
         get
         {
@@ -57,36 +56,47 @@ public sealed class UnitActivationContext
 
     public UnitActivationContext(BattleUnit unit, Vector2I originCell)
     {
+        _logger.Log($"Created - Unit={unit}, OriginCell={originCell}", LogSeverity.Trace, LogCategory.Initialization);
         Unit = unit;
         OriginCell = originCell;
     }
 
     public void SetMoveTargetCell(Vector2I targetCell)
     {
+        _logger.Log($"SetMoveTargetCell - target={targetCell}", LogSeverity.Trace, LogCategory.UnitLifecycle);
         MoveTargetCell = targetCell;
     }
 
     public void ClearMoveTargetCell()
     {
+        _logger.Log("ClearMoveTargetCell", LogSeverity.Trace, LogCategory.UnitLifecycle);
         MoveTargetCell = null;
     }
 
-    public void SetPrimaryAction(PrimaryActionType actionType, Vector2I? targetCell, BattleUnit? targetUnit)
+    public void SetPrimaryAction(PrimaryActionType action)
     {
-        PrimaryActionType = actionType;
-        PrimaryActionTargetCell = targetCell;
-        PrimaryActionTargetUnit = targetUnit;
+        _logger.Log($"SetPrimaryAction - action={action}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        PrimaryAction = action;
+    }
+
+    public void SetPrimaryActionTarget(Vector2I cell, BattleUnit unit)
+    {
+        _logger.Log($"SetPrimaryActionTarget - cell={cell}, unit={unit}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        PrimaryActionTargetCell = cell;
+        PrimaryActionTargetUnit = unit;
     }
 
     public void ClearPrimaryAction()
     {
-        PrimaryActionType = PrimaryActionType.None;
+        _logger.Log("ClearPrimaryAction", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        PrimaryAction = PrimaryActionType.None;
         PrimaryActionTargetCell = null;
         PrimaryActionTargetUnit = null;
     }
 
     public void Reset()
     {
+        _logger.Log("Reset", LogSeverity.Trace, LogCategory.UnitLifecycle);
         ClearMoveTargetCell();
         ClearPrimaryAction();
     }

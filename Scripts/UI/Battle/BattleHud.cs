@@ -14,16 +14,28 @@ namespace Goblinos.Scripts.UI.Battle
 {
     public partial class BattleHud : CanvasLayer
     {
+        /** Signals */
+        [Signal]
+        public delegate void PrimaryActionFocusedEventHandler(int action);
+        [Signal]
+        public delegate void PrimaryActionSelectedEventHandler(int action);
+        
+        /** Components */
         [Export] private NodePath _panelsRootPath;
+        [Export] private NodePath _primaryActionSelectPath;
 
-        private Node _panelsRoot;
-        private SelectionController _selectionController;
         private BattleController _battleController;
+        private Node _panelsRoot;
+        private PrimaryActionSelect _primaryActionSelect;
+        private SelectionController _selectionController;
         
         private Logger _logger = LogManager.For<BattleHud>();
         
-        
+        /** Fields */
         private readonly List<IBattleHudPanel> _panels = new();
+
+        /** Properties */
+        public bool IsPrimaryActionSelectMenuActive => _primaryActionSelect.Visible;
 
         // ---------------------------------------------------------------------
         // Lifecycle / Setup Methods
@@ -45,8 +57,12 @@ namespace Goblinos.Scripts.UI.Battle
         public override void _Ready()
         {
             _panelsRoot = GetNode(_panelsRootPath);
+            _primaryActionSelect = GetNode<PrimaryActionSelect>(_primaryActionSelectPath);
             DebugUtil.Require(_panelsRoot != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
+            DebugUtil.Require(_primaryActionSelect != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
 
+            HidePrimaryActionSelectMenu();
+            
             CachePanels();
             WirePanels();
             
@@ -61,6 +77,9 @@ namespace Goblinos.Scripts.UI.Battle
         private void _SubscribeToEvents()
         {
             _logger.Log("ConnectSignals", LogSeverity.Info, LogCategory.Initialization);
+
+            _primaryActionSelect.ActionFocused += OnPrimaryActionFocused;
+            _primaryActionSelect.ActionSelected += OnPrimaryActionSelected;
             
             _selectionController.HoveredTerrainChanged += OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
@@ -71,6 +90,9 @@ namespace Goblinos.Scripts.UI.Battle
         private void _UnsubscribeFromEvents()
         {
             _logger.Log("DisconnectSignals", LogSeverity.Info, LogCategory.Exit);
+            
+            _primaryActionSelect.ActionFocused -= OnPrimaryActionFocused;
+            _primaryActionSelect.ActionSelected -= OnPrimaryActionSelected;
 
             _selectionController.HoveredTerrainChanged -= OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
@@ -98,6 +120,24 @@ namespace Goblinos.Scripts.UI.Battle
         }
         
         // ---------------------------------------------------------------------
+        // Public Methods
+        // ---------------------------------------------------------------------
+
+        public void HidePrimaryActionSelectMenu()
+        {
+            _primaryActionSelect.Visible = false;
+            _primaryActionSelect.ReleaseFocus();
+        }
+        public void ShowPrimaryActionSelectMenu()
+        {
+            _primaryActionSelect.Visible = true;
+            
+            // Pick a deterministic "top" action (don’t rely on enum order)
+            var firstAction = PrimaryActionType.Attack; // choose your default
+            _primaryActionSelect.TryFocus(firstAction);
+        }
+        
+        // ---------------------------------------------------------------------
         // Signal / Event Callbacks
         // ---------------------------------------------------------------------
 
@@ -121,9 +161,22 @@ namespace Goblinos.Scripts.UI.Battle
         private void OnBattleControllerInputStateChanged(int s)
         {
             var state = (BattleInputState) s;
-            _logger.Log("OnBattleControllerInputStateChanged", LogSeverity.Info, LogCategory.UiNavigation);
             var node = GetNode<Label>("BattleControllerInputState");
+            _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
+            
             node.Text = state.ToString();
+        }
+
+        private void OnPrimaryActionFocused(int action)
+        {
+            _logger.Log("OnPrimaryActionFocused", LogSeverity.Trace, LogCategory.Signal);
+            EmitSignal(SignalName.PrimaryActionFocused, action);
+        }
+
+        private void OnPrimaryActionSelected(int action)
+        {
+            _logger.Log("OnPrimaryActionSelected", LogSeverity.Trace, LogCategory.Signal);
+            EmitSignal(SignalName.PrimaryActionSelected, action);
         }
     }
 }

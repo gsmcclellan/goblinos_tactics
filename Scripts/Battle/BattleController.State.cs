@@ -104,8 +104,19 @@ public partial class BattleController
            )
             return;
         
+        HideCursor();
+        _hud.ShowPrimaryActionSelectMenu();
+        
         InputState = BattleInputState.PrimaryActionSelect;
-        // TODO - show action menu
+    }
+
+    private void EnterPrimaryActionTargetMode(PrimaryActionType action)
+    {
+        _unitActivation.SetPrimaryAction(action);
+        ShowCursor();
+        _hud.HidePrimaryActionSelectMenu();
+        // TODO - set cursor position
+        InputState = BattleInputState.PrimaryActionTargeting;
     }
 
     private void ExitPrimaryActionSelectMode()
@@ -123,6 +134,7 @@ public partial class BattleController
         InputState = BattleInputState.FreeSelect;
         _selectionController.TriggerClearSelection();
         _grid.ClearOverlays();
+        ShowCursor();
     }
     
     /// <summary>
@@ -161,6 +173,11 @@ public partial class BattleController
         GD.Print($"movementPreview.Cells.Count={movementPreview.Cells.Count}");
         _unitActivation = new UnitActivationContext(unit, cell);
         _grid.SetPreviews(movementPreview, attackPreview);
+    }
+
+    private void HideCursor()
+    {
+        _cursor.Visible = false;
     }
     
     private void ResetActivationPreview()
@@ -206,6 +223,11 @@ public partial class BattleController
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    private void ShowCursor()
+    {
+        _cursor.Visible = true;
     }
 
     private bool TryUndoMove()
