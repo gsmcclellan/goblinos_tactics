@@ -25,7 +25,7 @@ public partial class BattleUnit : Area2D
 
     public String Id { get; private set; }
 
-    public bool IsFriendly => true;
+    public bool IsFriendly { get; private set; } = true;
     
     // Realtime Properties
     private int _currentHealth;

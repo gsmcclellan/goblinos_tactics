@@ -12,6 +12,11 @@ public sealed class MoveRangeService
     
     private readonly BattleGrid _grid;
 
+    private int _gridRevision = 0; // TODO - increment when grid / battle changes in a way that invalidates movement results
+
+    private readonly Dictionary<(Vector2I Cell, int MovePoints, int GridRevision), MovementPreviewResults> _cache =
+        new();//TODO
+
     public MoveRangeService(BattleGrid grid)
     {
         _grid = grid;

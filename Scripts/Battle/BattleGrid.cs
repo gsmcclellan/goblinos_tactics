@@ -129,6 +129,14 @@ public partial class BattleGrid : Node2D
         cell = GetCellAtGlobalPosition(globalPos);
         return CanFocusCell(cell);
     }
+
+    /// <summary>Clears preview data and overlay.</summary>
+    public void ClearPreviews()
+    {
+        _movementPreview = null;
+        _attackPreview = null;
+        ClearOverlays();
+    }
     
     /// <summary>Clears preview overlay. Use if you change lots of tiles at once.</summary>
     public void ClearOverlays()

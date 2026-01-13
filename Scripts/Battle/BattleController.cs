@@ -13,14 +13,15 @@ public partial class BattleController : Node
     /** Actions */
 
     /** Components */
-    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [Export] private NodePath _cursorPath;
+
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
     [Export] private NodePath _movementControllerPath;
     [Export] private NodePath _selectionControllerPath;
     [Export] private NodePath _unitRegistryPath;
-    
+
     private Battle _battle;
     private GridCursor _cursor;
     private BattleGrid _grid;
@@ -28,18 +29,18 @@ public partial class BattleController : Node
     private MovementController _movementController;
     private SelectionController _selectionController;
     private UnitRegistry _unitRegistry;
-    
+
     private readonly Logger _logger = LogManager.For<BattleController>();
     private AttackRangeService _attackRangeService;
     private MoveRangeService _moveRangeService;
-    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
     /** Fields */
-    
-    
+
+
     /** Properties */
-    
-    
+
+
     public override void _Ready()
     {
         CallDeferred(nameof(_DeferredInit));
@@ -50,15 +51,15 @@ public partial class BattleController : Node
         _InitializeBattleComponents();
         _BindBattleComponents();
         _SubscribeToEvents();
-        
+
         _Ready_Input();
         _Ready_Events();
         _Ready_State();
-        
+
         NotifyInitialized();
-        
+
         HandleStartOfBattle();
-        
+
         _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
@@ -77,7 +78,7 @@ public partial class BattleController : Node
         _movementController = GetNode<MovementController>(_movementControllerPath);
         _selectionController = GetNode<SelectionController>(_selectionControllerPath);
         _unitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
-        
+
         Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
         Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
         Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
@@ -85,11 +86,11 @@ public partial class BattleController : Node
         Debug.Assert(_movementController != null, "[BattleController] MovementController must be initialized.");
         Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
-        
+
         // Non-Node Components
         _attackRangeService = new AttackRangeService(_grid);
         _moveRangeService = new MoveRangeService(_grid);
-        
+
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
     }
 
@@ -104,12 +105,13 @@ public partial class BattleController : Node
     {
         _Process_Input(delta);
     }
+
     private void DoEnemyTurn(bool isFirstTurn = false)
     {
     }
 
-    
-    public void HandleStartOfBattle()
+
+public void HandleStartOfBattle()
     {
     }
 
