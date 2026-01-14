@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
@@ -42,20 +41,34 @@ public partial class BattleController
 
     private void _SubscribeToEvents()
     {
+        // BattleHud
         _hud.PrimaryActionFocused += OnPrimaryActionFocused;
         _hud.PrimaryActionSelected += OnPrimaryActionSelected;
         
+        // SelectionController
         _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
+        
+        // UnitRegistry
+        _unitRegistry.UnitMoveResolved += OnUnitMoveResolved;
+        _unitRegistry.UnitRegistered += OnUnitRegistered;
+        _unitRegistry.UnitUnregistered += OnUnitUnregistered;
     }
 
     private void _UnsubscribeFromEvents()
     {
+        // BattleHud
         _hud.PrimaryActionFocused -= OnPrimaryActionFocused;
         _hud.PrimaryActionSelected -= OnPrimaryActionSelected;
         
+        // SelectionController
         _selectionController.HoveredUnitChanged -= OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
+        
+        // UnitRegistry
+        _unitRegistry.UnitMoveResolved -= OnUnitMoveResolved;
+        _unitRegistry.UnitRegistered -= OnUnitRegistered;
+        _unitRegistry.UnitUnregistered -= OnUnitUnregistered;
     }
     
     // ---------------------------------------------------------------------
@@ -69,10 +82,10 @@ public partial class BattleController
         {
             // In FreeSelect, change move preview when hovered unit changes.
             case BattleUnit when InputState == BattleInputState.FreeSelect:
-                ResetActivationPreview();
+                ResetPreviews();
                 break;
             case null when InputState == BattleInputState.FreeSelect:
-                ClearActivationPreviews();
+                ClearPreviews();
                 break;
         }
     }
@@ -97,19 +110,23 @@ public partial class BattleController
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
         _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", LogSeverity.Trace, LogCategory.Signal);
-        switch (selectedNode)
-        {
-            case BattleUnit bu:
-                EnterMoveTargetingMode(bu);
-                break;
-            case null:
-                ExitTargetingMode();
-                break;
-            default:
-                throw new Exception("[BattleController.Events] Selected node invalid type.");
-        }
+        // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
     }
-    
+
+    private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    {
+        _moveRangeService.InvalidateCache();
+    }
+
+    private void OnUnitRegistered(BattleUnit unit, Vector2I cell)
+    {
+        _moveRangeService.InvalidateCache();
+    }
+
+    private void OnUnitUnregistered(BattleUnit unit, Vector2I cell)
+    {
+        _moveRangeService.InvalidateCache();
+    }
     
     // ---------------------------------------------------------------------
     // Event Triggers

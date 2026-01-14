@@ -16,11 +16,12 @@ public partial class UnitRegistry: Node
 {
     /** Signals */
     [Signal]
+    public delegate void UnitMoveResolvedEventHandler(BattleUnit unit, Vector2I fromCell, Vector2I toCell);
+    [Signal]
     public delegate void UnitRegisteredEventHandler(BattleUnit unit, Vector2I cell);
     [Signal]
     public delegate void UnitUnregisteredEventHandler(BattleUnit unit, Vector2I cell);
-    [Signal]
-    public delegate void UnitMoveResolvedEventHandler(BattleUnit unit, Vector2I fromCell, Vector2I toCell);
+    
     // [Signal]
     // public delegate void UnitDiedEventHandler(BattleUnit unit, Vector2I cell);
 

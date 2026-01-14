@@ -30,6 +30,8 @@ public partial class BattleController
 
     public bool IsUnitSelected => _selectionController.IsUnitSelected;
 
+    public Vector2I HoveredCell => _selectionController.HoveredCell;
+    public BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
     public Vector2I? SelectedCell => _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
     public BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
     private void _Ready_State()
@@ -66,23 +68,21 @@ public partial class BattleController
         ExitTargetingMode();
         // TODO - update cursor
         // add enum for different behaviors AbortBehavior { KeepCursor, RecenterOnOrigin }
-        ClearUnitActivation();
-        ResetActivationPreview();
+        ResetPreviews();
     }
 
-    private void ClearActivationPreviews()
+    private void ClearPreviews()
     {
         _grid.ClearOverlays();
     }
-    
     private void ClearUnitActivation()
     {
         // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
 
-        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
+        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] ClearUnitActivation failed. No UnitActivationContext."))
             return;
         
-        _unitActivation.Reset();
+        _unitActivation = null;
     }
     
     private void EnterMoveTargetingMode(BattleUnit unit)
@@ -94,7 +94,7 @@ public partial class BattleController
             !DebugUtil.Require(unit != null, "[BattleController.Input] failed to enter MovementMode, no unit")
            )
             return;
-        
+        InitializeActivationContext();
         InputState = BattleInputState.MoveTargeting;
     }
 
@@ -110,6 +110,8 @@ public partial class BattleController
         
         HideCursor();
         _hud.ShowPrimaryActionSelectMenu();
+        
+        // TODO - create primary action target previews. Add to Activation Context.
         InputState = BattleInputState.PrimaryActionSelect;
     }
 
@@ -129,43 +131,50 @@ public partial class BattleController
 
     private void ExitPrimaryActionSelectMode()
     {
-        _logger.Log("ExitTargetingMode", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("ExitPrimaryActionSelectMode", LogSeverity.Trace, LogCategory.Input);
         
-        if (TryUndoMove())
+        if (TryUndoMove() && DebugUtil.Require(_unitActivation != null, "[BattleController] ExitPrimaryActionSelectMode - no UnitActivationContext"))
             EnterMoveTargetingMode(_unitActivation.Unit);
     }
         
     private void ExitTargetingMode()
     {
         _logger.Log("ExitTargetingMode", LogSeverity.Trace, LogCategory.Input);
-
-        InputState = BattleInputState.FreeSelect;
+        
         _selectionController.TriggerClearSelection();
-        _grid.ClearOverlays();
+        _hud.HidePrimaryActionSelectMenu();
+        ClearUnitActivation();
         ShowCursor();
+        ResetPreviews();
+        
+        InputState = BattleInputState.FreeSelect;
     }
     
     /// <summary>
     /// Generates move & attack preview for hovered cell.
     /// </summary>
-    private void GenerateActivationPreviewForHoveredCell()
+    private void GenerateHoverPreview()
     {
-        var cell = _selectionController.HoveredCell;
-        var isHoveredUnit = _unitRegistry.TryGetUnitAtCell(cell, out var registeredUnit);
-        var unit = _selectionController.HoveredUnit;
-        Debug.Assert(unit == registeredUnit, "Hovered unit does not match UnitRegistry record for unit at cell.");
-        
-        _logger.Log($"GeneratePreviewForHoveredCell cell={cell} unit={unit?.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        var cell = HoveredCell;
+        var unit = HoveredUnit;
         if (unit == null)
             return;
         
-        var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit.Movement);
+        _unitRegistry.TryGetUnitAtCell(cell, out var registeredUnit);
+        
+        if (!DebugUtil.Require(unit == registeredUnit,
+                "Hovered unit does not match UnitRegistry record for unit at cell."))
+            return;
+        
+        _logger.Log($"GeneratePreviewForHoveredCell cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        
+        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit.Movement);
         var attackPreview = _attackRangeService.BuildAttackThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
-        _unitActivation = new UnitActivationContext(unit, cell);
+        
         _grid.SetPreviews(movementPreview, attackPreview);
     }
     
-    private void GenerateActivationPreviewForSelectedUnit()
+    private void GenerateMovePreviewForSelectedUnit()
     {
         if (!DebugUtil.Require(IsUnitSelected, "[BattleController.State].GeneratePreviewForSelectedUnit - Unable to generate, no selected unit"))
             return;
@@ -175,7 +184,7 @@ public partial class BattleController
         
         _logger.Log($"GeneratePreviewForSelectedUnit cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         
-        var movementPreview = _moveRangeService.BuildMovementPreview(cell, unit!.Movement);
+        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit!.Movement);
         var attackPreview = _attackRangeService.BuildAttackThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
 
         GD.Print($"movementPreview.Cells.Count={movementPreview.Cells.Count}");
@@ -194,10 +203,7 @@ public partial class BattleController
         // TODO - other types of actions.
         // TODO - filter attack targets cells for valid target units
         var attackableCells = _attackRangeService.BuildAttackRangeFromCell(cell, unit.AttackRange)
-            .Where((cell) =>
-        {
-            return _unitRegistry.TryGetUnitAtCell(cell, out var unit) && !unit.IsFriendly;
-        });
+            .Where((attackableCell) => _unitRegistry.TryGetUnitAtCell(attackableCell, out var unitAtCell) && !unitAtCell.IsFriendly);
         var attackPreview = new HashSet<Vector2I>(attackableCells);
         
         _grid.ClearPreviews();
@@ -217,20 +223,36 @@ public partial class BattleController
             !DebugUtil.Require(cell != null, "[BattleController] InitializeActivationContext - No Cell"))
             return;
 
+        if (_unitActivation != null && _unitActivation.Unit == unit)
+        {
+            _logger.Warn("InitializeActivationContext - already initialized.");
+            return;
+        }
+            
         _unitActivation = new UnitActivationContext(unit, cell.Value);
     }
     
-    private void ResetActivationPreview()
+    private void ResetPreviews()
     {
-        ClearActivationPreviews();
+        ClearPreviews();
+        
         if (IsUnitSelected)
         {
-            InitializeActivationContext();
-            GenerateActivationPreviewForSelectedUnit();
-            // TODO - center cursor/camera on 
+            GenerateMovePreviewForSelectedUnit();
+            return;
         }
-        else
-            GenerateActivationPreviewForHoveredCell();
+
+        GenerateHoverPreview();
+    }
+    
+    private void ResetUnitActivation()
+    {
+        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
+
+        if (!DebugUtil.Require(_unitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
+            return;
+        
+        _unitActivation.Reset();
     }
     
     /// <summary>

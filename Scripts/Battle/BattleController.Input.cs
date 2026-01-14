@@ -107,7 +107,7 @@ public partial class BattleController: IInputHandler
         if (e.IsActionPressed("TEST"))
         {
             _logger.Log("DEBUG button pressed - TEST", LogSeverity.Warn, LogCategory.DebugOnly);
-            ClearActivationPreviews();
+            ClearPreviews();
             return true;
         }
         
@@ -148,6 +148,8 @@ public partial class BattleController: IInputHandler
         if (unitAtCell != null)
         {
             _selectionController.SelectUnit(unitAtCell);
+            if (DebugUtil.Require(SelectedUnit != null, "[BattleController.Input]HandleAccept_FreeSelect - Selection failed"))
+                EnterMoveTargetingMode(SelectedUnit);
             return true;
         }
 
@@ -166,7 +168,9 @@ public partial class BattleController: IInputHandler
         if (unitAtCell is { IsFriendly: true })
         {
             _selectionController.SelectUnit(unitAtCell);
-            ResetActivationPreview();
+            ClearUnitActivation();
+            InitializeActivationContext();
+            ResetPreviews();
             return true;
         }
 
@@ -216,23 +220,27 @@ public partial class BattleController: IInputHandler
     private bool HandleCancel(InputEvent e)
     {
         _logger.Log("HandleCancel", LogSeverity.Info, LogCategory.Input);
-        // switch (_inputState)
-        // {
-        //     case BattleInputState.FreeSelect:
-        //         return HandleCancel_FreeSelect();
-        //     case BattleInputState.MoveTargeting:
-        //         return HandleCancel_MoveTargeting();
-        //     case BattleInputState.PrimaryActionSelect:
-        //         return HandleCancel_PrimaryActionSelect();
-        //     case BattleInputState.PrimaryActionConfirm:
-        //         return HandleCancel_PrimaryActionConfirm();
-        //     default:
-        //         ExitTargetingMode();
-        //         return true;
-        // }
-        AbortActivationToFreeSelect();
-        
-        return true;
+        switch (_inputState)
+        {
+            case BattleInputState.FreeSelect:
+                return true;
+            case BattleInputState.MoveTargeting:
+            case BattleInputState.PrimaryActionSelect:
+                TryUndoMove();
+                ExitTargetingMode();
+                return true;
+            case BattleInputState.PrimaryActionTargeting:
+                TryUndoMove();
+                ExitTargetingMode();
+                return true;
+            case BattleInputState.PrimaryActionConfirm:
+                TryUndoMove();
+                ExitTargetingMode();
+                return true;
+            default:
+                ExitTargetingMode();
+                return true;
+        }
     }
     
     private bool HandleDirection(InputDirection? dir)
