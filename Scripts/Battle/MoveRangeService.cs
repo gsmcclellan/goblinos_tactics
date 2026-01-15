@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -30,6 +31,11 @@ public sealed class MoveRangeService
     // Public Methods
     // ---------------------------------------------------------------------
 
+    public bool CanMoveTo(BattleUnit unit, Vector2I cell)
+    {
+        throw new NotImplementedException();
+    }
+    
     /// <summary>
     /// Returns a cached movement preview when available, otherwise computes and caches it.
     /// </summary>
@@ -152,12 +158,4 @@ public sealed class MoveRangeService
             StartCell = startCell
         };
     }
-}
-
-public sealed class MovementPreviewResults
-{
-    public required IReadOnlySet<Vector2I> Cells { get; init; }
-    public required IReadOnlyDictionary<Vector2I, int> CostByCell { get; init; }
-    public required IReadOnlyDictionary<Vector2I, Vector2I> ParentCells { get; init; }
-    public required Vector2I StartCell { get; init; }
 }

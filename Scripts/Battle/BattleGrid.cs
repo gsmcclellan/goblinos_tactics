@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -348,7 +349,7 @@ public partial class BattleGrid : Node2D
         if (renderedCells.Count == 0)
             _actionPreviewLayer.Visible = false; // hide empty overlay
         
-        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", LogSeverity.Extra, LogCategory.BattleState);
     }
 }
 

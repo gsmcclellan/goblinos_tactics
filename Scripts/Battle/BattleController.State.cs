@@ -117,6 +117,7 @@ public partial class BattleController
 
     private void EnterPrimaryActionTargetMode(PrimaryActionType action)
     {
+        _logger.Log("EnterPrimaryActionTargetMode", LogSeverity.Info, LogCategory.BattleState);
         if (!DebugUtil.Require(_unitActivation != null,
                 "Cannot Enter PrimaryActionTarget mode, no UnitActivationContext"))
             return;
@@ -166,7 +167,7 @@ public partial class BattleController
                 "Hovered unit does not match UnitRegistry record for unit at cell."))
             return;
         
-        _logger.Log($"GeneratePreviewForHoveredCell cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.GetMovementPreview(cell, unit.Movement);
         var attackPreview = _attackRangeService.BuildAttackThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
@@ -193,6 +194,7 @@ public partial class BattleController
 
     private void GeneratePrimaryActionTargetPreviewForActiveUnit()
     {
+        _logger.Log("EnterPrimaryActionTargetMode", LogSeverity.Info, LogCategory.BattleState);
         if (!DebugUtil.Require(_unitActivation != null,
                 "Unable to generate PrimaryActionTarget preview, no UnitActivationContext"))
             return;

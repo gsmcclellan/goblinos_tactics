@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -42,6 +43,7 @@ public partial class SelectionController : Node
     private BattleUnit? _selectedUnit;
 
     /** Properties */
+    public CellFocus Focus => new CellFocus(_hoveredCell, _hoveredTerrain, _hoveredUnit);
     public Vector2I HoveredCell => _hoveredCell;
     public BattleUnit? HoveredUnit => _hoveredUnit;
 
@@ -65,7 +67,6 @@ public partial class SelectionController : Node
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
-
 
     public override void _Ready()
     {
@@ -117,13 +118,25 @@ public partial class SelectionController : Node
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public void SelectCell(Vector2I cell)
+    public CellFocus GetFocus(Vector2I cell)
+    {
+        _grid.TryGetTerrainAtCell(cell, out var terrain);
+        _unitRegistry.TryGetUnitAtCell(cell, out var unit);
+        return new CellFocus(cell, terrain, unit);
+    }
+    public void SelectCell(Vector2I cell, out Node? selectedNode)
     {
         if (_unitRegistry.TryGetUnitAtCell(cell, out var unit))
         {
             SelectUnit(unit);
+            selectedNode = unit;
+            return;
         }
+
+        selectedNode = null;
     }
+
+    public void SelectCell(Vector2I cell) => SelectCell(cell, out _);
     
     public void SelectUnit(BattleUnit unit)
     {
