@@ -23,9 +23,11 @@ namespace Goblinos.Scripts.UI.Battle
         /** Components */
         [Export] private NodePath _panelsRootPath;
         [Export] private NodePath _primaryActionSelectPath;
+        [Export] private NodePath _primaryActionConfirmPath;
 
         private BattleController _battleController;
         private Node _panelsRoot;
+        private PrimaryActionConfirm _primaryActionConfirm;
         private PrimaryActionSelect _primaryActionSelect;
         private SelectionController _selectionController;
         
@@ -57,10 +59,13 @@ namespace Goblinos.Scripts.UI.Battle
         public override void _Ready()
         {
             _panelsRoot = GetNode(_panelsRootPath);
+            _primaryActionConfirm = GetNode<PrimaryActionConfirm>(_primaryActionConfirmPath);
             _primaryActionSelect = GetNode<PrimaryActionSelect>(_primaryActionSelectPath);
             DebugUtil.Require(_panelsRoot != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
+            DebugUtil.Require(_primaryActionConfirm != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
             DebugUtil.Require(_primaryActionSelect != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
-
+            
+            HidePrimaryActionConfirm();
             HidePrimaryActionSelectMenu();
             
             CachePanels();
@@ -123,11 +128,23 @@ namespace Goblinos.Scripts.UI.Battle
         // Public Methods
         // ---------------------------------------------------------------------
 
+        public void HidePrimaryActionConfirm()
+        {
+            _primaryActionConfirm.Visible = false;
+        }
+        
         public void HidePrimaryActionSelectMenu()
         {
             _primaryActionSelect.Visible = false;
             _primaryActionSelect.ReleaseFocus();
         }
+
+        public void ShowPrimaryActionConfirm()
+        {
+            _primaryActionConfirm.Visible = true;
+            _primaryActionConfirm.Message = _battleController.UnitActivation?.PrimaryAction.ToString();
+        }
+        
         public void ShowPrimaryActionSelectMenu()
         {
             _primaryActionSelect.Visible = true;
@@ -144,7 +161,7 @@ namespace Goblinos.Scripts.UI.Battle
         private void OnHoveredTerrainChanged(TerrainType? terrain)
         {
             _logger.Log("OnHoveredTerrainChanged", LogSeverity.Trace, LogCategory.UiNavigation);
-            foreach (IBattleHudPanel panel in _panels)
+            foreach (var panel in _panels)
                 panel.OnHoveredTerrainChanged(terrain);
         }
 
@@ -154,7 +171,7 @@ namespace Goblinos.Scripts.UI.Battle
             if (selectedUnit != null && selectedUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
 
-            foreach (IBattleHudPanel panel in _panels)
+            foreach (var panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
         }
 

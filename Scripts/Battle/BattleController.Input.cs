@@ -30,7 +30,7 @@ public partial class BattleController: IInputHandler
     public InputDeviceMode InputDeviceMode = GlobalSettings.DefaultInputMode;
     
 
-    private BattleUnit? ActiveMover => _unitActivation?.Unit;
+    private BattleUnit? ActiveMover => UnitActivation?.Unit;
     
     private void _Ready_Input()
     {
@@ -86,7 +86,7 @@ public partial class BattleController: IInputHandler
         }
 
         // Accept / cancel actions
-        if (e.IsActionPressed("ui_accept")) { return HandleAcceptAtFocusedCell(); }
+        if (e.IsActionPressed("ui_accept")) { return HandleAcceptAtFocusedCell(e); }
         if (e.IsActionPressed("ui_cancel"))  { return HandleCancel(e); }
 
         // Mouse - Click
@@ -95,7 +95,7 @@ public partial class BattleController: IInputHandler
             if (mbe.ButtonIndex == MouseButton.Left && mbe.Pressed)
             {
                 _cursor.TryMoveToGlobalPosition(mbe.GlobalPosition);
-                return HandleAcceptAtFocusedCell();
+                return HandleAcceptAtFocusedCell(e);
             }
             if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
                 return HandleCancel(e);
@@ -120,7 +120,7 @@ public partial class BattleController: IInputHandler
     /// <summary>
     /// Routes a confirm/click intent based on the current battle input state.
     /// </summary>
-    private bool HandleAcceptAtFocusedCell()
+    private bool HandleAcceptAtFocusedCell(InputEvent e)
     {
         _logger.Log("HandleAcceptAtFocusedCell", LogSeverity.Trace, LogCategory.Input);
 
@@ -136,6 +136,8 @@ public partial class BattleController: IInputHandler
                 return HandleAccept_MoveTargeting(focus);
             case BattleInputState.PrimaryActionSelect:
                 return HandleAccept_PrimaryActionSelect(focus);
+            case BattleInputState.PrimaryActionTargeting:
+                return HandleAccept_PrimaryActionTargeting(focus);
             case BattleInputState.PrimaryActionConfirm:
                 return HandleAccept_PrimaryActionConfirm(focus);
 
@@ -168,18 +170,18 @@ public partial class BattleController: IInputHandler
     {
         _logger.Log("HandleAccept_MoveTargeting", LogSeverity.Trace, LogCategory.Input);
 
-        if (!DebugUtil.Require(_unitActivation != null,
+        if (!DebugUtil.Require(UnitActivation != null,
                 "[BattleController.Input].HandleAccept_MoveTargeting - No UnitActivationContext") ||
             !DebugUtil.Require(ActiveMover != null,
                 "[BattleController.Input].HandleAccept_MoveTargeting - No ActiveMover"))
         {
-            ExitTargetingMode();
+            AbortActivationToFreeSelect();
             return true;
         }
 
-        if (cellFocus.Cell == _unitActivation.OriginCell)
+        if (cellFocus.Cell == UnitActivation.OriginCell)
         {
-            EnterPrimaryActionSelectMode(ActiveMover);
+            EnterPrimaryActionSelectMode();
             return true;
         }
 
@@ -194,8 +196,8 @@ public partial class BattleController: IInputHandler
 
         if (_movementController.TryMoveToCell(ActiveMover, cellFocus.Cell))
         {
-            _unitActivation.SetMoveTargetCell(cellFocus.Cell);
-            EnterPrimaryActionSelectMode(ActiveMover);
+            UnitActivation.SetMoveTargetCell(cellFocus.Cell);
+            EnterPrimaryActionSelectMode();
             return true;
         }
         
@@ -217,9 +219,37 @@ public partial class BattleController: IInputHandler
         return true;
     }
 
+    private bool HandleAccept_PrimaryActionTargeting(CellFocus cellFocus)
+    {
+        if (!DebugUtil.Require(UnitActivation != null,
+                $"[{nameof(BattleController)}].{nameof(HandleAccept_PrimaryActionTargeting)} - No {nameof(UnitActivationContext)}"))
+        {
+            AbortActivationToFreeSelect();
+            return true;
+        }
+        
+        if (_primaryActionTargetingService.IsValidTarget(UnitActivation, cellFocus))
+        {
+            _unitRegistry.TryGetUnitAtCell(cellFocus.Cell, out var target);
+            UnitActivation.SetPrimaryActionTarget(cellFocus.Cell, target);
+            EnterPrimaryActionConfirmation();
+        }
+
+        return true;
+    }
+
     private bool HandleAccept_PrimaryActionConfirm(CellFocus cellFocus)
     {
-        throw new NotImplementedException();
+        if (!DebugUtil.Require(UnitActivation != null,
+                $"[{nameof(BattleController)}].{nameof(HandleAccept_PrimaryActionConfirm)} - No {nameof(UnitActivationContext)}"))
+        {
+            AbortActivationToFreeSelect();
+            return true;
+        }
+        
+        // TODO - if click target or press enter (or controller confirm button) resolve, else Exit.
+        
+        ResolveUnitActions();
         return true;
     }
     
@@ -232,19 +262,16 @@ public partial class BattleController: IInputHandler
                 return true;
             case BattleInputState.MoveTargeting:
             case BattleInputState.PrimaryActionSelect:
-                TryUndoMove();
-                ExitTargetingMode();
+                AbortActivationToFreeSelect();
                 return true;
             case BattleInputState.PrimaryActionTargeting:
-                TryUndoMove();
-                ExitTargetingMode();
+                AbortActivationToFreeSelect();
                 return true;
             case BattleInputState.PrimaryActionConfirm:
-                TryUndoMove();
-                ExitTargetingMode();
+                AbortActivationToFreeSelect();
                 return true;
             default:
-                ExitTargetingMode();
+                AbortActivationToFreeSelect();
                 return true;
         }
     }

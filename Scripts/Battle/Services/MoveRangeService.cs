@@ -5,7 +5,7 @@ using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Services;
 
 public sealed class MoveRangeService
 {

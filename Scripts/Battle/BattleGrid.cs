@@ -34,7 +34,7 @@ public partial class BattleGrid : Node2D
     
     // Preview Data
     private MovementPreviewResults? _movementPreview;
-    private HashSet<Vector2I>? _attackPreview;
+    private (IReadOnlySet<Vector2I> Cells, int TileType)? _actionPreview;
     // private HashSet<Vector2I> _interactCells = new();
     private static readonly HashSet<Vector2I> EmptyCells = new();
     
@@ -135,7 +135,7 @@ public partial class BattleGrid : Node2D
     public void ClearPreviews()
     {
         _movementPreview = null;
-        _attackPreview = null;
+        _actionPreview = null;
         ClearOverlays();
     }
     
@@ -216,16 +216,24 @@ public partial class BattleGrid : Node2D
         RedrawOverlay();
     }
 
-    public void SetAttackPreview(HashSet<Vector2I> preview)
+    public void SetActionPreview(IReadOnlySet<Vector2I> preview, PrimaryActionType actionType)
     {
-        _attackPreview = preview;
+        _movementPreview = null;
+        _actionPreview = (preview, (int)PrimaryActionTypeToOverlayType(actionType));
+        RedrawOverlay();
+    }
+    
+    public void SetAttackPreview(IReadOnlySet<Vector2I> preview)
+    {
+        _movementPreview = null;
+        _actionPreview = (preview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
     }
 
     public void SetPreviews(MovementPreviewResults movePreview, HashSet<Vector2I> attackPreview)
     {
         _movementPreview = movePreview;
-        _attackPreview = attackPreview;
+        _actionPreview = (attackPreview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
     }
 
@@ -248,8 +256,6 @@ public partial class BattleGrid : Node2D
         return true;
     }
     
-    
-    
     // ---------------------------------------------------------------------
     // Private Methods
     // ---------------------------------------------------------------------
@@ -263,29 +269,7 @@ public partial class BattleGrid : Node2D
         _terrainAtCellCache[cell] = terrain;
         return terrain;
     }
-    
-    //
-    //
-    // public void DisplayMovementPreview(MovementPreviewResults movementPreview)
-    // {
-    //     _actionPreviewLayer.Visible = true;
-    //     _actionPreviewLayer.Clear();
-    //
-    //     const int sourceId = GridNavigationUtil.ActionOverlayTilesAtlasId;
-    //     var atlasCoords = OverlayTypeToVector2I(ActionOverlayType.Movement);
-    //     
-    //     // TODO - paint all cells blue
-    //     foreach (var cell in movementPreview.CostByCell.Keys)
-    //     {
-    //         _actionPreviewLayer.SetCell(cell, sourceId, atlasCoords);
-    //     }
-    // }
 
-    
-    
-    
-    
-    
     /// <summary>
     /// Returns first TerrainType from file in directory
     /// </summary>
@@ -296,9 +280,29 @@ public partial class BattleGrid : Node2D
         return null;
     }
 
-    private Vector2I OverlayTypeToVector2I(ActionOverlayType t)
+    private static Vector2I OverlayTypeToVector2I(ActionOverlayType t)
     {
         return new Vector2I((int)t, 0);
+    }
+
+    private static ActionOverlayType PrimaryActionTypeToOverlayType(PrimaryActionType actionType)
+    {
+        switch (actionType)
+        {
+            case PrimaryActionType.Attack:
+                return ActionOverlayType.Attack;
+            case PrimaryActionType.Ability:
+                // TODO - depends on type.
+                return ActionOverlayType.Attack;
+            case PrimaryActionType.Item:
+                return ActionOverlayType.Interact;
+            case PrimaryActionType.Trade:
+                return ActionOverlayType.Interact;
+            case PrimaryActionType.Wait:
+            case PrimaryActionType.None:
+            default:
+                return ActionOverlayType.Attack;
+        }
     }
 
     private void RedrawOverlay()
@@ -313,7 +317,7 @@ public partial class BattleGrid : Node2D
         _actionPreviewLayer.Visible = true;
         
         var moveCells = _movementPreview?.Cells ?? EmptyCells;
-        var attackCells = _attackPreview ?? EmptyCells;
+        var (attackCells, actionTileType) = _actionPreview ?? (EmptyCells, 1);
         
         // Movement takes priority - cell legal for move & attack show as movement
         var attackOnly = new HashSet<Vector2I>(attackCells);
@@ -335,7 +339,7 @@ public partial class BattleGrid : Node2D
             if (moveCells.Contains(cell))
                 overlayType = ActionOverlayType.Movement;
             else if (attackOnly.Contains(cell))
-                overlayType = ActionOverlayType.Attack;
+                overlayType = (ActionOverlayType)actionTileType;
             else
             {
                 _logger.Warn($"Redraw Overlay - Unknown type for cell={cell}");

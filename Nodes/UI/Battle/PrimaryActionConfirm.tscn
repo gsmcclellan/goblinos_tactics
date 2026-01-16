@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3 uid="uid://dr6d1tddeftk2"]
+
+[ext_resource type="Script" uid="uid://dsjuqvu241b1d" path="res://Scripts/UI/Battle/PrimaryActionConfirm.cs" id="1_tyjm8"]
+
+[node name="PrimaryActionConfirmation" type="Control" node_paths=PackedStringArray("_label")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_tyjm8")
+_label = NodePath("PrimaryActionConfirmationPanel/PrimaryActionConfirmationLabel")
+
+[node name="PrimaryActionConfirmationPanel" type="Panel" parent="."]
+offset_left = 953.0
+offset_top = 167.0
+offset_right = 1153.0
+offset_bottom = 267.0
+
+[node name="PrimaryActionConfirmationLabel" type="Label" parent="PrimaryActionConfirmationPanel"]
+layout_mode = 0
+offset_right = 200.0
+offset_bottom = 100.0
+text = "Attack the unit.Attack the unit.Attack the unit.Attack the unit.Attack the unit.Attack the unit."
+autowrap_mode = 3
+clip_text = true

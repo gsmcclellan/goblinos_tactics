@@ -94,8 +94,7 @@ public partial class BattleController
     {
         var action = (PrimaryActionType)actionIndex;
         _logger.Log($"OnPrimaryActionFocused - action={action}", LogSeverity.Info, LogCategory.Signal);
-        
-        // TODO - check based on type if requires target - update target preview
+        DisplayPrimaryActionPreview((PrimaryActionType)actionIndex);
     }
 
     private void OnPrimaryActionSelected(int actionIndex)
