@@ -76,12 +76,40 @@ public class PrimaryActionTargetingService
         return targetableCells;
     }
 
+    public bool IsValidTarget(Vector2I originCell, Vector2I targetCell, BattleUnit actingUnit, PrimaryActionType actionType)
+    {
+        RangeBand range = GetRange(actingUnit, actionType);
+        var inRangeCells = _targetRangeService.BuildTargetRangeFromCell(originCell, range);
+        // Check range.
+
+        var inRange = inRangeCells.Contains(targetCell);
+        var isValidTarget = IsValidTargetNoRangeCheck(targetCell, actingUnit, actionType);
+        
+        _logger.Log($"{nameof(IsValidTarget)} originCell={originCell}, targetCell={targetCell}, actingUnit={actingUnit.UnitName}, " +
+                    $"actionType={actionType}, inRange={inRange}, isValidTarget={isValidTarget}", LogSeverity.Info, LogCategory.UiNavigation);
+        return inRange && isValidTarget;
+    }
+
+    /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>
+    public bool IsValidTarget(UnitActivationContext unitActivation, Vector2I targetCell)
+    {
+        if (!DebugUtil.Require(unitActivation != null,
+                $"[{nameof(PrimaryActionTargetingService)}].{nameof(IsValidTarget)} - Missing UnitActivationContext"))
+            return false;
+        
+        return IsValidTarget(unitActivation.MoveTargetCell ?? unitActivation.OriginCell, targetCell, unitActivation.Unit, unitActivation.PrimaryAction);
+    }
+    
+    /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>
+    public bool IsValidTarget(UnitActivationContext unitActivation, CellFocus focus) =>
+        IsValidTarget(unitActivation, focus.Cell);
+    
     /// <summary>
     /// Determines if target cell is valid given acting unit & action type. Does not check for range.
     /// </summary>
-    public bool IsValidTarget(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType)
+    private bool IsValidTargetNoRangeCheck(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType)
     {
-        _logger.Log($"{nameof(IsValidTarget)} cell={cell} actionType={actionType}", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log($"{nameof(IsValidTargetNoRangeCheck)} cell={cell} actionType={actionType}", LogSeverity.Extra, LogCategory.Input);
         
         bool requiresUnit;
         bool mustBeEnemies;
@@ -109,20 +137,6 @@ public class PrimaryActionTargetingService
     }
 
     /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>
-    public bool IsValidTarget(UnitActivationContext unitActivation, Vector2I cell)
-    {
-        if (!DebugUtil.Require(unitActivation != null,
-                $"[{nameof(PrimaryActionTargetingService)}].{nameof(IsValidTarget)} - Missing UnitActivationContext"))
-            return false;
-        
-        return IsValidTarget(cell, unitActivation.Unit, unitActivation.PrimaryAction);
-    }
-    
-    /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>
-    public bool IsValidTarget(UnitActivationContext unitActivation, CellFocus focus) =>
-        IsValidTarget(unitActivation, focus.Cell);
-
-    /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>
     public IReadOnlySet<Vector2I> GetValidTargets(UnitActivationContext unitActivation) => 
         GetValidTargets(unitActivation.MoveTargetCell ?? unitActivation.OriginCell, unitActivation.Unit, unitActivation.PrimaryAction);
     
@@ -131,7 +145,7 @@ public class PrimaryActionTargetingService
     // ---------------------------------------------------------------------
     private void AddIfValidTarget(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType, HashSet<Vector2I> output)
     {
-        if (IsValidTarget(cell, actingUnit, actionType))
+        if (IsValidTargetNoRangeCheck(cell, actingUnit, actionType))
             output.Add(cell);
     }
 

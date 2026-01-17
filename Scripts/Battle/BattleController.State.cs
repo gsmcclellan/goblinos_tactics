@@ -78,6 +78,7 @@ public partial class BattleController
 
     private void ClearActivationAndUi()
     {
+        _selectionController.TriggerClearSelection();
         ClearUnitActivation();
         ClearPreviews();
         _hud.HidePrimaryActionSelectMenu();
@@ -119,6 +120,7 @@ public partial class BattleController
     private void EnterFreeSelectMode()
     {
         InputState = BattleInputState.FreeSelect;
+        GenerateHoverPreview();
     }
 
     private void EnterMoveTargetingMode(BattleUnit unit)

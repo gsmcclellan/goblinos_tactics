@@ -13,7 +13,7 @@ public partial class GridCursor : Node2D
     
     /** Signals */
     [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(Vector2I newCell, Vector2I oldCell); // TODO - move unit, terrain to SelectionController. Cursor only emits cell
+    public delegate void GridCursorFocusChangedEventHandler(Vector2I newCell, Vector2I oldCell);
 
     /** Events */
 

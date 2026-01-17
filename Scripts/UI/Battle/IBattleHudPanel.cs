@@ -10,8 +10,8 @@ namespace Goblinos.Scripts.UI.Battle
     /// </summary>
     public interface IBattleHudPanel
     {
+        void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell);
         void OnHoveredTerrainChanged(TerrainType? terrain);
-
         void OnSelectedUnitChanged(BattleUnit? selectedUnit);
     }
 }

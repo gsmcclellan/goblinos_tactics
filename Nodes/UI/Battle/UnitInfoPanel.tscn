@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://btuxwrm08l1n2"]
+
+[ext_resource type="Script" uid="uid://cbavhww3u7de0" path="res://Scripts/UI/Battle/UnitInfoPanel.cs" id="1_5tlod"]
+
+[sub_resource type="Theme" id="Theme_oq75t"]
+default_font_size = 12
+
+[node name="UnitInfo" type="Panel"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1152.0
+offset_top = -128.0
+offset_right = -952.0
+offset_bottom = -3.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_oq75t")
+script = ExtResource("1_5tlod")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="LeftColumn" type="Control" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+
+[node name="VboxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+offset_left = 4.0
+offset_right = 84.0
+offset_bottom = 131.0
+
+[node name="UnitNameLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Name:"
+
+[node name="Separator" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+
+[node name="HitPointsLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Def:"
+
+[node name="PowerLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+layout_mode = 2
+text = "Pow:"
+
+[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="UnitName" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "Goblino"
+
+[node name="Separator" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+
+[node name="hitPoints" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "20 / 20 hp"
+
+[node name="Power" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "10"

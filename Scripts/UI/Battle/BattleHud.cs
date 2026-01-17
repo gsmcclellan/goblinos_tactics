@@ -26,6 +26,7 @@ namespace Goblinos.Scripts.UI.Battle
         [Export] private NodePath _primaryActionConfirmPath;
 
         private BattleController _battleController;
+        private GridCursor _cursor;
         private Node _panelsRoot;
         private PrimaryActionConfirm _primaryActionConfirm;
         private PrimaryActionSelect _primaryActionSelect;
@@ -42,15 +43,19 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         // Lifecycle / Setup Methods
         // ---------------------------------------------------------------------
-        public void Bind(SelectionController selectionController, BattleController battleController)
+        public void Bind(SelectionController selectionController, BattleController battleController, GridCursor cursor)
         {
             _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
             
-            _selectionController = selectionController;
-            _battleController = battleController;
             
-            if (!DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding") ||
-                !DebugUtil.Require(_battleController != null, "[BattleHud] requires BattleController binding") )
+            _battleController = battleController;
+            _cursor = cursor;
+            _selectionController = selectionController;
+            
+            if (!DebugUtil.Require(_battleController != null, "[BattleHud] requires BattleController binding") ||
+                !DebugUtil.Require(_cursor != null, "[BattleHud] requires GridCursor binding") ||
+                !DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding")
+               )
                 return;
             
             _SubscribeToEvents();
@@ -83,26 +88,32 @@ namespace Goblinos.Scripts.UI.Battle
         {
             _logger.Log("ConnectSignals", LogSeverity.Info, LogCategory.Initialization);
 
+            _battleController.InputStateChanged += OnBattleControllerInputStateChanged;
+
+            _cursor.GridCursorFocusChanged += OnHoveredCellChanged;
+            
             _primaryActionSelect.ActionFocused += OnPrimaryActionFocused;
             _primaryActionSelect.ActionSelected += OnPrimaryActionSelected;
             
             _selectionController.HoveredTerrainChanged += OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
 
-            _battleController.InputStateChanged += OnBattleControllerInputStateChanged;
+            
         }
 
         private void _UnsubscribeFromEvents()
         {
             _logger.Log("DisconnectSignals", LogSeverity.Info, LogCategory.Exit);
             
+            _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
+            
+            _cursor.GridCursorFocusChanged -= OnHoveredCellChanged;
+            
             _primaryActionSelect.ActionFocused -= OnPrimaryActionFocused;
             _primaryActionSelect.ActionSelected -= OnPrimaryActionSelected;
 
             _selectionController.HoveredTerrainChanged -= OnHoveredTerrainChanged;
             _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
-            
-            _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
         }
 
         private void CachePanels()
@@ -158,6 +169,13 @@ namespace Goblinos.Scripts.UI.Battle
         // Signal / Event Callbacks
         // ---------------------------------------------------------------------
 
+        private void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
+        {
+            _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+            foreach (var panel in _panels)
+                panel.OnHoveredCellChanged(newCell, oldCell);
+        }
+        
         private void OnHoveredTerrainChanged(TerrainType? terrain)
         {
             _logger.Log("OnHoveredTerrainChanged", LogSeverity.Trace, LogCategory.UiNavigation);

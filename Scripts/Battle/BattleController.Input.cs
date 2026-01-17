@@ -194,6 +194,12 @@ public partial class BattleController: IInputHandler
             return true;
         }
 
+        if (!_moveRangeService.CanMoveTo(ActiveMover, UnitActivation.OriginCell, cellFocus.Cell))
+        {
+            AbortActivationToFreeSelect();
+            return true;
+        }
+
         if (_movementController.TryMoveToCell(ActiveMover, cellFocus.Cell))
         {
             UnitActivation.SetMoveTargetCell(cellFocus.Cell);
@@ -234,6 +240,8 @@ public partial class BattleController: IInputHandler
             UnitActivation.SetPrimaryActionTarget(cellFocus.Cell, target);
             EnterPrimaryActionConfirmation();
         }
+        else
+            AbortActivationToFreeSelect();
 
         return true;
     }

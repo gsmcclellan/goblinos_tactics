@@ -92,7 +92,7 @@ public partial class BattleController : Node
 
         // Non-Node Components
         _targetRangeService = new TargetRangeService(_grid);
-        _moveRangeService = new MoveRangeService(_grid);
+        _moveRangeService = new MoveRangeService(_grid, _unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);
 
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
@@ -102,7 +102,7 @@ public partial class BattleController : Node
     {
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
-        _hud.Bind(_selectionController, this);
+        _hud.Bind(_selectionController, this, _cursor);
     }
 
     public override void _Process(double delta)

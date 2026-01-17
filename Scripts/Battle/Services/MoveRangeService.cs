@@ -12,6 +12,7 @@ public sealed class MoveRangeService
     private readonly Logger _logger = LogManager.For<MoveRangeService>();
     
     private readonly BattleGrid _grid;
+    private readonly UnitRegistry _unitRegistry;
 
     private int _gridRevision;
 
@@ -22,18 +23,39 @@ public sealed class MoveRangeService
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
     
-    public MoveRangeService(BattleGrid grid)
+    public MoveRangeService(BattleGrid grid, UnitRegistry unitRegistry)
     {
         _grid = grid;
+        _unitRegistry = unitRegistry;
     }
     
     // ---------------------------------------------------------------------
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public bool CanMoveTo(BattleUnit unit, Vector2I cell)
+    public bool CanMoveTo(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
-        throw new NotImplementedException();
+        _logger.Log($"CanMoveTo unit={unit.Name} from={fromCell} to={toCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+        
+        // Destination must exist and be walkable.
+        if (!_grid.TryGetTerrainAtCell(toCell, out var destinationTerrain))
+            return false;
+        
+        if (destinationTerrain.BlocksMovement)
+            return false;
+
+        // Do not allow ending movement on another unit.
+        // (Adjust this if you want to allow ending on allies for swap/stack/etc.)
+        if (_unitRegistry.TryGetUnitAtCell(toCell, out var occupyingUnit) && occupyingUnit != unit)
+            return false;
+        
+        // Use the cached movement preview to answer reachability.
+        var movePoints = unit.Movement;
+        if (movePoints <= 0)
+            return false;
+        
+        var preview = GetMovementPreview(fromCell, movePoints);
+        return preview.Cells.Contains(toCell);
     }
     
     /// <summary>

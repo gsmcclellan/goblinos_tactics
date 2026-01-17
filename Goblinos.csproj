@@ -7,6 +7,7 @@
     <Folder Include="Scripts\Data\" />
     <Folder Include="Scripts\Overworld\" />
     <Folder Include="Scripts\UI\Menus\" />
+    <Folder Include="Scripts\Units\Types\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="BATTLE_INPUT_FLOW.md" />

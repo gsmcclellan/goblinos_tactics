@@ -10,6 +10,8 @@ using Goblinos.Scripts.Util;
 
 public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 {
+    private readonly Logger _logger = LogManager.For<TerrainInfoPanel>();
+    
     [ExportGroup("Label Nodes")]
     [Export] public Label TerrainNameLabel;
     [Export] public Label TerrainDescriptionLabel;
@@ -39,6 +41,10 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
             UpdateTerrainLabels();
         }
     }
+    
+    // ---------------------------------------------------------------------
+    // Lifecycle / Init Callbacks
+    // ---------------------------------------------------------------------
 
     public override void _Ready()
     {
@@ -48,7 +54,18 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(DefenseBonusLabel != null, "[TerrainInfoPanel].  Not Initialized. DefenseBonusLabel is required.");
         Debug.Assert(MovementCostLabel != null, "[TerrainInfoPanel].  Not Initialized. MovementCostLabel is required.");
     }
+    
+    // ---------------------------------------------------------------------
+    // Signal / Event Callbacks
+    // ---------------------------------------------------------------------
 
+    public void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
+    {
+        _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _cell = newCell;
+        UpdateCellLabels();
+    }
+    
     public void OnHoveredTerrainChanged(TerrainType terrain)
     {
         _terrain = terrain;
@@ -78,4 +95,6 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
         DefenseBonusLabel.Text = _terrain?.DefenseBonus.ToString() ?? "";
         MovementCostLabel.Text = _terrain?.MoveCost.ToString(CultureInfo.CurrentCulture) ?? "";
     }
+    
+    
 }
