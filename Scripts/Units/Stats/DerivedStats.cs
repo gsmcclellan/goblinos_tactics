@@ -16,19 +16,9 @@ public sealed class DerivedStats
     public int ArmorPierce { get; }
     public int MagicPenetration { get; }
     
-    // consider adding these later with more systems 
-    // public int StunResist { get; }
-    // public int PoisonResist { get; }
-    // public int BleedResist { get; }
-    // public int FireResist { get; }
-    // public int LightningResist { get; }
-    // public int FrostResist { get; }
-
-    // public DerivedStats(
-    //     StatBlock baseStats,
-    //     IEnumerable<IReadonlyStatModifier> modifiers,
-    //     StatCaps caps)
-    // {
-    //     
-    // }
+    public DerivedStats(
+        /* inputs: final core/base stats + weapon + context + modifiers */)
+    {
+        // compute once
+    }
 }

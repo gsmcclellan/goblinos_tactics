@@ -1,3 +1,4 @@
+#nullable enable
 using Godot;
 using System;
 using System.Diagnostics;
@@ -20,7 +21,7 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
     [Export] public Label MovementCostLabel;
 
     private Vector2I _cell;
-    private TerrainType _terrain;
+    private TerrainType? _terrain;
 
     public Vector2I Cell
     {
@@ -66,15 +67,15 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
         UpdateCellLabels();
     }
     
-    public void OnHoveredTerrainChanged(TerrainType terrain)
+    public void OnHoveredTerrainChanged(TerrainType? terrain)
     {
         _terrain = terrain;
         UpdateTerrainLabels();
     }
 
-    public void OnSelectedUnitChanged(Goblinos.Scripts.Battle.BattleUnit selectedUnit)
+    public void OnSelectedUnitChanged(BattleUnit? selectedUnit)
     {
-        LogManager.Log("[TerrainInfoPanel] OnSelectedUnitChange - Unused", LogSeverity.Trace, LogCategory.Signal);
+        // Intentionally unused for this panel.
     }
 
     private void UpdateLabels()
@@ -82,6 +83,10 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
         UpdateCellLabels();
         UpdateTerrainLabels();
     }
+    
+    // ---------------------------------------------------------------------
+    // Label Update Methods
+    // ---------------------------------------------------------------------
 
     private void UpdateCellLabels()
     {

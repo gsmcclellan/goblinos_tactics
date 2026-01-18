@@ -25,7 +25,7 @@ public partial class PrimaryActionSelect : Control
 
     private Button? hoveredButton;
     private Button? selectedButton;
-
+    
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
@@ -57,6 +57,23 @@ public partial class PrimaryActionSelect : Control
     // Public Methods
     // ---------------------------------------------------------------------
 
+    /// <summary>
+    /// Enables or disables the specified action button.
+    /// Disabled actions cannot be focused or pressed.
+    /// </summary>
+    public void SetActionEnabled(PrimaryActionType actionType, bool isEnabled)
+    {
+        _logger.Log($"{nameof(SetActionEnabled)} action={actionType} isEnabled={isEnabled}", LogSeverity.Trace, LogCategory.UiNavigation);
+
+        if (!_buttons.TryGetValue(actionType, out var button))
+            return;
+
+        button.Disabled = !isEnabled;
+
+        if (!isEnabled && button.HasFocus())
+            ReleaseFocus();
+    }
+
     public bool TryGetButton(PrimaryActionType action, out Button button)
     {
         return _buttons.TryGetValue(action, out button);
@@ -69,6 +86,30 @@ public partial class PrimaryActionSelect : Control
         button.GrabFocus();
         return true;
     }
+    
+    /// <summary>
+    /// Focuses the first enabled action from the provided priority order.
+    /// Returns false if none are enabled.
+    /// </summary>
+    public bool TryFocusFirstEnabled(IEnumerable<PrimaryActionType> priorityOrder)
+    {
+        _logger.Log($"{nameof(TryFocusFirstEnabled)}", LogSeverity.Trace, LogCategory.UiNavigation);
+
+        foreach (var action in priorityOrder)
+        {
+            if (!_buttons.TryGetValue(action, out var button))
+                continue;
+
+            if (button.Disabled)
+                continue;
+
+            button.GrabFocus();
+            return true;
+        }
+
+        return false;
+    }
+    public bool TryFocusFirstEnabled() => TryFocusFirstEnabled(PrimaryActionInfo.PrimaryActionOrder);
     
     // ---------------------------------------------------------------------
     // Event Callbacks / Handlers

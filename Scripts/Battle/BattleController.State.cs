@@ -13,7 +13,6 @@ public partial class BattleController
     /** Fields */
     private BattleInputState _inputState = BattleInputState.FreeSelect;
     
-
     private PrimaryActionPreviewResults? _primaryActionPreviews;
     
     /** Properties */
@@ -165,9 +164,8 @@ public partial class BattleController
         
         HideCursor();
         GeneratePrimaryActionTargetPreviewForActiveUnit();
-        _hud.ShowPrimaryActionSelectMenu();
+        _hud.ShowPrimaryActionSelectMenu(_primaryActionPreviews);
         
-        // TODO - create primary action target previews. Add to Activation Context.
         InputState = BattleInputState.PrimaryActionSelect;
     }
 

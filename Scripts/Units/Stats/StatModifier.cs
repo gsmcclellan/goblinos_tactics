@@ -10,7 +10,7 @@ public sealed class StatModifier
     public int Value { get; }
     public StatModifierExpiration ExpiresAt { get; }
 
-    public StatTier StatTier => StatNameInfo.GetTier(StatName);
+    public StatTier StatTier { get; }
     public StatModifierStage ModifierStage { get; }
 
     public StatModifier(string sourceId, 
@@ -18,11 +18,15 @@ public sealed class StatModifier
         int value,
         StatModifierExpiration expiresAt)
     {
+        if (string.IsNullOrWhiteSpace(sourceId))
+            throw new ArgumentException("SourceId is required.", nameof(sourceId));
+        
         SourceId = sourceId;
         StatName = statName;
         Value = value;
         ExpiresAt = expiresAt;
         
+        StatTier = StatNameInfo.GetTier(statName);
         ModifierStage = StatNameInfo.GetTier(statName) switch
         {
             StatTier.Core or StatTier.Base => StatModifierStage.PreCompute,

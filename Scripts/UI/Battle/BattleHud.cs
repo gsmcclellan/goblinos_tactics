@@ -96,6 +96,7 @@ namespace Goblinos.Scripts.UI.Battle
             _primaryActionSelect.ActionSelected += OnPrimaryActionSelected;
             
             _selectionController.HoveredTerrainChanged += OnHoveredTerrainChanged;
+            _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
 
             
@@ -113,6 +114,7 @@ namespace Goblinos.Scripts.UI.Battle
             _primaryActionSelect.ActionSelected -= OnPrimaryActionSelected;
 
             _selectionController.HoveredTerrainChanged -= OnHoveredTerrainChanged;
+            _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
             _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
         }
 
@@ -156,13 +158,32 @@ namespace Goblinos.Scripts.UI.Battle
             _primaryActionConfirm.Message = _battleController.UnitActivation?.PrimaryAction.ToString();
         }
         
-        public void ShowPrimaryActionSelectMenu()
+        /// <summary>
+        /// Shows the primary action menu, disables actions with no valid targets, and focuses the first enabled action.
+        /// </summary>
+        public void ShowPrimaryActionSelectMenu(PrimaryActionPreviewResults? previews)
         {
             _primaryActionSelect.Visible = true;
             
+            // Disable actions that cannot currently target anything.
+            foreach (var actionType in PrimaryActionInfo.PrimaryActionOrder)
+            {
+                if (actionType == PrimaryActionType.None)
+                    continue;
+
+                var requiresTarget = PrimaryActionInfo.RequiresTarget(actionType);
+                var hasTargets = previews != null && previews.HasTargets(actionType);
+
+                // For now, allow Wait even if it has no targets (it is always valid).
+                if (actionType == PrimaryActionType.Wait)
+                    hasTargets = true;
+
+                _primaryActionSelect.SetActionEnabled(actionType, !requiresTarget || hasTargets);
+            }
+            
             // Pick a deterministic "top" action (don’t rely on enum order)
-            var firstAction = PrimaryActionType.Attack; // choose your default
-            _primaryActionSelect.TryFocus(firstAction);
+            if (!_primaryActionSelect.TryFocusFirstEnabled(PrimaryActionInfo.PrimaryActionOrder))
+                _primaryActionSelect.ReleaseFocus();
         }
         
         // ---------------------------------------------------------------------
@@ -181,6 +202,16 @@ namespace Goblinos.Scripts.UI.Battle
             _logger.Log("OnHoveredTerrainChanged", LogSeverity.Trace, LogCategory.UiNavigation);
             foreach (var panel in _panels)
                 panel.OnHoveredTerrainChanged(terrain);
+        }
+        
+        private void OnHoveredUnitChanged(Node? hoveredUnit)
+        {
+            _logger.Log("OnHoveredUnitChanged", LogSeverity.Trace, LogCategory.UiNavigation);
+            if (hoveredUnit != null && hoveredUnit is not BattleUnit)
+                throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
+            
+            foreach (var panel in _panels)
+                panel.OnHoveredUnitChanged(hoveredUnit as BattleUnit);
         }
 
         private void OnSelectedUnitChanged(Node? selectedUnit)

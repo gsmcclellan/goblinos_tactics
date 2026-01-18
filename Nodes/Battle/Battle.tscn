@@ -48,13 +48,16 @@ region_rect = Rect2(112, 0, 16, 16)
 
 [node name="Unit" parent="Units" instance=ExtResource("3_o62pt")]
 position = Vector2(16, 16)
+UnitName = "Gobbo"
 
 [node name="Unit2" parent="Units" instance=ExtResource("3_o62pt")]
 position = Vector2(143, 145)
+UnitName = "Gleebo"
 MaxAttackRange = 3
 
 [node name="Enemy" parent="Units" instance=ExtResource("3_o62pt")]
 position = Vector2(208, 177)
+UnitName = "Harf"
 IsFriendly = false
 
 [node name="Overlays" type="Node2D" parent="."]

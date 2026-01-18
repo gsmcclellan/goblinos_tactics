@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://0yqqd78jcaet"]
+[gd_scene load_steps=6 format=3 uid="uid://0yqqd78jcaet"]
 
 [ext_resource type="Script" uid="uid://b1v83afs0nq7i" path="res://Scripts/UI/Battle/BattleHud.cs" id="1_8w1vy"]
 [ext_resource type="PackedScene" uid="uid://ddrrh4301j2v6" path="res://Nodes/UI/Battle/TerrainInfoPanel.tscn" id="2_at2nw"]
+[ext_resource type="PackedScene" uid="uid://btuxwrm08l1n2" path="res://Nodes/UI/Battle/UnitInfoPanel.tscn" id="3_6em5t"]
 [ext_resource type="PackedScene" uid="uid://cixx1r5qwd8im" path="res://Nodes/UI/Battle/PrimaryActionSelect.tscn" id="3_rfvvm"]
 [ext_resource type="PackedScene" uid="uid://dr6d1tddeftk2" path="res://Nodes/UI/Battle/PrimaryActionConfirm.tscn" id="4_kr30i"]
 
@@ -22,6 +23,17 @@ mouse_filter = 2
 
 [node name="TerrainInfo" parent="BattleHudPanels" instance=ExtResource("2_at2nw")]
 layout_mode = 1
+
+[node name="UnitInfo" parent="BattleHudPanels" instance=ExtResource("3_6em5t")]
+layout_mode = 0
+anchors_preset = 0
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = 1.0
+offset_top = 522.0
+offset_right = 201.0
+offset_bottom = 647.0
+grow_vertical = 1
 
 [node name="BattleControllerInputState" type="Label" parent="."]
 offset_left = 965.0

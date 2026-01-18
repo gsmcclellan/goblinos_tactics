@@ -1,31 +1,73 @@
-using Godot;
-using System;
+#nullable enable
+using System.Diagnostics;
+using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
-using Goblinos.Scripts.Battle.Terrain;
-using Goblinos.Scripts.UI.Battle;
+using Godot;
+
+namespace Goblinos.Scripts.UI.Battle;
 
 public partial class UnitInfoPanel : Panel, IBattleHudPanel
 {
+    private readonly Logger _logger = LogManager.For<UnitInfoPanel>();
     [ExportGroup("Label Nodes")]
-    [Export] public Label UnitNameLabel;
-    [Export] public Label HitPointsLabel;
-    [Export] public Label PowerLabel;
+    [Export] public Label? UnitNameLabel;
+    [Export] public Label? HitPointsLabel;
+    [Export] public Label? PowerLabel;
+
+    private BattleUnit? _hoveredUnit;
+    private BattleUnit? _selectedUnit;
     
-    private Vector2I _cell;
-    private TerrainType _terrain;
+    public BattleUnit? Unit => _selectedUnit ?? _hoveredUnit;
     
-    public void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
+    // ---------------------------------------------------------------------
+    // Lifecycle / Init Callbacks
+    // ---------------------------------------------------------------------
+
+    public override void _Ready()
     {
-        throw new NotImplementedException();
+        Debug.Assert(UnitNameLabel != null, "[UnitInfoPanel].  Not Initialized. UnitNameLabel is required.");
+        Debug.Assert(HitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. HitPointsLabel is required.");
+        Debug.Assert(PowerLabel != null, "[UnitInfoPanel].  Not Initialized. PowerLabel is required.");
+    }
+    // ---------------------------------------------------------------------
+    // Signal / Event Callbacks
+    // ---------------------------------------------------------------------
+
+    public void OnHoveredUnitChanged(BattleUnit? hoveredUnit)
+    {
+        _logger.Log($"{nameof(OnHoveredUnitChanged)} - hoveredUnit={hoveredUnit?.UnitName}", LogSeverity.Extra, LogCategory.Signal);
+        SetHoveredUnit(hoveredUnit);
     }
 
-    public void OnHoveredTerrainChanged(TerrainType terrain)
+    public void OnSelectedUnitChanged(BattleUnit? selectedUnit)
     {
-        throw new NotImplementedException();
+        _logger.Log($"{nameof(OnSelectedUnitChanged)} - selectedUnit={selectedUnit?.UnitName}", LogSeverity.Extra, LogCategory.Signal);
+        SetSelectedUnit(selectedUnit);
+    }
+    
+    // ---------------------------------------------------------------------
+    // Label Update Methods
+    // ---------------------------------------------------------------------
+
+    private void SetHoveredUnit(BattleUnit? unit)
+    {
+        _hoveredUnit = unit;
+        
+        if (_selectedUnit != null)
+            return;
+        
+        UpdateUnitLabels();
+    }
+    private void SetSelectedUnit(BattleUnit? unit)
+    {
+        _selectedUnit = unit;
+        UpdateUnitLabels();
     }
 
-    public void OnSelectedUnitChanged(BattleUnit selectedUnit)
-    {
-        throw new NotImplementedException();
+    private void UpdateUnitLabels() {
+        _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
+        if (UnitNameLabel != null) UnitNameLabel.Text = Unit?.UnitName ?? "";
+        // if (HitPointsLabel != null) HitPointsLabel.Text = _unit?.Stats.HitPoints.ToString() ?? "";
+        // if (PowerLabel != null) PowerLabel.Text = _unit?.Stats.Power.ToString() ?? "";
     }
 }

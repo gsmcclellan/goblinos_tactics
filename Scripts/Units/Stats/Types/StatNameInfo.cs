@@ -53,4 +53,20 @@ public static class StatNameInfo
             .Cast<StatName>()
             .Where(sn => GetTier(sn) == StatTier.Derived)
             .ToList();
+    
+    /// <summary>
+    /// Makes flavor based display, possibly contextual based on type.
+    /// </summary>
+    /// <param name="statName"></param>
+    /// <returns></returns>
+    public static string GetDisplayName(StatName statName)
+    {
+        // Might - Smack, Smash, Slash, Stab, Blast
+        // Agility - Scurry, Sneak
+        // Vitality - Grit, Meatiness
+        // Mind - Cunning, Guile, Weird, Trickery
+        // Presence - Swagger, Bluster, Moxie, Menace
+        // Luck - ??
+        return statName.ToString();
+    }
 }

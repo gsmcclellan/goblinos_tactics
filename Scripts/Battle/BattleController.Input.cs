@@ -193,6 +193,8 @@ public partial class BattleController: IInputHandler
             ResetPreviews();
             return true;
         }
+        
+        // TODO - if target valid attack target, move to in range attack square, go to PrimaryActionSelect
 
         if (!_moveRangeService.CanMoveTo(ActiveMover, UnitActivation.OriginCell, cellFocus.Cell))
         {

@@ -1,5 +1,6 @@
 using System;
 using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Units;
 using Godot;
 using Range = Godot.Range;
 
@@ -26,8 +27,6 @@ public partial class BattleUnit : Area2D
 
     public String Id { get; private set; }
 
-    
-    
     // Realtime Properties
     private int _currentHealth;
     private bool _isSelected = false;
