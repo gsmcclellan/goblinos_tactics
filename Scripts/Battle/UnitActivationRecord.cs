@@ -1,6 +1,5 @@
 ﻿using Goblinos.Scripts.Battle.Types;
-using Goblinos.Scripts.Units;
-using Goblinos.Scripts.Util;
+using Goblinos.Scripts.Units.Types;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;

@@ -1,10 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://ckjgg67grrl4p"]
+[gd_scene load_steps=10 format=3 uid="uid://ckjgg67grrl4p"]
 
 [ext_resource type="Script" uid="uid://cqpcxwyad48vv" path="res://Scripts/Battle/Battle.cs" id="1_7xgak"]
 [ext_resource type="Script" uid="uid://c1h3o8qhaoubx" path="res://Scripts/Battle/BattleController.cs" id="2_2qpgi"]
 [ext_resource type="PackedScene" uid="uid://v4pdegvv5cl" path="res://Nodes/Battle/BattleUnit.tscn" id="3_o62pt"]
 [ext_resource type="Script" uid="uid://4vdeogyls6pq" path="res://Scripts/Battle/UnitRegistry.cs" id="3_sx5ws"]
-[ext_resource type="Texture2D" uid="uid://bhsux83jnkgt2" path="res://Assets/4goblin4soldier.png" id="4_2o8ig"]
 [ext_resource type="Script" uid="uid://brlge3s1bs64r" path="res://Scripts/Battle/SelectionController.cs" id="4_ko8gk"]
 [ext_resource type="Script" uid="uid://m03nd4f33xra" path="res://Scripts/Battle/MovementController.cs" id="4_sl1sn"]
 [ext_resource type="PackedScene" uid="uid://dsm2xuioevf8o" path="res://Nodes/Battle/BattleGrid.tscn" id="5_43edm"]
@@ -22,6 +21,8 @@ _hudPath = NodePath("../Overlays/BattleHud")
 _movementControllerPath = NodePath("../MovementController")
 _selectionControllerPath = NodePath("../SelectionController")
 _unitRegistryPath = NodePath("../UnitRegistry")
+_battleUnitScene = ExtResource("3_o62pt")
+_unitsRootPath = NodePath("../Units")
 
 [node name="UnitRegistry" type="Node" parent="."]
 script = ExtResource("3_sx5ws")
@@ -36,29 +37,6 @@ script = ExtResource("4_ko8gk")
 
 [node name="Units" type="Node2D" parent="."]
 z_index = 1
-
-[node name="Human" type="Node" parent="Units"]
-
-[node name="Sprite2D" type="Sprite2D" parent="Units/Human"]
-position = Vector2(592, 272)
-scale = Vector2(2, 2)
-texture = ExtResource("4_2o8ig")
-region_enabled = true
-region_rect = Rect2(112, 0, 16, 16)
-
-[node name="Unit" parent="Units" instance=ExtResource("3_o62pt")]
-position = Vector2(16, 16)
-UnitName = "Gobbo"
-
-[node name="Unit2" parent="Units" instance=ExtResource("3_o62pt")]
-position = Vector2(143, 145)
-UnitName = "Gleebo"
-MaxAttackRange = 3
-
-[node name="Enemy" parent="Units" instance=ExtResource("3_o62pt")]
-position = Vector2(208, 177)
-UnitName = "Harf"
-IsFriendly = false
 
 [node name="Overlays" type="Node2D" parent="."]
 z_index = 2

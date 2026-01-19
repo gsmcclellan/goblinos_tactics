@@ -163,12 +163,12 @@ public partial class UnitRegistry: Node
     /// <summary>
     /// Enumerates units belonging to the given team/faction.
     /// </summary>
-    public IEnumerable<BattleUnit> GetUnitsByTeam(UnitTeam team)
-    {
-        _logger.Log("GetUnitsByTeam " + team, LogSeverity.Extra, LogCategory.DebugOnly);
-
-        yield break;
-    }
+    // public IEnumerable<BattleUnit> GetUnitsByTeam(UnitTeam team)
+    // {
+    //     _logger.Log("GetUnitsByTeam " + team, LogSeverity.Extra, LogCategory.DebugOnly);
+    //
+    //     yield break;
+    // }
 
     /// <summary>
     /// Enumerates all units that are still alive.

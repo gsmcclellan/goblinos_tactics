@@ -5,7 +5,7 @@
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "HitPointsLabel", "PowerLabel")]
+[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "PowerLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -16,6 +16,7 @@ mouse_filter = 2
 theme = SubResource("Theme_oq75t")
 script = ExtResource("1_5tlod")
 UnitNameLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/UnitName")
+IsFriendlyLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/IsFriendly")
 HitPointsLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/hitPoints")
 PowerLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/Power")
 
@@ -40,8 +41,9 @@ offset_bottom = 131.0
 layout_mode = 2
 text = "Name:"
 
-[node name="Separator" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
+[node name="IsFriendlyLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
 layout_mode = 2
+text = "IsFriend:"
 
 [node name="HitPointsLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
 layout_mode = 2
@@ -58,8 +60,9 @@ layout_mode = 2
 layout_mode = 2
 text = "Goblino"
 
-[node name="Separator" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+[node name="IsFriendly" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
 layout_mode = 2
+text = "True"
 
 [node name="hitPoints" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
 layout_mode = 2

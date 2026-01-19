@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Services;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.UI.Battle;
 using Godot;
 
@@ -33,9 +34,11 @@ public partial class BattleController : Node
 
     private readonly Logger _logger = LogManager.For<BattleController>();
     
+    private CombatResolver _combatResolver;
     private MoveRangeService _moveRangeService;
     private PrimaryActionTargetingService _primaryActionTargetingService;
     private TargetRangeService _targetRangeService;
+    
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /** Fields */
@@ -58,6 +61,7 @@ public partial class BattleController : Node
         _Ready_Input();
         _Ready_Events();
         _Ready_State();
+        _Ready_Test();
 
         NotifyInitialized();
 
@@ -91,9 +95,10 @@ public partial class BattleController : Node
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
 
         // Non-Node Components
-        _targetRangeService = new TargetRangeService(_grid);
+        _combatResolver = new CombatResolver(new DamageCalculator());
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);
+        _targetRangeService = new TargetRangeService(_grid);
 
         _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
     }

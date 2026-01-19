@@ -43,22 +43,6 @@ public partial class BattleController
         _logger.Log("_Ready_State", LogSeverity.Info, LogCategory.Initialization);
     }
     
-    /// <summary>
-    /// Test function - registers Units in node path. Will be replaced with loading from UnitData.
-    /// </summary>
-    private void _registerExistingBattleUnitNodes()
-    {
-        var units = _battle.GetNode("Units").GetChildren();
-
-        foreach (var unit in units)
-        {
-            if (unit is BattleUnit bUnit)
-                _unitRegistry.RegisterUnit(bUnit, _grid.GetCellAtGlobalPosition(bUnit.GlobalPosition));
-        }
-        
-        _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
-    }
-
     private void AbortActivationToFreeSelect()
     {
         _logger.Log("AbortActivationToFreeSelect", LogSeverity.Info, LogCategory.UnitLifecycle);
@@ -208,7 +192,7 @@ public partial class BattleController
                 "Hovered unit does not match UnitRegistry record for unit at cell."))
             return;
         
-        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.Unit.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.GetMovementPreview(cell, unit.Movement);
         var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
@@ -302,11 +286,52 @@ public partial class BattleController
     /// with shared interface containing TryExecute.
     private void ResolveUnitActions()
     {
+        if (!DebugUtil.Require(UnitActivation != null,
+                $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
+        {
+            AbortActivationToFreeSelect();
+            return;
+        }
+            
+        
         // move already committed.
         // Handle attack / other action. TODO
+        switch (UnitActivation.PrimaryAction)
+        {
+            case PrimaryActionType.Attack:
+                ResolveCombat();
+                break;
+            case PrimaryActionType.Ability:
+                _logger.Warn($"{nameof(ResolveUnitActions)} - Ability not implemented.");
+                break;
+            case PrimaryActionType.Item:
+                _logger.Warn($"{nameof(ResolveUnitActions)} - Item not implemented.");
+                break;
+            case PrimaryActionType.Trade:
+                _logger.Warn($"{nameof(ResolveUnitActions)} - Trade not implemented.");
+                break;
+            case PrimaryActionType.Wait:
+                break;
+            case PrimaryActionType.None:
+                throw new ArgumentOutOfRangeException();;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
         // Set unit as activated / already taken turn. TODO
+        // Log Snapshot class for logs / after battle stats. TODO
         ClearActivationAndUi();
         EnterFreeSelectMode();
+    }
+
+    public void ResolveCombat()
+    {
+        if (!DebugUtil.Require(UnitActivation != null,
+                $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
+            return;
+
+        var results = _combatResolver.Resolve(UnitActivation);
+        GD.Print(results);
     }
 
     private void ShowCursor()

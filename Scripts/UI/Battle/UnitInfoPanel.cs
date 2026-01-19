@@ -11,6 +11,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     private readonly Logger _logger = LogManager.For<UnitInfoPanel>();
     [ExportGroup("Label Nodes")]
     [Export] public Label? UnitNameLabel;
+    [Export] public Label? IsFriendlyLabel;
     [Export] public Label? HitPointsLabel;
     [Export] public Label? PowerLabel;
 
@@ -26,6 +27,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     public override void _Ready()
     {
         Debug.Assert(UnitNameLabel != null, "[UnitInfoPanel].  Not Initialized. UnitNameLabel is required.");
+        Debug.Assert(IsFriendlyLabel != null, "[UnitInfoPanel].  Not Initialized. IsFriendlyPanel is required.");
         Debug.Assert(HitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. HitPointsLabel is required.");
         Debug.Assert(PowerLabel != null, "[UnitInfoPanel].  Not Initialized. PowerLabel is required.");
     }
@@ -67,6 +69,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     private void UpdateUnitLabels() {
         _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         if (UnitNameLabel != null) UnitNameLabel.Text = Unit?.UnitName ?? "";
+        if (IsFriendlyLabel != null) IsFriendlyLabel.Text = Unit?.IsFriendly.ToString() ?? "";
         // if (HitPointsLabel != null) HitPointsLabel.Text = _unit?.Stats.HitPoints.ToString() ?? "";
         // if (PowerLabel != null) PowerLabel.Text = _unit?.Stats.Power.ToString() ?? "";
     }

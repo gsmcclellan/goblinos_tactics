@@ -1,4 +1,5 @@
-﻿using Goblinos.Scripts.Units.Stats;
+﻿using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Units.Stats;
 using Godot;
 
 namespace Goblinos.Scripts.Units;
@@ -12,7 +13,9 @@ public class Unit
     // level / XP / growths
     public int Level;
     public int Experience;
-    
+
+    public bool IsFriendly;
+
     // Future stuff:
     // class/job
     // inventory, equipment slots
