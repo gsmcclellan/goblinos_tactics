@@ -7,6 +7,7 @@ public class UnitTemplate
 {
     public string Id;
     public string DisplayName;
+    public string ImageFileName;
     public StatBlock BaseStats;
     public StatGrowthProfile StatGrowthProfile;
 }

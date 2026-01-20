@@ -32,10 +32,10 @@ public partial class BattleController
         var templates = TestUnitTemplates.Dict;
 
 
-        var gob1 = unitFactory.CreateFromTemplate(templates["gob_spear"]);
-        var gob2 = unitFactory.CreateFromTemplate(templates["gob_spear"]);
-        var gob3 = unitFactory.CreateFromTemplate(templates["gob_sword"]);
-        var gob4 = unitFactory.CreateFromTemplate(templates["gob_sword"]);
+        var gob1 = unitFactory.CreateFromTemplate(templates["gob_stab"]);
+        var gob2 = unitFactory.CreateFromTemplate(templates["gob_stab"]);
+        var gob3 = unitFactory.CreateFromTemplate(templates["gob_shield"]);
+        var gob4 = unitFactory.CreateFromTemplate(templates["gob_shield"]);
         var friends = new List<Unit>() {gob1, gob2, gob3, gob4};
         
         var enemy1 = unitFactory.CreateFromTemplate(templates["hum_spear"]);

@@ -142,6 +142,12 @@ public partial class SelectionController : Node
     {
         if (unit == _selectedUnit) return;
         
+        if (unit.State == UnitActivationState.Exhausted)
+        {
+            _logger.Log($"SelectUnit blocked: unit exhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.UiNavigation);
+            return;
+        }
+        
         _selectedUnit?.Deselect();
         unit.Select();
         _selectedUnit = unit;
@@ -163,6 +169,12 @@ public partial class SelectionController : Node
         if (_hoveredUnit == null)
         {
             _logger.Log("TriggerSelection - No Hovered Unit, return", LogSeverity.Trace, LogCategory.Input);
+            return;
+        }
+        
+        if (_hoveredUnit.State == UnitActivationState.Exhausted)
+        {
+            _logger.Log("TriggerSelection - Unit is exhausted, return", LogSeverity.Trace, LogCategory.Input);
             return;
         }
         

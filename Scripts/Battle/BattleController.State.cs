@@ -47,9 +47,12 @@ public partial class BattleController
     {
         _logger.Log("AbortActivationToFreeSelect", LogSeverity.Info, LogCategory.UnitLifecycle);
         // Cancel unit activation, go back to free select.
+        if (InputState == BattleInputState.FreeSelect) return;
+        
         if (!TryUndoMove())
             throw new Exception("Try undo move failed, can't reset.");
         
+        UnitActivation?.Unit.SetActivationState(UnitActivationState.Ready);
         ClearActivationAndUi();
         EnterFreeSelectMode();
     }
@@ -109,10 +112,24 @@ public partial class BattleController
     private void EnterMoveTargetingMode(BattleUnit unit)
     {
         _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
+
+        if (!DebugUtil.Require(unit != null, "[BattleController.Input] failed to enter MovementMode, no unit"))
+        {
+            AbortActivationToFreeSelect();
+            return;
+        }
+
+        if (unit.State == UnitActivationState.Exhausted)
+        {
+            _logger.Log($"EnterMoveTargetingMode blocked: unit exhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.BattleState);
+            AbortActivationToFreeSelect();
+            return;
+        }
         
         var cell = _selectionController.SelectedCell;
         if (!DebugUtil.Require(cell.HasValue, "[BattleController.Input] failed to enter MovementMode, no selected cell") ||
-            !DebugUtil.Require(unit != null, "[BattleController.Input] failed to enter MovementMode, no unit")
+            !DebugUtil.Require(unit != null, "[BattleController.Input] failed to enter MovementMode, no unit") ||
+            !DebugUtil.Require(unit.State != UnitActivationState.Exhausted, $"[BattleController.Input] failed to enter MovementMode, unit={unit.UnitName} already exhausted")
            )
             return;
         
@@ -191,8 +208,11 @@ public partial class BattleController
         if (!DebugUtil.Require(unit == registeredUnit,
                 "Hovered unit does not match UnitRegistry record for unit at cell."))
             return;
+
+        if (unit.State == UnitActivationState.Exhausted)
+            return;
         
-        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.Unit.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.GetMovementPreview(cell, unit.Movement);
         var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
@@ -251,8 +271,9 @@ public partial class BattleController
             _logger.Warn("InitializeActivationContext - already initialized.");
             return;
         }
-            
+        
         UnitActivation = new UnitActivationContext(unit, cell.Value);
+        unit.SetActivationState(UnitActivationState.Activated);
     }
     
     private void ResetPreviews()
@@ -318,7 +339,7 @@ public partial class BattleController
                 throw new ArgumentOutOfRangeException();
         }
         
-        // Set unit as activated / already taken turn. TODO
+        UnitActivation.Unit.SetActivationState(UnitActivationState.Exhausted);
         // Log Snapshot class for logs / after battle stats. TODO
         ClearActivationAndUi();
         EnterFreeSelectMode();

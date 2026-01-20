@@ -13,8 +13,9 @@ public static class TestUnitTemplates
     {
         new()
         {
-            Id = "gob_sword",
-            DisplayName = "Sword Goblin",
+            Id = "gob_stab",
+            DisplayName = "Goblin Stabber",
+            ImageFileName = "GoblinStabber",
             BaseStats = new StatBlock(
                 might: 7,
                 agility: 6,
@@ -23,7 +24,7 @@ public static class TestUnitTemplates
                 presence: 2,
                 luck: 3,
                 movement: 5,
-                maxHealth: 20,
+                maxHitPoints: 20,
                 defense: 4,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -37,8 +38,9 @@ public static class TestUnitTemplates
 
         new()
         {
-            Id = "gob_spear",
-            DisplayName = "Spear Goblin",
+            Id = "gob_shield",
+            DisplayName = "Goblin Blocker",
+            ImageFileName = "GoblinShielder",
             BaseStats = new StatBlock(
                 might: 6,
                 agility: 7,
@@ -47,7 +49,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHealth: 18,
+                maxHitPoints: 18,
                 defense: 3,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -63,6 +65,7 @@ public static class TestUnitTemplates
         {
             Id = "hum_spear",
             DisplayName = "Spearman",
+            ImageFileName = "HumanSpearman",
             BaseStats = new StatBlock(
                 might: 6,
                 agility: 7,
@@ -71,7 +74,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHealth: 18,
+                maxHitPoints: 18,
                 defense: 3,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(

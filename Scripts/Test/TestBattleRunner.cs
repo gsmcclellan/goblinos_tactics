@@ -33,7 +33,7 @@ namespace Goblinos.Scripts.Test
                 mind: 2,
                 presence: 2,
                 luck: 3,
-                maxHealth: 20,
+                maxHitPoints: 20,
                 defense: 4,
                 resistance: 2,
                 movement: 5);
@@ -47,7 +47,7 @@ namespace Goblinos.Scripts.Test
                 mind: 2,
                 presence: 3,
                 luck: 2,
-                maxHealth: 18,
+                maxHitPoints: 18,
                 defense: 3,
                 resistance: 2,
                 movement: 6);
@@ -73,7 +73,7 @@ namespace Goblinos.Scripts.Test
             int mind,
             int presence,
             int luck,
-            int maxHealth,
+            int maxHitPoints,
             int defense,
             int resistance,
             int movement)
@@ -86,7 +86,7 @@ namespace Goblinos.Scripts.Test
                 presence: presence,
                 luck: luck,
                 movement: movement,
-                maxHealth: maxHealth,
+                maxHitPoints: maxHitPoints,
                 defense: defense,
                 resistance: resistance);
 
@@ -121,7 +121,7 @@ namespace Goblinos.Scripts.Test
                 round++;
             }
 
-            var winner = attacker.IsDefeated ? defender.Unit.UnitName : attacker.Unit.UnitName;
+            var winner = attacker.IsDefeated ? defender.UnitName : attacker.UnitName;
             _logger.Log("Winner: " + winner, LogSeverity.Info, LogCategory.UnitLifecycle);
         }
 
@@ -130,7 +130,7 @@ namespace Goblinos.Scripts.Test
         /// </summary>
         private void ResolveAttack(BattleUnit attacker, BattleUnit defender, Random random)
         {
-            _logger.Log("ResolveAttack " + attacker.Unit.UnitName + " -> " + defender.Unit.UnitName,
+            _logger.Log("ResolveAttack " + attacker.UnitName + " -> " + defender.UnitName,
                 LogSeverity.Info,
                 LogCategory.UnitLifecycle);
 
@@ -154,7 +154,7 @@ namespace Goblinos.Scripts.Test
 
             defender.ApplyDamage(damage);
 
-            _logger.Log("Hit for " + damage + " (HP now " + defender.CurrentHealth + ")",
+            _logger.Log("Hit for " + damage + " (HP now " + defender.CurrentHitPoints + ")",
                 LogSeverity.Info,
                 LogCategory.UnitLifecycle);
         }

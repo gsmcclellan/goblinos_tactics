@@ -35,4 +35,18 @@ public class SimpleCombatResult
         AttackerHealthRemaining = attackerHealthRemaining;
         DefenderHealthRemaining = defenderHealthRemaining;
     }
+    
+    public override string ToString()
+    {
+        return
+            $"CombatResult:\n" +
+            $"  Attacker: <{Attacker.UnitId}> {Attacker.UnitName}\n" +
+            $"    Damage Dealt: {AttackerDamage}\n" +
+            $"    HP Remaining: {AttackerHealthRemaining}\n" +
+            $"    Died: {AttackerDied}\n" +
+            $"  Defender: <{Defender.UnitId}> {Defender.UnitName}\n" +
+            $"    Damage Dealt: {DefenderDamage}\n" +
+            $"    HP Remaining: {DefenderHealthRemaining}\n" +
+            $"    Died: {DefenderDied}";
+    }
 }

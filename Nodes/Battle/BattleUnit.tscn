@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://v4pdegvv5cl"]
 
 [ext_resource type="Script" uid="uid://ct2py77lvfwmo" path="res://Scripts/Battle/BattleUnit.cs" id="1_q1p61"]
-[ext_resource type="Texture2D" uid="uid://bhsux83jnkgt2" path="res://Assets/4goblin4soldier.png" id="2_kd3sj"]
+[ext_resource type="Texture2D" uid="uid://dklob8yewxr1r" path="res://Assets/Images/Units/GoblinStabber.png" id="2_f5ts6"]
 [ext_resource type="Texture2D" uid="uid://brkn7mbdkgwpv" path="res://Assets/selection_square_32x32.png" id="3_7r0qe"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_hm8sg"]
@@ -19,17 +19,19 @@ thickness = 2
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7fc2e"]
 size = Vector2(30, 29)
 
-[node name="Unit" type="Area2D"]
+[node name="BattleUnit" type="Area2D" node_paths=PackedStringArray("_imageSprite", "_hpBar")]
 scale = Vector2(1, 0.997975)
 script = ExtResource("1_q1p61")
+_imageSprite = NodePath("Sprite")
+_hpBar = NodePath("HpBar")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)
-texture = ExtResource("2_kd3sj")
+texture = ExtResource("2_f5ts6")
 region_enabled = true
 region_rect = Rect2(0, 0, 16, 16)
 
-[node name="HealthBar" type="ProgressBar" parent="."]
+[node name="HpBar" type="ProgressBar" parent="."]
 offset_left = -15.0
 offset_top = -15.0
 offset_right = 15.0
@@ -40,7 +42,7 @@ step = 1.0
 value = 75.0
 show_percentage = false
 
-[node name="SelectionNode" type="Sprite2D" parent="."]
+[node name="IsSelectedNode" type="Sprite2D" parent="."]
 visible = false
 texture = ExtResource("3_7r0qe")
 

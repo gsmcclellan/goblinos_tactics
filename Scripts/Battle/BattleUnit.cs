@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Units.Stats;
+using Goblinos.Scripts.Util;
 using Godot;
 using Range = Godot.Range;
 
@@ -11,49 +14,82 @@ namespace Goblinos.Scripts.Battle;
 
 public partial class BattleUnit : Area2D
 {
+    /** Signals */
+    [Signal]
+    public delegate void HitPointsChangedEventHandler(int newValue, int oldValue);
+    
     /** Components */
     private readonly Logger _logger = LogManager.For<BattleUnit>();
-    
-    private Sprite2D _selectionNode;
-    
+
+    [Export] private Sprite2D _imageSprite;
+    [Export] private ProgressBar _hpBar;
+    private Sprite2D _isSelectedNode;
+
     /** Fields */
-    
+    private int _currentHitPoints;
     
     // UnitData class - TODO
     /** Properties */
-    public Unit Unit { get; private set; }
-    public int CurrentHealth { get; private set; }
+    private Unit _unit;
+
+    public int CurrentHitPoints => _currentHitPoints;
     public List<StatModifier> BattleModifiers { get; } = [];
 
-    public bool IsDefeated => CurrentHealth <= 0;
+    public UnitActivationState State { get; private set; } = UnitActivationState.Ready;
     
     /** Facade Properties */
     public RangeBand AttackRange => new RangeBand(1, 1); // TODO - base on weapon.
-    public bool IsFriendly => Unit.IsFriendly;
-    public int MaxHealth => Unit.Stats.BaseStats.MaxHealth;
-    public int Movement => Unit.Stats.BaseStats.Movement;
-    public string UnitName => Unit.UnitName;
+    public String Id => _unit.Id;
+    public bool IsDefeated => CurrentHitPoints <= 0;
+    public bool IsFriendly => _unit.IsFriendly;
+    public int MaxHitPoints => _unit.Stats.BaseStats.MaxHitPoints;
+    public int Movement => _unit.Stats.BaseStats.Movement;
+    public Unit Unit => _unit;
+    public string UnitName => _unit.UnitName;
     
-
-    public String Id { get; private set; }
-
     // Realtime Properties
     private bool _isSelected = false;
 
     public BattleUnit(Unit unit)
     {
-        Unit = unit;
-        CurrentHealth = MaxHealth;
+        _unit = unit;
+        SetHitPoints(MaxHitPoints);
     }
 
     public BattleUnit()
     {
     }
+    
+    // ---------------------------------------------------------------------
+    // Lifecycle / Setup Methods
+    // ---------------------------------------------------------------------
 
     public override void _Ready()
     {
-        _selectionNode = GetNode<Sprite2D>("SelectionNode");
-        Id = Name; // Temporary, change to Guid / constructed string when persisting.
+        
+        _isSelectedNode = GetNode<Sprite2D>("IsSelectedNode");
+        
+        Debug.Assert(_imageSprite != null, "No Sprite Node");
+        Debug.Assert(_isSelectedNode != null, "No Selected Display Node");
+        
+        SubscribeToEvents();
+        
+        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+    }
+
+    public override void _ExitTree()
+    {
+        UnsubscribeFromEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        HitPointsChanged += OnHitPointsChanged;
+    }
+    
+    private void UnsubscribeFromEvents()
+    {
+        HitPointsChanged -= OnHitPointsChanged;
     }
     
     /// <summary>
@@ -63,20 +99,34 @@ public partial class BattleUnit : Area2D
     {
         _logger.Log($"Bind " + unit.UnitName, LogSeverity.Info, LogCategory.UnitLifecycle);
 
-        Unit = unit;
-        CurrentHealth = unit.Stats.BaseStats.MaxHealth;
+        _unit = unit;
+        SetHitPoints(unit.Stats.BaseStats.MaxHitPoints);
+        
+        // Set sprite image.
+        if (!DebugUtil.Require(_unit.ImageFilePath != null, "Sprite missing"))
+            return;
+
+        var texture = GD.Load<Texture2D>(_unit.ImageFilePath);
+        
+        if (!DebugUtil.Require(texture != null, $"Failed to load texture: {_unit.ImageFilePath}"))
+            return;
+
+        _imageSprite.Texture = texture;
+        
+        Refresh();
     }
     
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
+    
     /// <summary>
-    /// Applies damage to CurrentHealth.
+    /// Applies damage to CurrentHitpoints.
     /// </summary>
     public void ApplyDamage(int damage)
     {
         _logger.Log("[BattleUnit] ApplyDamage " + damage, LogSeverity.Info, LogCategory.UnitLifecycle);
-
-        CurrentHealth -= damage;
-        if (CurrentHealth < 0)
-            CurrentHealth = 0;
+        SetHitPoints(CurrentHitPoints - damage);
     }
     public void Select()
     {
@@ -88,15 +138,69 @@ public partial class BattleUnit : Area2D
         ToggleSelected(false);
     }
 
+    public void SetActivationState(UnitActivationState state)
+    {
+        _logger.Log($"{nameof(SetActivationState)} state={state}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        State = state;
+    }
+
     public void ToggleSelected(bool? force = null)
     {
         _isSelected = force ?? !_isSelected;
         UpdateSelectionUi();
     }
+    
+    // ---------------------------------------------------------------------
+    // Signal / Event Handlers
+    // ---------------------------------------------------------------------
+    
+    private void OnHitPointsChanged(int newValue, int oldValue)
+    {
+        var delta = newValue - oldValue;
+        _logger.Log("OnHitPointsChanged delta=" + delta, LogSeverity.Info, LogCategory.UnitStats);
+
+        if (!DebugUtil.Require(_hpBar != null, "HP Bar missing."))
+            return;
+
+        _hpBar.Value = newValue;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Private Methods
+    // ---------------------------------------------------------------------
+
+    private void Refresh()
+    {
+        if (!DebugUtil.Require(_unit != null, "Refresh failed. Null unit.") ||
+            !DebugUtil.Require(_hpBar != null, "Refresh failed. Null HP Bar.")
+           )
+            return;
+        
+        _logger.Log("Refresh", LogSeverity.Trace, LogCategory.UnitStats);
+
+        _hpBar.MaxValue = MaxHitPoints;
+        _hpBar.Value = CurrentHitPoints;
+    }
+
+    private void SetHitPoints(int newValue)
+    {
+        var clamped = Math.Clamp(newValue, 0, MaxHitPoints);
+        if (clamped == CurrentHitPoints)
+            return;
+
+        var old = _currentHitPoints;
+        _currentHitPoints = clamped;
+
+        var delta = _currentHitPoints - old;
+        _logger.Log("[BattleUnit] HitPoints changed: " + old + " -> " + _currentHitPoints,
+            LogSeverity.Info, LogCategory.UnitStats);
+
+        EmitSignal(SignalName.HitPointsChanged, _currentHitPoints, old);
+    }
 
     private void UpdateSelectionUi()
     {
-        _selectionNode.Visible = _isSelected;
+        _isSelectedNode.Visible = _isSelected;
     }
 }
 

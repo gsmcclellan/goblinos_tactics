@@ -15,6 +15,8 @@ public partial class GlobalSettings : Node
     public const string BattleLogScenePath = "res://Nodes/BattleLog.tscn";
     public const string BattleScenePath = "res://Nodes/Battle.tscn";
     public const string BattleResultsScreenScenePath = "res://Nodes/BattleResultsScreen.tscn";
+    
+    public const string UnitImageDirPath = "res://Assets/Images/Units/";
 
     public const bool AllowInputModeSwitching = true; // TODO move to user settings
     public const InputDeviceMode DefaultInputMode = InputDeviceMode.MouseAndKeyboard; // TODO move to user settings

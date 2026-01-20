@@ -1,4 +1,6 @@
 ﻿using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Core;
+using Goblinos.Scripts.Test;
 using Goblinos.Scripts.Units.Stats;
 using Godot;
 
@@ -6,15 +8,19 @@ namespace Goblinos.Scripts.Units;
 
 public class Unit
 {
-    // base/core stats
+    
     public string Id;
+    public string TemplateId;
     public string UnitName;
     public UnitStats Stats;
-    // level / XP / growths
+    
     public int Level;
     public int Experience;
 
     public bool IsFriendly;
+
+    public string ImageFilePath => GlobalSettings.UnitImageDirPath + Template.ImageFileName + ".png";
+    public UnitTemplate Template => TestUnitTemplates.Dict[TemplateId];
 
     // Future stuff:
     // class/job

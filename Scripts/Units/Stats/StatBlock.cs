@@ -5,16 +5,22 @@ namespace Goblinos.Scripts.Units.Stats;
 public class StatBlock
 {
     /** Core Attributes */
+    // Physical power, damage
     public int Might;
+    // hit, dodge, crit
     public int Agility;
+    // health, defense
     public int Vitality;
+    // magic damage, magic def
     public int Mind;
+    // status apply, status defense, magic defense
     public int Presence;
+    // crit, crit def
     public int Luck;
 
     /** Base Stats */
     public int Movement;
-    public int MaxHealth;
+    public int MaxHitPoints;
     public int Defense;
     public int Resistance;
 
@@ -27,7 +33,7 @@ public class StatBlock
         int presence,
         int luck,
         int movement,
-        int maxHealth,
+        int maxHitPoints,
         int defense,
         int resistance)
     {
@@ -38,7 +44,7 @@ public class StatBlock
         Presence = presence;
         Luck = luck;
         Movement = movement;
-        MaxHealth = maxHealth;
+        MaxHitPoints = maxHitPoints;
         Defense = defense;
         Resistance = resistance;
     }

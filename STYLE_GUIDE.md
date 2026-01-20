@@ -192,7 +192,7 @@ private void UpdateFocus()
 Example:
 
 ```
-_logger.Log("[GridCursor] Move " + direction, 0, DebugLogCategory.UiNavigation);
+_logger.Log("Move " + direction, 0, LogCategory.UiNavigation);
 ```
 
 ## 7.2 DebugUtil Configuration & Usage Rules
@@ -210,11 +210,11 @@ The project uses a centralized logging utility (`Goblinos.Logging`) to control l
 - `ShouldRegisterNewCategories` - Defines whether to register an unknown string category
 - `ShouldEnableAutoRegisteredCategories` - Defines whether to enable an auto-registered string category
 
-- Severity ordering is defined by `DebugLogSeverity`
-- All logs **should** specify an appropriate `DebugLogCategory`, but None can be used if no suitable category is available
+- Severity ordering is defined by `LogSeverity`
+- All logs **should** specify an appropriate `LogCategory`, but None can be used if no suitable category is available
 
 ```csharp
-public enum DebugLogCategory
+public enum LogCategory
 {
     // Core & Engine-Level
     None,               // Default / uncategorized
@@ -248,7 +248,7 @@ public enum DebugLogCategory
     DebugOnly           // Temporary or experimental logs
 }
 
-public enum DebugLogSeverity
+public enum LogSeverity
 {
     Extra = -1,    // Extremely spammy logs that will dominate the console
     Trace = 0,     // Minor info

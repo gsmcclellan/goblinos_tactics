@@ -70,7 +70,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         if (UnitNameLabel != null) UnitNameLabel.Text = Unit?.UnitName ?? "";
         if (IsFriendlyLabel != null) IsFriendlyLabel.Text = Unit?.IsFriendly.ToString() ?? "";
-        // if (HitPointsLabel != null) HitPointsLabel.Text = _unit?.Stats.HitPoints.ToString() ?? "";
-        // if (PowerLabel != null) PowerLabel.Text = _unit?.Stats.Power.ToString() ?? "";
+        if (HitPointsLabel != null) HitPointsLabel.Text = $"{Unit?.CurrentHitPoints} / {Unit?.MaxHitPoints} HP";
+        if (PowerLabel != null) PowerLabel.Text = Unit?.Unit.Stats.BaseStats.Might.ToString();
     }
 }

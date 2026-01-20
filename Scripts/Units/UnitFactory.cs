@@ -1,4 +1,5 @@
-﻿using Goblinos.Logging;
+﻿using System;
+using Goblinos.Logging;
 using Goblinos.Scripts.Units.Stats;
 
 namespace Goblinos.Scripts.Units
@@ -19,7 +20,8 @@ namespace Goblinos.Scripts.Units
 
             var unit = new Unit
             {
-                Id = template.Id,
+                Id = new Guid().ToString(),
+                TemplateId = template.Id,
                 UnitName = template.DisplayName,
                 Level = 1,
                 Experience = 0,

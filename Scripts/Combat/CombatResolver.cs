@@ -48,8 +48,8 @@ public class CombatResolver
             defender: new UnitSnapshot(defender.Id, defender.UnitName),
             attackerDamage: attackerDamage,
             defenderDamage: defenderDamage,
-            attackerHealthRemaining: attacker.CurrentHealth,
-            defenderHealthRemaining: defender.CurrentHealth
+            attackerHealthRemaining: attacker.CurrentHitPoints,
+            defenderHealthRemaining: defender.CurrentHitPoints
         );
         
         // determine # & order of hits.

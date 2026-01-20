@@ -20,7 +20,7 @@ public static class StatNameInfo
 
             // Base
             StatName.Movement or
-                StatName.MaxHealth or
+                StatName.MaxHitPoints or
                 StatName.Defense or
                 StatName.Resistance => StatTier.Base,
 

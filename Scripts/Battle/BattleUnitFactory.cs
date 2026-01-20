@@ -14,7 +14,7 @@ public sealed class BattleUnitFactory
     {
         _logger.Log("[BattleUnitFactory] Create " + unit.UnitName, LogSeverity.Info, LogCategory.Initialization);
 
-        // Starting health is pulled from persistent BaseStats.MaxHealth for now.
+        // Starting health is pulled from persistent BaseStats.MaxHitPoints for now.
         return new BattleUnit(unit);
     }
 }

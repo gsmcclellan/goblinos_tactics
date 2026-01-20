@@ -11,7 +11,7 @@ public enum StatName
     Luck,
     /** Base Stats */
     Movement,
-    MaxHealth,
+    MaxHitPoints,
     Defense,
     Resistance,
     /** Derived Stats */
