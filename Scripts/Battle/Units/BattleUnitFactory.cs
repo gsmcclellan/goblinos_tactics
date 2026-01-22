@@ -1,7 +1,7 @@
 ﻿using Goblinos.Logging;
 using Goblinos.Scripts.Units;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Units;
 
 /// <summary>
 /// Creates BattleUnit instances from persistent Units.

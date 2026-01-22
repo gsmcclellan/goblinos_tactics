@@ -1,10 +1,7 @@
 using Goblinos.Logging;
-using Goblinos.Scripts.Test;
-using Goblinos.Scripts.Units;
-using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Core;
 
 public partial class Battle : Node2D
 {

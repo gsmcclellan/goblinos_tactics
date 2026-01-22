@@ -17,7 +17,7 @@ public static class TestUnitTemplates
             DisplayName = "Goblin Stabber",
             ImageFileName = "GoblinStabber",
             BaseStats = new StatBlock(
-                might: 7,
+                might: 9,
                 agility: 6,
                 vitality: 5,
                 mind: 2,
@@ -50,7 +50,7 @@ public static class TestUnitTemplates
                 luck: 2,
                 movement: 6,
                 maxHitPoints: 18,
-                defense: 3,
+                defense: 6,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
                 might: 40,
@@ -67,7 +67,7 @@ public static class TestUnitTemplates
             DisplayName = "Spearman",
             ImageFileName = "HumanSpearman",
             BaseStats = new StatBlock(
-                might: 6,
+                might: 8,
                 agility: 7,
                 vitality: 4,
                 mind: 2,
@@ -75,7 +75,7 @@ public static class TestUnitTemplates
                 luck: 2,
                 movement: 6,
                 maxHitPoints: 18,
-                defense: 3,
+                defense: 4,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
                 might: 40,

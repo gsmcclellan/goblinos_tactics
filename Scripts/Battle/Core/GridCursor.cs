@@ -1,11 +1,9 @@
-using System.Diagnostics;
 using Goblinos.Logging;
-using Godot;
-using Goblinos.Scripts.Battle;
-using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
-using Godot.Collections;
+using Godot;
+
+namespace Goblinos.Scripts.Battle.Core;
 
 public partial class GridCursor : Node2D
 {
@@ -28,15 +26,15 @@ public partial class GridCursor : Node2D
     private Vector2I _lastCellFocused = new(int.MinValue, int.MinValue);
     
     /** Properties */
-    public Goblinos.Scripts.Battle.BattleGrid Grid;
-    public UnitRegistry UnitRegistry;
+    public BattleGrid Grid;
+    public Units.UnitRegistry UnitRegistry;
 
     public Vector2I FocusedCell { get; private set; }
 
     public override void _Ready()
     {
-        Grid = GetNode<Goblinos.Scripts.Battle.BattleGrid>(_battleGridPath);
-        UnitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
+        Grid = GetNode<BattleGrid>(_battleGridPath);
+        UnitRegistry = GetNode<Units.UnitRegistry>(_unitRegistryPath);
         
         DebugUtil.Require(Grid != null, "[GridCursor] Grid must be initialized");
         DebugUtil.Require(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");

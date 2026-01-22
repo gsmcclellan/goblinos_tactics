@@ -5,7 +5,7 @@ namespace Goblinos.Scripts.Battle.Types;
 
 public readonly struct CellFocus
 {
-    public CellFocus(Vector2I cell, TerrainType? terrain, BattleUnit? unit)
+    public CellFocus(Vector2I cell, TerrainType? terrain, Units.BattleUnit? unit)
     {
         Cell = cell;
         Terrain = terrain;
@@ -14,5 +14,5 @@ public readonly struct CellFocus
 
     public Vector2I Cell { get; }
     public TerrainType? Terrain { get; }
-    public BattleUnit? Unit { get; }
+    public Units.BattleUnit? Unit { get; }
 }

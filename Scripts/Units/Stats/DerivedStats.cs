@@ -15,15 +15,18 @@ public sealed class DerivedStats(
     int maxHitPoints,
     int defense,
     int resistance,
-    int attackSpeed,
-    int accuracy,
-    int evasion,
-    int critChance,
-    int critDefense,
+    int physicalDamage,
+    int magicDamage,
+    // int attackSpeed,
+    // int accuracy,
+    // int evasion,
+    // int critChance,
+    // int critDefense,
     int physicalProtection,
-    int magicProtection,
-    int armorPierce,
-    int magicPenetration)
+    int magicResistance
+    // int armorPierce,
+    // int magicPenetration
+    )
 {
     /** Core Attributes */
     public int Might { get; } = might;
@@ -38,15 +41,17 @@ public sealed class DerivedStats(
     public int MaxHitPoints { get; } = maxHitPoints;
     public int Defense { get; } = defense;
     public int Resistance { get; } = resistance;
-    
+
     /** Derived Stats */
-    public int AttackSpeed { get; } = attackSpeed;
-    public int Accuracy { get; } = accuracy;
-    public int Evasion { get; } = evasion;
-    public int CritChance { get; } = critChance;
-    public int CritDefense { get; } = critDefense;
+    public int PhysicalDamage { get; } = physicalDamage;
+    public int MagicDamage { get; } = magicDamage;
+    // public int AttackSpeed { get; } = attackSpeed;
+    // public int Accuracy { get; } = accuracy;
+    // public int Evasion { get; } = evasion;
+    // public int CritChance { get; } = critChance;
+    // public int CritDefense { get; } = critDefense;
     public int PhysicalProtection { get; } = physicalProtection;
-    public int MagicProtection { get; } = magicProtection;
-    public int ArmorPierce { get; } = armorPierce;
-    public int MagicPenetration { get; } = magicPenetration;
+    public int MagicProtection { get; } = magicResistance;
+    // public int ArmorPierce { get; } = armorPierce;
+    // public int MagicPenetration { get; } = magicPenetration;
 }

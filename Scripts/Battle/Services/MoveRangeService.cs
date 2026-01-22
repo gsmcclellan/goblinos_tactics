@@ -11,19 +11,19 @@ public sealed class MoveRangeService
 {
     private readonly Logger _logger = LogManager.For<MoveRangeService>();
     
-    private readonly BattleGrid _grid;
-    private readonly UnitRegistry _unitRegistry;
+    private readonly Core.BattleGrid _grid;
+    private readonly Units.UnitRegistry _unitRegistry;
 
     private int _gridRevision;
 
-    private readonly Dictionary<(Vector2I Cell, int MovePoints, int GridRevision), MovementPreviewResults> _cache =
+    private readonly Dictionary<(Vector2I Cell, string UnitId, int GridRevision), MovementPreviewResults> _cache =
         new();
 
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
     
-    public MoveRangeService(BattleGrid grid, UnitRegistry unitRegistry)
+    public MoveRangeService(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
         _unitRegistry = unitRegistry;
@@ -33,7 +33,7 @@ public sealed class MoveRangeService
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public bool CanMoveTo(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    public bool CanMoveTo(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _logger.Log($"CanMoveTo unit={unit.Name} from={fromCell} to={toCell}", LogSeverity.Trace, LogCategory.UiNavigation);
         
@@ -50,23 +50,22 @@ public sealed class MoveRangeService
             return false;
         
         // Use the cached movement preview to answer reachability.
-        var movePoints = unit.Movement;
-        if (movePoints <= 0)
+        if (unit.Movement <= 0)
             return false;
         
-        var preview = GetMovementPreview(fromCell, movePoints);
+        var preview = GetMovementPreview(fromCell, unit);
         return preview.Cells.Contains(toCell);
     }
     
     /// <summary>
     /// Returns a cached movement preview when available, otherwise computes and caches it.
     /// </summary>
-    public MovementPreviewResults GetMovementPreview(Vector2I startCell, int movePoints)
+    public MovementPreviewResults GetMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
     {
-        var cacheKey = (startCell, movePoints, _gridRevision);
+        var cacheKey = (startCell, actingUnit.Id, _gridRevision);
         if (_cache.TryGetValue(cacheKey, out var movePreview))
             return movePreview;
-        movePreview = BuildMovementPreview(startCell, movePoints);
+        movePreview = BuildMovementPreview(startCell, actingUnit);
         _cache[cacheKey] = movePreview;
         return movePreview;
     }
@@ -124,9 +123,8 @@ public sealed class MoveRangeService
     /// <summary>
     /// Computes all reachable cells within the given movement budget using Dijkstra.
     /// </summary>
-    /// TODO - block movement through enemy units.
     /// TODO - add function that takes multiple starting cells (for enemy threat range)
-    private MovementPreviewResults BuildMovementPreview(Vector2I startCell, int movePoints)
+    private MovementPreviewResults BuildMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
     {
         _logger.Log("GetReachableCells", LogSeverity.Trace, LogCategory.UiNavigation);
 
@@ -144,7 +142,7 @@ public sealed class MoveRangeService
                 continue; // stale entry, already resolved better cost for this cell
             
             // Skip nodes beyond budget.
-            if (costSoFar > movePoints)
+            if (costSoFar > actingUnit.Movement)
                 continue;
             
             foreach (var neighbor in GridNavigationUtil.GetCardinalNeighbors(cell))
@@ -153,11 +151,16 @@ public sealed class MoveRangeService
                 if (!_grid.TryGetTerrainAtCell(neighbor, out var terrain) || terrain.BlocksMovement)
                     continue;
                 
+                // Skip if enemy unit.
+                if (_unitRegistry.TryGetUnitAtCell(neighbor, out var existingUnit) &&
+                    existingUnit.IsFriendly != actingUnit.IsFriendly)
+                    continue;
+                
                 // add step cost to costSoFar, if less than movePoints
                 var addCost = Math.Max(1, terrain.MoveCost);
                 var newCost = costSoFar + addCost;
 
-                if (newCost > movePoints)
+                if (newCost > actingUnit.Movement)
                     continue;
 
                 // skip if already lower or equal cost

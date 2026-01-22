@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -30,7 +31,7 @@ public partial class BattleController: IInputHandler
     public InputDeviceMode InputDeviceMode = GlobalSettings.DefaultInputMode;
     
 
-    private BattleUnit? ActiveMover => UnitActivation?.Unit;
+    private Units.BattleUnit? ActiveMover => UnitActivation?.Unit;
     
     private void _Ready_Input()
     {

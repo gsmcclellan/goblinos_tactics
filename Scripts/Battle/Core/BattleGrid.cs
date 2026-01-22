@@ -8,7 +8,7 @@ using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Core;
 
 public partial class BattleGrid : Node2D
 {
@@ -33,8 +33,9 @@ public partial class BattleGrid : Node2D
     private readonly Dictionary<Vector2I, TerrainType?> _terrainAtCellCache = new();
     
     // Preview Data
-    private MovementPreviewResults? _movementPreview;
+    private IReadOnlySet<Vector2I>? _movementPreview;
     private (IReadOnlySet<Vector2I> Cells, int TileType)? _actionPreview;
+    private IReadOnlySet<Vector2I>? _hoveredThreatPreview;
     // private HashSet<Vector2I> _interactCells = new();
     private static readonly HashSet<Vector2I> EmptyCells = new();
     
@@ -136,7 +137,7 @@ public partial class BattleGrid : Node2D
     {
         _movementPreview = null;
         _actionPreview = null;
-        ClearOverlays();
+        _hoveredThreatPreview = null;
     }
     
     /// <summary>Clears preview overlay. Use if you change lots of tiles at once.</summary>
@@ -210,28 +211,37 @@ public partial class BattleGrid : Node2D
         _terrainAtCellCache.Remove(cell);
     }
     
-    public void SetMovementPreview(MovementPreviewResults preview)
+    public void SetMovementPreview(IReadOnlySet<Vector2I> preview)
     {
+        ClearPreviews();
         _movementPreview = preview;
         RedrawOverlay();
     }
 
     public void SetActionPreview(IReadOnlySet<Vector2I> preview, PrimaryActionType actionType)
     {
-        _movementPreview = null;
+        ClearPreviews();
         _actionPreview = (preview, (int)PrimaryActionTypeToOverlayType(actionType));
         RedrawOverlay();
     }
     
     public void SetAttackPreview(IReadOnlySet<Vector2I> preview)
     {
-        _movementPreview = null;
+        ClearPreviews();
         _actionPreview = (preview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
     }
 
-    public void SetPreviews(MovementPreviewResults movePreview, HashSet<Vector2I> attackPreview)
+    public void SetHoveredThreatPreview(IReadOnlySet<Vector2I> preview)
     {
+        ClearPreviews();
+        _hoveredThreatPreview = preview;
+        RedrawOverlay();
+    }
+
+    public void SetUnitStartOfTurnPreviews(IReadOnlySet<Vector2I> movePreview, IReadOnlySet<Vector2I> attackPreview)
+    {
+        ClearPreviews();
         _movementPreview = movePreview;
         _actionPreview = (attackPreview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
@@ -316,8 +326,9 @@ public partial class BattleGrid : Node2D
 
         _actionPreviewLayer.Visible = true;
         
-        var moveCells = _movementPreview?.Cells ?? EmptyCells;
+        var moveCells = _movementPreview ?? EmptyCells;
         var (attackCells, actionTileType) = _actionPreview ?? (EmptyCells, 1);
+        var hoveredThreatCells = _hoveredThreatPreview ?? EmptyCells;
         
         // Movement takes priority - cell legal for move & attack show as movement
         var attackOnly = new HashSet<Vector2I>(attackCells);
@@ -326,6 +337,7 @@ public partial class BattleGrid : Node2D
         // Combined set of cells to draw
         var renderedCells = new HashSet<Vector2I>(moveCells);
         renderedCells.UnionWith(attackCells);
+        renderedCells.UnionWith(hoveredThreatCells);
         // renderedCells.UnionWith(_interactCells); TODO
         
         ClearOverlays(); // TODO - clear selectively by passing renderedCells & ignoring everything else
@@ -340,6 +352,8 @@ public partial class BattleGrid : Node2D
                 overlayType = ActionOverlayType.Movement;
             else if (attackOnly.Contains(cell))
                 overlayType = (ActionOverlayType)actionTileType;
+            else if (hoveredThreatCells.Contains(cell))
+                overlayType = ActionOverlayType.EnemyThreat;
             else
             {
                 _logger.Warn($"Redraw Overlay - Unknown type for cell={cell}");
@@ -371,5 +385,6 @@ public enum ActionOverlayType
     Movement = 0,
     Attack = 1,
     Interact = 2,
-    Warning = 3
+    Warning = 3,
+    EnemyThreat
 }

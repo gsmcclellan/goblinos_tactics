@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Goblinos.Logging;
-using Goblinos.Scripts.Units;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Units;
 
 /// <summary>
 /// Authoritative registry of all units participating in a single battle.
@@ -39,6 +41,10 @@ public partial class UnitRegistry: Node
     /// </summary>
     public IReadOnlyList<BattleUnit> Units => _units;
 
+    // ---------------------------------------------------------------------
+    // Lifecycle / Setup Methods
+    // ---------------------------------------------------------------------
+    
     public override void _Ready()
     {
         _SubscribeToEvents();
@@ -56,8 +62,10 @@ public partial class UnitRegistry: Node
     private void _UnsubscribeFromEvents()
     {
     }
-
-    /** Registration / Lifecycle */
+    
+    // ---------------------------------------------------------------------
+    // Registration / Unit Lifecycle
+    // ---------------------------------------------------------------------
 
     /// <summary>
     /// Registers a unit as participating in the battle.
@@ -108,32 +116,6 @@ public partial class UnitRegistry: Node
         EmitSignal(SignalName.UnitUnregistered, unit, cell);
     }
 
-    // public void HandleUnitDeath(BattleUnit unit) TODO - unit death, finish here or move elsewhere to other battle controller
-    // {
-    //     // Unit has died
-    //     // kill unit
-    //     
-    //     // unregister unit
-    //     // send signal
-    // }
-    //
-    // /// <summary>
-    // /// Marks a unit as dead for the purposes of this battle.
-    // /// </summary>
-    // public void NotifyUnitDied(BattleUnit unit)
-    // {
-    //     var containsUnit = Contains(unit);
-    //     DebugUtil.Require(containsUnit, "Unit died, already unregistered");
-    //     if (!containsUnit)
-    //         return;
-    //     
-    //     var cell = _cellsByUnit[unit];
-    //     
-    //     _logger.Log($"[Signal] UnitDied unit={unit} cell={cell}" + unit, LogSeverity.Trace, LogCategory.Signal);
-    //     _logger.Log("NotifyUnitDied " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
-    //     EmitSignal(SignalName.UnitDied, unit, cell);
-    // }
-
     /// <summary>
     /// Clears all registered units. Intended for battle teardown.
     /// </summary>
@@ -145,7 +127,14 @@ public partial class UnitRegistry: Node
         _cellsByUnit.Clear();
     }
     
-    /* Filtering / Queries */
+    // ---------------------------------------------------------------------
+    // Queries / Filtering
+    // ---------------------------------------------------------------------
+    
+    public bool AreAllFriendlyUnitsExhausted()
+    {
+        throw new System.NotImplementedException();
+    }
 
     /// <summary>
     /// Determines if the registry has a given unit
@@ -159,6 +148,19 @@ public partial class UnitRegistry: Node
         _logger.Log($"Contains [unit]={unit} :: {hasUnit}", LogSeverity.Extra, LogCategory.DebugOnly);
         return hasUnit;
     }
+    
+    /// <summary>
+    /// Enumerates all units that are friendly.
+    /// </summary>
+    public IEnumerable<BattleUnit> GetFriendlyUnits()
+    {
+        return GetUnitsWhere(unit => unit.IsFriendly);
+    }
+
+    public IEnumerable<BattleUnit> GetUnitsWhere(Func<BattleUnit, bool> predicate)
+    {
+        return _units.Where(predicate);
+    }
 
     /// <summary>
     /// Enumerates units belonging to the given team/faction.
@@ -169,16 +171,6 @@ public partial class UnitRegistry: Node
     //
     //     yield break;
     // }
-
-    /// <summary>
-    /// Enumerates all units that are still alive.
-    /// </summary>
-    public IEnumerable<BattleUnit> GetLivingUnits()
-    {
-        _logger.Log("GetLivingUnits", LogSeverity.Extra, LogCategory.DebugOnly);
-
-        yield break;
-    }
 
     /// <summary>
     /// Determines if a cell is occupied by a unit
@@ -221,8 +213,10 @@ public partial class UnitRegistry: Node
         return hasUnit;
     }
     
-    /** Movement */
-
+    // ---------------------------------------------------------------------
+    // Updates / Set Unit Values - Maybe move to separate UnitController
+    // ---------------------------------------------------------------------
+    
     /// <summary>
     /// Updates the registry when a unit moves between cells.
     /// </summary>
@@ -257,6 +251,16 @@ public partial class UnitRegistry: Node
         _AssertInvariants();
         EmitSignal(SignalName.UnitMoveResolved, unit, fromCell, toCell);
     }
+    
+    public void SetFriendlyUnitsActivationState(UnitActivationState state)
+    {
+        foreach (var unit in GetFriendlyUnits())
+            unit.SetActivationState(state);
+    }
+    
+    // ---------------------------------------------------------------------
+    // Private Helpers
+    // ---------------------------------------------------------------------
     
     
     // ---------------------------------------------------------------------

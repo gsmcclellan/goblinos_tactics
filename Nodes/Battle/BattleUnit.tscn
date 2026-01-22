@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://v4pdegvv5cl"]
 
-[ext_resource type="Script" uid="uid://ct2py77lvfwmo" path="res://Scripts/Battle/BattleUnit.cs" id="1_q1p61"]
+[ext_resource type="Script" uid="uid://clo5tokfv7h6" path="res://Scripts/Battle/Units/BattleUnit.cs" id="1_f5ts6"]
 [ext_resource type="Texture2D" uid="uid://dklob8yewxr1r" path="res://Assets/Images/Units/GoblinStabber.png" id="2_f5ts6"]
 [ext_resource type="Texture2D" uid="uid://brkn7mbdkgwpv" path="res://Assets/selection_square_32x32.png" id="3_7r0qe"]
 
@@ -21,7 +21,7 @@ size = Vector2(30, 29)
 
 [node name="BattleUnit" type="Area2D" node_paths=PackedStringArray("_imageSprite", "_hpBar")]
 scale = Vector2(1, 0.997975)
-script = ExtResource("1_q1p61")
+script = ExtResource("1_f5ts6")
 _imageSprite = NodePath("Sprite")
 _hpBar = NodePath("HpBar")
 

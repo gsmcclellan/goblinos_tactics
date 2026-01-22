@@ -5,7 +5,7 @@ using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Controllers;
 
 public partial class SelectionController : Node
 {
@@ -28,24 +28,24 @@ public partial class SelectionController : Node
     /** Components */
     private Logger _logger = LogManager.For<SelectionController>();
 
-    private GridCursor _cursor;
-    private BattleGrid _grid;
-    private UnitRegistry _unitRegistry;
+    private Core.GridCursor _cursor;
+    private Core.BattleGrid _grid;
+    private Units.UnitRegistry _unitRegistry;
 
     /** Fields */
     private Vector2I _hoveredCell;
 
     private TerrainType? _hoveredTerrain;
-    private BattleUnit? _hoveredUnit;
+    private Units.BattleUnit? _hoveredUnit;
 
     // private Vector2I _selectedCell;
     // private TerrainType _selectedTerrain;
-    private BattleUnit? _selectedUnit;
+    private Units.BattleUnit? _selectedUnit;
 
     /** Properties */
     public CellFocus Focus => new CellFocus(_hoveredCell, _hoveredTerrain, _hoveredUnit);
     public Vector2I HoveredCell => _hoveredCell;
-    public BattleUnit? HoveredUnit => _hoveredUnit;
+    public Units.BattleUnit? HoveredUnit => _hoveredUnit;
 
     public Vector2I? SelectedCell { 
         get 
@@ -58,7 +58,7 @@ public partial class SelectionController : Node
             return null;
         }
     }
-    public BattleUnit? SelectedUnit => _selectedUnit;
+    public Units.BattleUnit? SelectedUnit => _selectedUnit;
 
     public bool IsUnitHovered => _hoveredUnit != null;
     public bool IsUnitSelected => _selectedUnit != null;
@@ -73,7 +73,7 @@ public partial class SelectionController : Node
         _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
     }
 
-    public void Bind(GridCursor cursor, BattleGrid grid, UnitRegistry unitRegistry)
+    public void Bind(Core.GridCursor cursor, Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
         if (_cursor != null || _grid != null || _unitRegistry != null)
@@ -138,7 +138,7 @@ public partial class SelectionController : Node
 
     public void SelectCell(Vector2I cell) => SelectCell(cell, out _);
     
-    public void SelectUnit(BattleUnit unit)
+    public void SelectUnit(Units.BattleUnit unit)
     {
         if (unit == _selectedUnit) return;
         
@@ -223,7 +223,7 @@ public partial class SelectionController : Node
         EmitSignalHoveredTerrainChanged(terrain);
     }
 
-    private void SetHoveredUnit(BattleUnit? unit)
+    private void SetHoveredUnit(Units.BattleUnit? unit)
     {
         _logger.Log($"Update hovered unit={unit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
         _hoveredUnit = unit;

@@ -1,19 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Test;
 using Goblinos.Scripts.Units;
+using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
 
 public partial class BattleController
 {
+    /** Components */
     [ExportGroup("Test")] 
     [Export] private PackedScene _battleUnitScene;
     [Export] private NodePath _unitsRootPath;
-
     private Node _unitsRoot;
+
+    private RandomNumberGenerator _random = new RandomNumberGenerator();
+
+    
     
     public void _Ready_Test()
     {
@@ -47,8 +53,8 @@ public partial class BattleController
         for (var i = 0; i < 4; i++)
         {
             friends[i].IsFriendly = true;
-            Spawn(friends[i], new Vector2I(i, 0));
-            Spawn(enemies[i], new Vector2I(i, 4));
+            Spawn(friends[i], new Vector2I(i, _random.RandiRange(0, 15)));
+            Spawn(enemies[i], new Vector2I(8+i, _random.RandiRange(0, 15)));
         }
         
         _registerExistingBattleUnitNodes();
@@ -60,7 +66,7 @@ public partial class BattleController
     private BattleUnit Spawn(Unit unit, Vector2I cell)
     {
         _logger.Log("[BattleUnitSpawner] Spawn " + unit.UnitName, LogSeverity.Info, LogCategory.UnitLifecycle);
-
+        
         var node = _battleUnitScene.Instantiate<BattleUnit>();
         _unitsRoot.AddChild(node);
 

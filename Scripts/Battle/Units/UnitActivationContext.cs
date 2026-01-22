@@ -3,7 +3,7 @@ using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Units;
 
 // TODO - investigate. Undo maybe not needed on primary action because it is not resolved until confirmation which then 
 // can't be undone.

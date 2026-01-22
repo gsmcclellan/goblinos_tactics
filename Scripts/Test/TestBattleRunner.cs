@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Units;
+using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 #nullable enable
 using System;
 using Goblinos.Logging;

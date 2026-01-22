@@ -8,9 +8,8 @@ using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Util;
 using Godot;
-using Range = Godot.Range;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Units;
 
 public partial class BattleUnit : Area2D
 {
@@ -44,6 +43,7 @@ public partial class BattleUnit : Area2D
     public bool IsFriendly => _unit.IsFriendly;
     public int MaxHitPoints => _unit.Stats.BaseStats.MaxHitPoints;
     public int Movement => _unit.Stats.BaseStats.Movement;
+    public UnitStats Stats => _unit.Stats;
     public Unit Unit => _unit;
     public string UnitName => _unit.UnitName;
     

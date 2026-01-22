@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Goblinos"
-run/main_scene="uid://cgqx8chjq2ysw"
+run/main_scene="uid://ckjgg67grrl4p"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

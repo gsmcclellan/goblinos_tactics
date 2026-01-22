@@ -2,6 +2,7 @@
 using System;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -11,11 +12,14 @@ public partial class BattleController
 {
     /** Signals */
     // Battle Level
-    [Signal] public delegate void BattleControllerInitializedEventHandler();
-
+    [Signal] 
+    public delegate void BattleControllerInitializedEventHandler();
     [Signal]
     public delegate void InputStateChangedEventHandler(int state);
-    // Components
+    // Units
+    [Signal]
+    public delegate void UnitActionsResolvedEventHandler(Units.BattleUnit unit); // TODO - put unit context snapshot here.
+    
 
     /** Events */
 
@@ -29,7 +33,6 @@ public partial class BattleController
     {
         // GridCursor
         DebugUtil.Require(_cursor != null, "[GridCursor] not initialized. Unable to set up actions.");
-        
         _logger.Log("Ready_Events", LogSeverity.Info, LogCategory.Initialization);
     }
 
@@ -41,6 +44,9 @@ public partial class BattleController
 
     private void _SubscribeToEvents()
     {
+        // BattleController
+        UnitActionsResolved += OnUnitActionsResolved;
+        
         // BattleHud
         _hud.PrimaryActionFocused += OnPrimaryActionFocused;
         _hud.PrimaryActionSelected += OnPrimaryActionSelected;
@@ -57,6 +63,9 @@ public partial class BattleController
 
     private void _UnsubscribeFromEvents()
     {
+        // BattleController
+        UnitActionsResolved -= OnUnitActionsResolved;
+        
         // BattleHud
         _hud.PrimaryActionFocused -= OnPrimaryActionFocused;
         _hud.PrimaryActionSelected -= OnPrimaryActionSelected;
@@ -81,7 +90,7 @@ public partial class BattleController
         switch (hoveredNode)
         {
             // In FreeSelect, change move preview when hovered unit changes.
-            case BattleUnit when InputState == BattleInputState.FreeSelect:
+            case Units.BattleUnit when InputState == BattleInputState.FreeSelect:
                 ResetPreviews();
                 break;
             case null when InputState == BattleInputState.FreeSelect:
@@ -112,17 +121,23 @@ public partial class BattleController
         // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
     }
 
-    private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    private void OnUnitActionsResolved(Units.BattleUnit unit)
+    {
+        _moveRangeService.InvalidateCache();
+        // TODO - Check for all units resolved/exhausted - enter enemy turn
+    }
+
+    private void OnUnitMoveResolved(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
     }
 
-    private void OnUnitRegistered(BattleUnit unit, Vector2I cell)
+    private void OnUnitRegistered(Units.BattleUnit unit, Vector2I cell)
     {
         _moveRangeService.InvalidateCache();
     }
 
-    private void OnUnitUnregistered(BattleUnit unit, Vector2I cell)
+    private void OnUnitUnregistered(Units.BattleUnit unit, Vector2I cell)
     {
         _moveRangeService.InvalidateCache();
     }

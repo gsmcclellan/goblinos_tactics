@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Units.Types;
 using Goblinos.Scripts.Util;
 
@@ -37,8 +39,11 @@ public class CombatResolver
            )
             return new SimpleCombatResult();
 
-        var attackerDamage = _damageCalculator.ComputeDamage(attacker, defender);
-        var defenderDamage = _damageCalculator.ComputeDamage(defender, attacker);
+        var attackerStats = DerivedStatsCalculator.Build(attacker.Stats);
+        var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
+        
+        var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
+        var defenderDamage = _damageCalculator.ComputeDamage(defenderStats, attackerStats);
 
         attacker.ApplyDamage(defenderDamage);
         defender.ApplyDamage(attackerDamage);

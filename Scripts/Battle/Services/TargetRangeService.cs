@@ -10,9 +10,9 @@ public sealed class TargetRangeService
 {
     private readonly Logger _logger = LogManager.For<TargetRangeService>();
 
-    private readonly BattleGrid _grid;
+    private readonly Core.BattleGrid _grid;
 
-    public TargetRangeService(BattleGrid grid)
+    public TargetRangeService(Core.BattleGrid grid)
     {
         _grid = grid;
     }

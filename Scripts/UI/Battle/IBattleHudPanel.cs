@@ -2,6 +2,7 @@
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
 using Godot;
+using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 
 namespace Goblinos.Scripts.UI.Battle
 {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Godot;
+using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 
 namespace Goblinos.Scripts.UI.Battle;
 

@@ -9,6 +9,9 @@ using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.UI.Battle;
 using Godot;
 using Goblinos.Scripts.Util;
+using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
+using SelectionController = Goblinos.Scripts.Battle.Controllers.SelectionController;
+using TurnController = Goblinos.Scripts.Battle.Controllers.TurnController;
 
 namespace Goblinos.Scripts.UI.Battle
 {
@@ -24,13 +27,17 @@ namespace Goblinos.Scripts.UI.Battle
         [Export] private NodePath _panelsRootPath;
         [Export] private NodePath _primaryActionSelectPath;
         [Export] private NodePath _primaryActionConfirmPath;
+        
+        [Export] private Label _turnNumberLabel;
+        [Export] private Button _endTurnButton;
 
         private BattleController _battleController;
-        private GridCursor _cursor;
+        private Scripts.Battle.Core.GridCursor _cursor;
         private Node _panelsRoot;
         private PrimaryActionConfirm _primaryActionConfirm;
         private PrimaryActionSelect _primaryActionSelect;
         private SelectionController _selectionController;
+        private TurnController _turnController;
         
         private Logger _logger = LogManager.For<BattleHud>();
         
@@ -43,20 +50,24 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         // Lifecycle / Setup Methods
         // ---------------------------------------------------------------------
-        public void Bind(SelectionController selectionController, BattleController battleController, GridCursor cursor)
+        public void Bind(BattleController battleController, Scripts.Battle.Core.GridCursor cursor, SelectionController selectionController, TurnController turnController)
         {
             _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
-            
             
             _battleController = battleController;
             _cursor = cursor;
             _selectionController = selectionController;
+            _turnController = turnController;
             
             if (!DebugUtil.Require(_battleController != null, "[BattleHud] requires BattleController binding") ||
                 !DebugUtil.Require(_cursor != null, "[BattleHud] requires GridCursor binding") ||
-                !DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding")
+                !DebugUtil.Require(_selectionController != null, "[BattleHud] requires SelectionController binding") ||
+                !DebugUtil.Require(_turnController != null, "[BattleHud] requires TurnController binding")
                )
                 return;
+            
+            Debug.Assert(_turnNumberLabel != null, "[BattleHud] Missing Turn Number Label");
+            Debug.Assert(_endTurnButton != null, "[BattleHud] Missing End Turn Button");
             
             _SubscribeToEvents();
         }
@@ -86,11 +97,15 @@ namespace Goblinos.Scripts.UI.Battle
         
         private void _SubscribeToEvents()
         {
-            _logger.Log("ConnectSignals", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("SubscribeToEvents", LogSeverity.Info, LogCategory.Initialization);
+            if (_primaryActionSelect == null)
+                throw new InvalidOperationException("[BattleHud] Bind called before _Ready. _primaryActionSelect is not initialized.");
 
             _battleController.InputStateChanged += OnBattleControllerInputStateChanged;
 
             _cursor.GridCursorFocusChanged += OnHoveredCellChanged;
+
+            _endTurnButton.Pressed += OnEndTurnButtonPressed;
             
             _primaryActionSelect.ActionFocused += OnPrimaryActionFocused;
             _primaryActionSelect.ActionSelected += OnPrimaryActionSelected;
@@ -99,23 +114,27 @@ namespace Goblinos.Scripts.UI.Battle
             _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
 
-            
+            _turnController.TurnStarted += OnTurnStarted;
         }
 
         private void _UnsubscribeFromEvents()
         {
-            _logger.Log("DisconnectSignals", LogSeverity.Info, LogCategory.Exit);
+            _logger.Log("UnsubscribeFromEvents", LogSeverity.Info, LogCategory.Exit);
             
             _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
             
             _cursor.GridCursorFocusChanged -= OnHoveredCellChanged;
             
+            _endTurnButton.Pressed -= OnEndTurnButtonPressed;
+            
             _primaryActionSelect.ActionFocused -= OnPrimaryActionFocused;
             _primaryActionSelect.ActionSelected -= OnPrimaryActionSelected;
 
             _selectionController.HoveredTerrainChanged -= OnHoveredTerrainChanged;
-            _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
+            _selectionController.HoveredUnitChanged -= OnHoveredUnitChanged;
             _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
+            
+            _turnController.TurnStarted -= OnTurnStarted;
         }
 
         private void CachePanels()
@@ -190,6 +209,21 @@ namespace Goblinos.Scripts.UI.Battle
         // Signal / Event Callbacks
         // ---------------------------------------------------------------------
 
+        private void OnBattleControllerInputStateChanged(int s)
+        {
+            var state = (BattleInputState) s;
+            var node = GetNode<Label>("BattleControllerInputState");
+            _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
+            
+            node.Text = state.ToString();
+        }
+
+        private void OnEndTurnButtonPressed()
+        {
+            _logger.Log("OnEndTurnButtonPressed", LogSeverity.Info, LogCategory.UiNavigation);
+            _battleController.RequestEndTurn();
+        }
+        
         private void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
         {
             _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", LogSeverity.Trace, LogCategory.UiNavigation);
@@ -223,16 +257,7 @@ namespace Goblinos.Scripts.UI.Battle
             foreach (var panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
         }
-
-        private void OnBattleControllerInputStateChanged(int s)
-        {
-            var state = (BattleInputState) s;
-            var node = GetNode<Label>("BattleControllerInputState");
-            _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
-            
-            node.Text = state.ToString();
-        }
-
+        
         private void OnPrimaryActionFocused(int action)
         {
             _logger.Log("OnPrimaryActionFocused", LogSeverity.Trace, LogCategory.Signal);
@@ -243,6 +268,11 @@ namespace Goblinos.Scripts.UI.Battle
         {
             _logger.Log("OnPrimaryActionSelected", LogSeverity.Trace, LogCategory.Signal);
             EmitSignal(SignalName.PrimaryActionSelected, action);
+        }
+        
+        private void OnTurnStarted(BattleSide activeSide, int turnNumber)
+        {
+            _turnNumberLabel.Text = turnNumber.ToString();
         }
     }
 }

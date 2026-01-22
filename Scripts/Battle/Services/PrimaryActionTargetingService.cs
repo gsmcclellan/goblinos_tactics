@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -18,11 +19,11 @@ public class PrimaryActionTargetingService
 {
     private readonly Logger _logger = LogManager.For<PrimaryActionTargetingService>();
 
-    private readonly BattleGrid _grid;
+    private readonly Core.BattleGrid _grid;
     private readonly TargetRangeService _targetRangeService;
-    private readonly UnitRegistry _unitRegistry;
+    private readonly Units.UnitRegistry _unitRegistry;
 
-    public PrimaryActionTargetingService(BattleGrid grid, UnitRegistry unitRegistry)
+    public PrimaryActionTargetingService(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
         _targetRangeService = new TargetRangeService(grid);
@@ -57,7 +58,7 @@ public class PrimaryActionTargetingService
     /// <summary>
     /// Returns all valid targets based on origin cell, unit & action type.
     /// </summary>
-    public IReadOnlySet<Vector2I> GetValidTargets(Vector2I originCell, BattleUnit unit, PrimaryActionType primaryActionType)
+    public IReadOnlySet<Vector2I> GetValidTargets(Vector2I originCell, Units.BattleUnit unit, PrimaryActionType primaryActionType)
     {
         _logger.Log($"{nameof(GetValidTargets)}", LogSeverity.Info, LogCategory.UiNavigation);
         var targetableCells = new HashSet<Vector2I>();
@@ -76,7 +77,7 @@ public class PrimaryActionTargetingService
         return targetableCells;
     }
 
-    public bool IsValidTarget(Vector2I originCell, Vector2I targetCell, BattleUnit actingUnit, PrimaryActionType actionType)
+    public bool IsValidTarget(Vector2I originCell, Vector2I targetCell, Units.BattleUnit actingUnit, PrimaryActionType actionType)
     {
         RangeBand range = GetRange(actingUnit, actionType);
         var inRangeCells = _targetRangeService.BuildTargetRangeFromCell(originCell, range);
@@ -107,7 +108,7 @@ public class PrimaryActionTargetingService
     /// <summary>
     /// Determines if target cell is valid given acting unit & action type. Does not check for range.
     /// </summary>
-    private bool IsValidTargetNoRangeCheck(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType)
+    private bool IsValidTargetNoRangeCheck(Vector2I cell, Units.BattleUnit actingUnit, PrimaryActionType actionType)
     {
         _logger.Log($"{nameof(IsValidTargetNoRangeCheck)} cell={cell} actionType={actionType}", LogSeverity.Extra, LogCategory.Input);
         
@@ -143,13 +144,13 @@ public class PrimaryActionTargetingService
     // ---------------------------------------------------------------------
     // Private Helpers
     // ---------------------------------------------------------------------
-    private void AddIfValidTarget(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType, HashSet<Vector2I> output)
+    private void AddIfValidTarget(Vector2I cell, Units.BattleUnit actingUnit, PrimaryActionType actionType, HashSet<Vector2I> output)
     {
         if (IsValidTargetNoRangeCheck(cell, actingUnit, actionType))
             output.Add(cell);
     }
 
-    private RangeBand GetRange(BattleUnit unit, PrimaryActionType actionType)
+    private RangeBand GetRange(Units.BattleUnit unit, PrimaryActionType actionType)
     {
         switch (actionType)
         {

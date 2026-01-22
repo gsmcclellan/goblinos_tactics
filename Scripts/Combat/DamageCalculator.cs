@@ -1,12 +1,13 @@
 ﻿using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Units.Stats;
 
 namespace Goblinos.Scripts.Combat;
 
 public class DamageCalculator
 {
-    public int ComputeDamage(BattleUnit attacker, BattleUnit defender)
+    public int ComputeDamage(DerivedStats attackerStats, DerivedStats defenderStats)
     {
-        return 10;
-        return 0;
+        // TODO - damage type - magic vs physical damage.
+        return attackerStats.PhysicalDamage - defenderStats.PhysicalProtection;
     }
 }

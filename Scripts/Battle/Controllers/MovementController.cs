@@ -3,16 +3,16 @@ using Goblinos.Logging;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Controllers;
 
 public partial class MovementController: Node
 {
     private Logger _logger = LogManager.For<MovementController>();
     
-    private BattleGrid _grid;
-    private UnitRegistry _unitRegistry;
+    private Core.BattleGrid _grid;
+    private Units.UnitRegistry _unitRegistry;
 
-    public void Bind(BattleGrid grid, UnitRegistry unitRegistry)
+    public void Bind(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
         _unitRegistry = unitRegistry;
@@ -23,7 +23,7 @@ public partial class MovementController: Node
         _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
     }
 
-    public bool TryMoveToCell(BattleUnit unit, Vector2I targetCell)
+    public bool TryMoveToCell(Units.BattleUnit unit, Vector2I targetCell)
     {
         _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "[MovementController] Unable to move, no unit."))
@@ -47,7 +47,7 @@ public partial class MovementController: Node
         return true;
     }
 
-    public void CommitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    public void CommitMove(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
         // TODO - animations & stuff

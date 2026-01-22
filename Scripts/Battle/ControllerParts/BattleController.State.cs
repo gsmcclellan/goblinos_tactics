@@ -1,8 +1,10 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -31,9 +33,11 @@ public partial class BattleController
 
     public bool IsUnitSelected => _selectionController.IsUnitSelected;
     public Vector2I HoveredCell => _selectionController.HoveredCell;
-    public BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
+    public Units.BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
     public Vector2I? SelectedCell => _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
-    public BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
+    public Units.BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
+    
+    
     
     private void _Ready_State()
     {
@@ -41,6 +45,16 @@ public partial class BattleController
         _registerExistingBattleUnitNodes();
         
         _logger.Log("_Ready_State", LogSeverity.Info, LogCategory.Initialization);
+    }
+
+
+    public void RequestEndTurn()
+    {
+        if (!_turnController.RequestEndPlayerTurn())
+            return;
+        
+        ClearUnitActivation();
+        ClearPreviews();
     }
     
     private void AbortActivationToFreeSelect()
@@ -74,10 +88,6 @@ public partial class BattleController
     
     private void ClearUnitActivation()
     {
-        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
-        if (!DebugUtil.Require(UnitActivation != null, "[BattleController.State] ClearUnitActivation failed. No UnitActivationContext."))
-            return;
-        
         UnitActivation = null;
     }
 
@@ -109,7 +119,7 @@ public partial class BattleController
         GenerateHoverPreview();
     }
 
-    private void EnterMoveTargetingMode(BattleUnit unit)
+    private void EnterMoveTargetingMode(Units.BattleUnit unit)
     {
         _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
 
@@ -214,10 +224,18 @@ public partial class BattleController
         
         _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
         
-        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit.Movement);
+        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit);
         var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
         
-        _grid.SetPreviews(movementPreview, attackPreview);
+        if (unit.IsFriendly)
+            _grid.SetUnitStartOfTurnPreviews(movementPreview.Cells, attackPreview);
+        else
+        {
+            var cells = new HashSet<Vector2I>();
+            cells.UnionWith(movementPreview.Cells);
+            cells.UnionWith(attackPreview);
+            _grid.SetHoveredThreatPreview(cells);
+        }
     }
     
     private void GenerateMovePreviewForSelectedUnit()
@@ -230,11 +248,11 @@ public partial class BattleController
         
         _logger.Log($"GeneratePreviewForSelectedUnit cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
         
-        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit!.Movement);
-        var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
+        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit!);
+        var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit!.AttackRange);
 
         GD.Print($"movementPreview.Cells.Count={movementPreview.Cells.Count}");
-        _grid.SetPreviews(movementPreview, attackPreview);
+        _grid.SetUnitStartOfTurnPreviews(movementPreview.Cells, attackPreview);
     }
 
     private void GeneratePrimaryActionTargetPreviewForActiveUnit()

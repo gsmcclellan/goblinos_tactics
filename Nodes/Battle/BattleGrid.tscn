@@ -1,8 +1,8 @@
 [gd_scene load_steps=8 format=4 uid="uid://dsm2xuioevf8o"]
 
+[ext_resource type="Script" uid="uid://chstjju17qxnc" path="res://Scripts/Battle/Core/BattleGrid.cs" id="1_eklga"]
 [ext_resource type="Texture2D" uid="uid://ba04ljt84x7m2" path="res://Assets/basic_ground_tiles.png" id="1_gq1es"]
-[ext_resource type="Script" uid="uid://c7th2gm615eh1" path="res://Scripts/Battle/BattleGrid.cs" id="1_mukho"]
-[ext_resource type="Texture2D" uid="uid://dkl2a06p23p6o" path="res://Assets/action_overlay_tiles.png" id="3_eklga"]
+[ext_resource type="Texture2D" uid="uid://86pdc73ds375" path="res://Assets/action_overlay_tiles.png" id="3_eklga"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_uu6xs"]
 resource_name = "BasicGroundTiles"
@@ -24,21 +24,21 @@ custom_data_layer_0/name = "terrain_id"
 custom_data_layer_0/type = 4
 sources/0 = SubResource("TileSetAtlasSource_uu6xs")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_j22kn"]
-resource_name = "ActionOverlayTiles"
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_eklga"]
 texture = ExtResource("3_eklga")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
 3:0/0 = 0
+4:0/0 = 0
 
-[sub_resource type="TileSet" id="TileSet_1au40"]
+[sub_resource type="TileSet" id="TileSet_j22kn"]
 tile_size = Vector2i(32, 32)
-sources/1 = SubResource("TileSetAtlasSource_j22kn")
+sources/1 = SubResource("TileSetAtlasSource_eklga")
 
 [node name="BattleGrid" type="Node2D" node_paths=PackedStringArray("_terrainLayer", "_actionPreviewLayer")]
-script = ExtResource("1_mukho")
+script = ExtResource("1_eklga")
 _terrainLayer = NodePath("TerrainLayer")
 _actionPreviewLayer = NodePath("ActionPreviewLayer")
 TerrainDbFolder = "res://Nodes/Battle/Terrain"
@@ -49,5 +49,6 @@ tile_set = SubResource("TileSet_rxg2q")
 
 [node name="ActionPreviewLayer" type="TileMapLayer" parent="."]
 z_index = 1
-tile_map_data = PackedByteArray("AAABAAAAAQAAAAAAAAABAAEAAQAAAAAAAAAAAAEAAQAAAAAAAAACAAAAAQAAAAAAAAADAAAAAQAAAAAAAAAEAAAAAQAAAAAAAAAAAAIAAQAAAAAAAAAAAAMAAQAAAAAAAAAAAAQAAQAAAAAAAAABAAMAAQAAAAAAAAACAAIAAQAAAAAAAAADAAEAAQAAAAAAAAACAAEAAQAAAAAAAAABAAIAAQAAAAAAAAAAAAUAAQABAAAAAAABAAQAAQABAAAAAAACAAMAAQABAAAAAAADAAIAAQABAAAAAAAEAAEAAQABAAAAAAAFAAAAAQABAAAAAAA=")
-tile_set = SubResource("TileSet_1au40")
+tile_map_data = PackedByteArray("AAABAAEAAQAAAAAAAAABAAAAAQAAAAAAAAAAAAEAAQAAAAAAAAACAAAAAQAAAAAAAAACAAEAAQAAAAAAAAABAAIAAQAAAAAAAAAAAAIAAQAAAAAAAAAAAAMAAQAAAAAAAAAAAAQAAQAAAAAAAAADAAAAAQAAAAAAAAAEAAAAAQAAAAAAAAADAAEAAQAAAAAAAAACAAIAAQAAAAAAAAABAAMAAQAAAAAAAAAAAAUAAQABAAAAAAABAAQAAQABAAAAAAACAAMAAQABAAAAAAADAAIAAQABAAAAAAAEAAEAAQABAAAAAAAFAAAAAQABAAAAAAANAAUAAQAEAAAAAAAMAAUAAQAEAAAAAAAOAAUAAQAEAAAAAAALAAUAAQAEAAAAAAAPAAUAAQAEAAAAAAAKAAUAAQAEAAAAAAAJAAUAAQAEAAAAAAAQAAUAAQAEAAAAAAARAAUAAQAEAAAAAAAKAAQAAQAEAAAAAAALAAQAAQAEAAAAAAAMAAQAAQAEAAAAAAANAAQAAQAEAAAAAAAOAAQAAQAEAAAAAAAPAAQAAQAEAAAAAAAQAAQAAQAEAAAAAAAOAAMAAQAEAAAAAAANAAMAAQAEAAAAAAAMAAMAAQAEAAAAAAALAAMAAQAEAAAAAAAOAAIAAQAEAAAAAAANAAIAAQAEAAAAAAAMAAIAAQAEAAAAAAANAAEAAQAEAAAAAAAKAAYAAQAEAAAAAAALAAYAAQAEAAAAAAAMAAYAAQAEAAAAAAANAAYAAQAEAAAAAAAOAAYAAQAEAAAAAAAPAAYAAQAEAAAAAAAQAAYAAQAEAAAAAAALAAcAAQAEAAAAAAAMAAcAAQAEAAAAAAANAAcAAQAEAAAAAAAOAAcAAQAEAAAAAAAPAAcAAQAEAAAAAAAMAAgAAQAEAAAAAAANAAgAAQAEAAAAAAAOAAgAAQAEAAAAAAANAAkAAQAEAAAAAAANAAoAAQABAAAAAAAOAAkAAQABAAAAAAAPAAgAAQABAAAAAAAQAAcAAQABAAAAAAARAAYAAQABAAAAAAASAAUAAQABAAAAAAARAAQAAQABAAAAAAAQAAMAAQABAAAAAAAPAAIAAQABAAAAAAAOAAEAAQABAAAAAAANAAAAAQABAAAAAAAMAAEAAQABAAAAAAALAAIAAQABAAAAAAAKAAMAAQABAAAAAAAJAAQAAQABAAAAAAAIAAUAAQABAAAAAAAJAAYAAQABAAAAAAAKAAcAAQABAAAAAAALAAgAAQABAAAAAAAMAAkAAQABAAAAAAAPAAMAAQAEAAAAAAA=")
+tile_set = SubResource("TileSet_j22kn")
+rendering_quadrant_size = 32

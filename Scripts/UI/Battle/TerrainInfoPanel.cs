@@ -8,6 +8,7 @@ using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Util;
+using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 
 public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 {

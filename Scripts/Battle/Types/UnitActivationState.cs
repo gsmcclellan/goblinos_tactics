@@ -4,5 +4,6 @@ public enum UnitActivationState
 {
     Ready,
     Activated,
-    Exhausted
+    Exhausted,
+    Skipped
 }

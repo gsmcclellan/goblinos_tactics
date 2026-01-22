@@ -6,11 +6,13 @@
 [ext_resource type="PackedScene" uid="uid://cixx1r5qwd8im" path="res://Nodes/UI/Battle/PrimaryActionSelect.tscn" id="3_rfvvm"]
 [ext_resource type="PackedScene" uid="uid://dr6d1tddeftk2" path="res://Nodes/UI/Battle/PrimaryActionConfirm.tscn" id="4_kr30i"]
 
-[node name="BattleHud" type="CanvasLayer"]
+[node name="BattleHud" type="CanvasLayer" node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton")]
 script = ExtResource("1_8w1vy")
 _panelsRootPath = NodePath("BattleHudPanels")
 _primaryActionSelectPath = NodePath("PrimaryActionSelect")
 _primaryActionConfirmPath = NodePath("PrimaryActionConfirmationPanel")
+_turnNumberLabel = NodePath("TurnPanel/MarginContainer/VBoxContainer/HBoxContainer/TurnNumber")
+_endTurnButton = NodePath("TurnPanel/MarginContainer/VBoxContainer/EndTurnButton")
 
 [node name="BattleHudPanels" type="Control" parent="."]
 layout_mode = 3
@@ -45,3 +47,36 @@ text = "Free Select"
 [node name="PrimaryActionSelect" parent="." instance=ExtResource("3_rfvvm")]
 
 [node name="PrimaryActionConfirmationPanel" parent="." instance=ExtResource("4_kr30i")]
+
+[node name="TurnPanel" type="Panel" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_bottom = 60.0
+grow_horizontal = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="TurnPanel"]
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TurnPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TurnPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TurnNumberLabel" type="Label" parent="TurnPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Turn:"
+
+[node name="TurnNumber" type="Label" parent="TurnPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "0"
+
+[node name="EndTurnButton" type="Button" parent="TurnPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "End Turn
+"

@@ -2,7 +2,7 @@
 using Goblinos.Scripts.Units.Types;
 using Godot;
 
-namespace Goblinos.Scripts.Battle;
+namespace Goblinos.Scripts.Battle.Units;
 
 /// <summary>
 /// This combines all actions of a unit's per turn command.
