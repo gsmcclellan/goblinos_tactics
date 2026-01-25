@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units;
@@ -38,6 +39,7 @@ public partial class BattleUnit : Area2D
     
     /** Facade Properties */
     public RangeBand AttackRange => new RangeBand(1, 1); // TODO - base on weapon.
+    public bool CanAct => State != UnitActivationState.Exhausted;
     public String Id => _unit.Id;
     public bool IsDefeated => CurrentHitPoints <= 0;
     public bool IsFriendly => _unit.IsFriendly;
@@ -142,6 +144,7 @@ public partial class BattleUnit : Area2D
     {
         _logger.Log($"{nameof(SetActivationState)} state={state}", LogSeverity.Trace, LogCategory.UnitLifecycle);
         State = state;
+        SetExhaustedVisual(state == UnitActivationState.Exhausted);
     }
 
     public void ToggleSelected(bool? force = null)
@@ -180,6 +183,13 @@ public partial class BattleUnit : Area2D
 
         _hpBar.MaxValue = MaxHitPoints;
         _hpBar.Value = CurrentHitPoints;
+    }
+    
+    private void SetExhaustedVisual(bool exhausted)
+    {
+        Modulate = exhausted 
+            ? new Color(0.6f, 0.6f, 0.6f)
+            : Colors.White;
     }
 
     private void SetHitPoints(int newValue)

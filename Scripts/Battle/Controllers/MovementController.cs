@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -9,10 +10,10 @@ public partial class MovementController: Node
 {
     private Logger _logger = LogManager.For<MovementController>();
     
-    private Core.BattleGrid _grid;
+    private BattleGrid _grid;
     private Units.UnitRegistry _unitRegistry;
 
-    public void Bind(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
+    public void Bind(BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
         _unitRegistry = unitRegistry;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.UI.Battle;
@@ -180,7 +181,7 @@ namespace Goblinos.Scripts.UI.Battle
         /// <summary>
         /// Shows the primary action menu, disables actions with no valid targets, and focuses the first enabled action.
         /// </summary>
-        public void ShowPrimaryActionSelectMenu(PrimaryActionPreviewResults? previews)
+        public void ShowPrimaryActionSelectMenu(PrimaryActionValidTargetsPreview? previews)
         {
             _primaryActionSelect.Visible = true;
             

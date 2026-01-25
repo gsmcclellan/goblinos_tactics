@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
@@ -15,7 +16,7 @@ public partial class BattleController
     /** Fields */
     private BattleInputState _inputState = BattleInputState.FreeSelect;
     
-    private PrimaryActionPreviewResults? _primaryActionPreviews;
+    private PrimaryActionValidTargetsPreview? _primaryActionPreviews;
     
     /** Properties */
     public UnitActivationContext? UnitActivation;
@@ -31,6 +32,7 @@ public partial class BattleController
         }
     }
 
+    public bool IsPlayerTurn => _turnController.ActiveSide == BattleSide.Player;
     public bool IsUnitSelected => _selectionController.IsUnitSelected;
     public Vector2I HoveredCell => _selectionController.HoveredCell;
     public Units.BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
@@ -97,7 +99,7 @@ public partial class BattleController
         if (!DebugUtil.Check(_primaryActionPreviews != null,
                 $"[{nameof(BattleController)}].{nameof(DisplayPrimaryActionPreview)} - Previews not initialized."))
         {
-            _primaryActionPreviews = _primaryActionTargetingService.BuildPrimaryActionPreviews(UnitActivation, new[]
+            _primaryActionPreviews = _primaryActionTargetingService.BuildPrimaryActionValidTargetPreviews(UnitActivation, new[]
                 {
                     PrimaryActionType.Attack
                 });
@@ -117,6 +119,7 @@ public partial class BattleController
     {
         InputState = BattleInputState.FreeSelect;
         GenerateHoverPreview();
+        ShowCursor();
     }
 
     private void EnterMoveTargetingMode(Units.BattleUnit unit)
@@ -187,11 +190,8 @@ public partial class BattleController
                 "Cannot Enter PrimaryActionTarget mode, no UnitActivationContext"))
             return;
         
-        UnitActivation.SetPrimaryAction(action);
-        ShowCursor();
-        _hud.HidePrimaryActionSelectMenu();
         // TODO - set cursor position
-        
+        ShowCursor();
         InputState = BattleInputState.PrimaryActionTargeting;
     }
 
@@ -263,7 +263,7 @@ public partial class BattleController
             return;
 
         // TODO - function to get appropriate preview types from Unit.
-        _primaryActionPreviews =  _primaryActionTargetingService.BuildPrimaryActionPreviews(UnitActivation, new []
+        _primaryActionPreviews =  _primaryActionTargetingService.BuildPrimaryActionValidTargetPreviews(UnitActivation, new []
             {
                 PrimaryActionType.Attack, 
                 PrimaryActionType.Ability
@@ -323,31 +323,23 @@ public partial class BattleController
     /// This can be refactored into own class - ActionResolver
     /// If many actions or becomes complex, refactor into one class per Action Type
     /// with shared interface containing TryExecute.
-    private void ResolveUnitActions()
+    private void CommitUnitActivation(IUnitActionPlan activation)
     {
-        if (!DebugUtil.Require(UnitActivation != null,
-                $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
-        {
-            AbortActivationToFreeSelect();
-            return;
-        }
-            
-        
         // move already committed.
         // Handle attack / other action. TODO
-        switch (UnitActivation.PrimaryAction)
+        switch (activation.PrimaryAction)
         {
             case PrimaryActionType.Attack:
-                ResolveCombat();
+                ResolveCombat(activation);
                 break;
             case PrimaryActionType.Ability:
-                _logger.Warn($"{nameof(ResolveUnitActions)} - Ability not implemented.");
+                _logger.Warn($"{nameof(CommitUnitActivation)} - Ability not implemented.");
                 break;
             case PrimaryActionType.Item:
-                _logger.Warn($"{nameof(ResolveUnitActions)} - Item not implemented.");
+                _logger.Warn($"{nameof(CommitUnitActivation)} - Item not implemented.");
                 break;
             case PrimaryActionType.Trade:
-                _logger.Warn($"{nameof(ResolveUnitActions)} - Trade not implemented.");
+                _logger.Warn($"{nameof(CommitUnitActivation)} - Trade not implemented.");
                 break;
             case PrimaryActionType.Wait:
                 break;
@@ -356,20 +348,38 @@ public partial class BattleController
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
-        UnitActivation.Unit.SetActivationState(UnitActivationState.Exhausted);
+
+        var unit = activation.Unit;
+        unit.SetActivationState(UnitActivationState.Exhausted);
         // Log Snapshot class for logs / after battle stats. TODO
-        ClearActivationAndUi();
-        EnterFreeSelectMode();
+        
+        _turnController.HandleUnitExhausted(unit);
+        if (IsPlayerTurn)
+        {
+            ClearActivationAndUi();
+            EnterFreeSelectMode();
+        }
     }
 
-    public void ResolveCombat()
+    private void CommitUnitActivation()
     {
         if (!DebugUtil.Require(UnitActivation != null,
                 $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
+        {
+            AbortActivationToFreeSelect();
+            return;
+        }
+        CommitUnitActivation(UnitActivation);
+    }
+
+    public void ResolveCombat(IUnitActionPlan activation)
+    {
+        // TODO - check units are in range
+        if (!DebugUtil.Require(activation != null,
+                $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
             return;
 
-        var results = _combatResolver.Resolve(UnitActivation);
+        var results = _combatResolver.Resolve(activation);
         GD.Print(results);
     }
 

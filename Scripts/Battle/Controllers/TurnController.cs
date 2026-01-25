@@ -1,7 +1,9 @@
 ﻿#nullable enable
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -39,14 +41,12 @@ public partial class TurnController : Node
         Debug.Assert(_unitRegistry != null, "[TurnController] UnitRegistry must be bound.");
         _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
     }
+    
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
 
-    public void StartBattle()
-    {
-        _logger.Log("StartBattle", LogSeverity.Info, LogCategory.BattleState);
-        BeginPlayerTurn();
-    }
-
-    public void NotifyUnitExhausted(Units.BattleUnit unit)
+    public void HandleUnitExhausted(BattleUnit unit)
     {
         _logger.Log($"NotifyUnitExhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.BattleState);
 
@@ -58,7 +58,7 @@ public partial class TurnController : Node
 
     public bool RequestEndPlayerTurn()
     {
-        _logger.Log("TryEndPlayerTurnEarly", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("RequestEndPlayerTurn", LogSeverity.Info, LogCategory.BattleState);
 
         if (!DebugUtil.Require(_unitRegistry != null, "[TurnController] No UnitRegistry."))
             return false;
@@ -86,6 +86,16 @@ public partial class TurnController : Node
 
         EndPlayerTurn();
         return true;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Turn Changes
+    // ---------------------------------------------------------------------
+    
+    public void StartBattle()
+    {
+        _logger.Log("StartBattle", LogSeverity.Info, LogCategory.BattleState);
+        BeginPlayerTurn();
     }
 
     private void BeginPlayerTurn()
@@ -131,6 +141,10 @@ public partial class TurnController : Node
         TurnNumber += 1;
         BeginPlayerTurn();
     }
+    
+    // ---------------------------------------------------------------------
+    // Private Helpers / Methods
+    // ---------------------------------------------------------------------
 
     private void SetPhase(TurnPhase phase)
     {

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
@@ -19,11 +21,11 @@ public class PrimaryActionTargetingService
 {
     private readonly Logger _logger = LogManager.For<PrimaryActionTargetingService>();
 
-    private readonly Core.BattleGrid _grid;
+    private readonly BattleGrid _grid;
     private readonly TargetRangeService _targetRangeService;
-    private readonly Units.UnitRegistry _unitRegistry;
+    private readonly UnitRegistry _unitRegistry;
 
-    public PrimaryActionTargetingService(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
+    public PrimaryActionTargetingService(BattleGrid grid, UnitRegistry unitRegistry)
     {
         _grid = grid;
         _targetRangeService = new TargetRangeService(grid);
@@ -38,13 +40,13 @@ public class PrimaryActionTargetingService
     /// Builds and returns cached target previews for every available primary action type.
     /// Call once when entering the PrimaryActionTargeting phase.
     /// </summary>
-    public PrimaryActionPreviewResults BuildPrimaryActionPreviews(
+    public PrimaryActionValidTargetsPreview BuildPrimaryActionValidTargetPreviews(
         UnitActivationContext unitActivation,
         IEnumerable<PrimaryActionType> primaryActionTypes)
     {
-        _logger.Log($"{nameof(BuildPrimaryActionPreviews)}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildPrimaryActionValidTargetPreviews)}", LogSeverity.Info, LogCategory.UiNavigation);
 
-        var previewResults = new PrimaryActionPreviewResults();
+        var previewResults = new PrimaryActionValidTargetsPreview();
 
         foreach (var primaryActionType in primaryActionTypes)
         {
@@ -58,9 +60,8 @@ public class PrimaryActionTargetingService
     /// <summary>
     /// Returns all valid targets based on origin cell, unit & action type.
     /// </summary>
-    public IReadOnlySet<Vector2I> GetValidTargets(Vector2I originCell, Units.BattleUnit unit, PrimaryActionType primaryActionType)
+    public IReadOnlySet<Vector2I> GetValidTargets(Vector2I originCell, BattleUnit unit, PrimaryActionType primaryActionType)
     {
-        _logger.Log($"{nameof(GetValidTargets)}", LogSeverity.Info, LogCategory.UiNavigation);
         var targetableCells = new HashSet<Vector2I>();
 
         if (!DebugUtil.Require(unit != null,
@@ -74,10 +75,64 @@ public class PrimaryActionTargetingService
         foreach (var inRangeCell in inRangeCells)
             AddIfValidTarget(inRangeCell, unit, primaryActionType, targetableCells);
 
+        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
         return targetableCells;
     }
 
-    public bool IsValidTarget(Vector2I originCell, Vector2I targetCell, Units.BattleUnit actingUnit, PrimaryActionType actionType)
+    /// <summary>
+    /// Builds a PrimaryActionPreview for a given action type, unit, and MovePreview.
+    /// </summary>
+    /// <param name="originCell"></param>
+    /// <param name="moveTargets"></param>
+    /// <param name="unit"></param>
+    /// <param name="actionType"></param>
+    /// <returns></returns>
+    public PrimaryActionPreview BuildPrimaryActionPreview(Vector2I originCell, IEnumerable<Vector2I>? moveTargets, BattleUnit unit,
+        PrimaryActionType actionType)
+    {
+        var previewBuilder = new PrimaryActionPreviewBuilder();
+        var range = GetRange(unit, actionType);
+
+        if (moveTargets == null)
+            moveTargets = [originCell];
+        
+        if (!DebugUtil.Require(unit != null,
+                $"[{nameof(PrimaryActionTargetingService)}].{nameof(GetValidTargets)} - Missing Unit"))
+            return previewBuilder.Build(actionType, range, originCell);
+
+        foreach (var moveTarget in moveTargets)
+        {
+            var targets = _targetRangeService.BuildTargetRangeFromCell(moveTarget, range);
+            previewBuilder.AddLinks(moveTarget, targets);
+        }
+
+        var preview = previewBuilder.Build(actionType, range, originCell);
+        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={preview.TargetCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        return preview;
+    }
+
+    public PrimaryActionPreview BuildPrimaryActionPreview(Vector2I originCell, BattleUnit unit,
+        PrimaryActionType actionType) => BuildPrimaryActionPreview(originCell, null, unit, actionType);
+
+    public IReadOnlySet<Vector2I> BuildThreatUnion(IEnumerable<Vector2I> cells, BattleUnit unit,
+        PrimaryActionType actionType)
+    {
+        var targetableCells = new HashSet<Vector2I>();
+
+        if (!DebugUtil.Require(unit != null,
+                $"[{nameof(PrimaryActionTargetingService)}].{nameof(GetValidTargets)} - Missing Unit"))
+            return targetableCells;
+        
+        var range = GetRange(unit, actionType);
+        var inRangeCells = _targetRangeService.BuildThreatUnionFromCells(cells, range);
+        foreach (var inRangeCell in inRangeCells)
+            AddIfValidTarget(inRangeCell, unit, actionType, targetableCells);
+
+        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        return targetableCells;
+    }
+
+    public bool IsValidTarget(Vector2I originCell, Vector2I targetCell, BattleUnit actingUnit, PrimaryActionType actionType)
     {
         RangeBand range = GetRange(actingUnit, actionType);
         var inRangeCells = _targetRangeService.BuildTargetRangeFromCell(originCell, range);
@@ -108,7 +163,7 @@ public class PrimaryActionTargetingService
     /// <summary>
     /// Determines if target cell is valid given acting unit & action type. Does not check for range.
     /// </summary>
-    private bool IsValidTargetNoRangeCheck(Vector2I cell, Units.BattleUnit actingUnit, PrimaryActionType actionType)
+    private bool IsValidTargetNoRangeCheck(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType)
     {
         _logger.Log($"{nameof(IsValidTargetNoRangeCheck)} cell={cell} actionType={actionType}", LogSeverity.Extra, LogCategory.Input);
         
@@ -144,13 +199,13 @@ public class PrimaryActionTargetingService
     // ---------------------------------------------------------------------
     // Private Helpers
     // ---------------------------------------------------------------------
-    private void AddIfValidTarget(Vector2I cell, Units.BattleUnit actingUnit, PrimaryActionType actionType, HashSet<Vector2I> output)
+    private void AddIfValidTarget(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType, HashSet<Vector2I> output)
     {
         if (IsValidTargetNoRangeCheck(cell, actingUnit, actionType))
             output.Add(cell);
     }
 
-    private RangeBand GetRange(Units.BattleUnit unit, PrimaryActionType actionType)
+    private RangeBand GetRange(BattleUnit unit, PrimaryActionType actionType)
     {
         switch (actionType)
         {

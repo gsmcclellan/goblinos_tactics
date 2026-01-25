@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -16,7 +17,7 @@ public sealed class MoveRangeService
 
     private int _gridRevision;
 
-    private readonly Dictionary<(Vector2I Cell, string UnitId, int GridRevision), MovementPreviewResults> _cache =
+    private readonly Dictionary<(Vector2I Cell, string UnitId, int GridRevision), MovementPreview> _cache =
         new();
 
     // ---------------------------------------------------------------------
@@ -60,7 +61,7 @@ public sealed class MoveRangeService
     /// <summary>
     /// Returns a cached movement preview when available, otherwise computes and caches it.
     /// </summary>
-    public MovementPreviewResults GetMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
+    public MovementPreview GetMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
     {
         var cacheKey = (startCell, actingUnit.Id, _gridRevision);
         if (_cache.TryGetValue(cacheKey, out var movePreview))
@@ -124,7 +125,7 @@ public sealed class MoveRangeService
     /// Computes all reachable cells within the given movement budget using Dijkstra.
     /// </summary>
     /// TODO - add function that takes multiple starting cells (for enemy threat range)
-    private MovementPreviewResults BuildMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
+    private MovementPreview BuildMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
     {
         _logger.Log("GetReachableCells", LogSeverity.Trace, LogCategory.UiNavigation);
 
@@ -175,12 +176,12 @@ public sealed class MoveRangeService
         
         _logger.Log($"GetReachableCells Count={bestCost.Count}", LogSeverity.Trace, LogCategory.UiNavigation);
         
-        return new MovementPreviewResults()
+        return new MovementPreview()
         {
             Cells = new HashSet<Vector2I>(bestCost.Keys),
             CostByCell = bestCost,
             ParentCells = parentCells,
-            StartCell = startCell
+            OriginCell = startCell
         };
     }
 }

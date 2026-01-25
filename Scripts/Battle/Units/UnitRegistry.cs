@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -133,7 +134,7 @@ public partial class UnitRegistry: Node
     
     public bool AreAllFriendlyUnitsExhausted()
     {
-        throw new System.NotImplementedException();
+        return !GetFriendlyUnits().Any(unit => unit.CanAct);
     }
 
     /// <summary>

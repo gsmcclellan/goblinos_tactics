@@ -27,7 +27,7 @@ public class CombatResolver
         _logger.Log("Constructed.", LogSeverity.Trace, LogCategory.Initialization);
     }
 
-    public SimpleCombatResult Resolve(UnitActivationContext activationContext)
+    public SimpleCombatResult Resolve(IUnitActionPlan activationContext)
     {
         // Simplified combat resolution - change later. 
         // Both units deal damage to each other, no hit, crit, order, multi attack.

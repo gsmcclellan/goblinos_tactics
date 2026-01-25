@@ -16,7 +16,7 @@ public partial class BattleController : Node
     /** Actions */
 
     /** Components */
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [Export] private NodePath _cursorPath;
 
     [Export] private NodePath _gridPath;
@@ -42,7 +42,7 @@ public partial class BattleController : Node
     private PrimaryActionTargetingService _primaryActionTargetingService;
     private TargetRangeService _targetRangeService;
     
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /** Fields */
 

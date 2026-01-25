@@ -3,6 +3,7 @@ using System;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.UI.Battle;
+using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -110,9 +111,38 @@ public partial class BattleController
     {
         var action = (PrimaryActionType)actionIndex;
         _logger.Log($"OnPrimaryActionSelected - action={action}", LogSeverity.Info, LogCategory.Signal);
+        if (!DebugUtil.Require(UnitActivation != null,
+                "Unable to process selected primary action, null UnitActivationContext"))
+            return;
+        
         // Transition to next phase based on if it requires target -> targeting phase, else confirm phase
         // TODO - check based on type if requires target.
-        EnterPrimaryActionTargetMode(action);
+        
+        UnitActivation.SetPrimaryAction(action);
+        
+        _hud.HidePrimaryActionSelectMenu();
+        
+        switch (action)
+        {
+            case PrimaryActionType.Attack:
+                EnterPrimaryActionTargetMode(action);
+                break;
+            case PrimaryActionType.Ability:
+                _logger.Warn("Ability primary action not implemented");
+                break;
+            case PrimaryActionType.Item:
+                _logger.Warn("Item primary action not implemented");
+                break;
+            case PrimaryActionType.Trade:
+                _logger.Warn("Trade primary action not implemented");
+                break;
+            case PrimaryActionType.Wait:
+                EnterPrimaryActionConfirmation();
+                break;
+            case PrimaryActionType.None:
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
     
     private void OnSelectedUnitChanged(Node? selectedNode)

@@ -1,0 +1,76 @@
+Enemy AI planning
+
+Steps:
+1. Gather context
+2. Compute possible moves - compute values
+3. Compute possible primary actions - compute values
+4. Rank values against priorities / weights
+5. Commit action.
+
+
+Step 0: Gather context (cheap caches)
+
+	Precompute per planning pass:
+	Player unit list + positions
+	Enemy unit list + positions
+	For each player unit: its threat area (tiles it can attack from its current position, or move+attack if your player can do that)
+	For each candidate move cell of the acting enemy: distance to nearest player, cover/terrain modifiers, etc.
+	This lets you score risk/position quickly without recomputing everything for each candidate.
+
+Step 1: Enumerate candidate move endpoints
+
+Compute the enemy’s reachable cells (plus “stay put”).
+
+Optional filters (huge perf win):
+	Remove cells that are strictly dominated:
+		same distance to all relevant players but worse terrain
+	Limit to top N cells by a cheap heuristic:
+		closest-to-best-target
+		best defensive terrain
+		nearest objective
+
+Step 2: From each endpoint, enumerate candidate actions (These computed by threat range, not recomputed for each move tile)
+
+For each move endpoint m:
+	Attack candidates: for each enemy attack action, list valid targets from m
+	Heal candidates: valid ally targets from m
+	Disable/debuff candidates: valid targets from m
+	Wait candidate: no action (or defend)
+Represent each as a concrete candidate:
+	Candidate = (moveEndpoint, actionType, target)
+This is key: your scoring becomes consistent.
+
+Step 3: Score each candidate with a structured scoring function
+
+Split into two parts (helps avoid double-counting):
+
+A) PositionScore(moveEndpoint)
+	Things you can score without simulating an action:
+		Safety / exposure: how many player units threaten this tile (or threaten after move if that’s part of player rules)
+		Terrain benefit: cover/avoid/defense
+		Formation / support: near allies (if you want)
+		Goal pressure: proximity to objectives / choke points
+B) ActionScore(action, target, fromCell)
+	Immediate effect estimates:
+	Damage / heal / status utility
+	Kill bonus (very high)
+	Disable bonus (scaled by target value)
+	Counterattack / retaliation penalty
+	Overkill waste penalty (small)
+Then:
+	TotalScore = PositionScore + ActionScore
+
+Step 4: Pick best candidate (with tie-breakers)
+
+Tie-breakers help AI look less random:
+	prefer kills
+	prefer less movement (more stable visuals)
+	prefer higher safety if scores close
+	small randomness within top few (optional)
+
+Step 5: Build the plan from the winning candidate
+
+Return:
+	MoveTargetCell (maybe null)
+	PrimaryAction + target (maybe null)
+	Optional: “face direction”, “use ability variant”, etc.

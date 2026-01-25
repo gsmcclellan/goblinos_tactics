@@ -1,13 +1,14 @@
 ﻿#nullable enable
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Godot;
 
-namespace Goblinos.Scripts.Battle.Units;
+namespace Goblinos.Scripts.Battle.Preview;
 
 // TODO - investigate. Undo maybe not needed on primary action because it is not resolved until confirmation which then 
 // can't be undone.
-public sealed class UnitActivationContext
+public sealed class UnitActivationContext: IUnitActionPlan
 {
     private readonly Logger _logger = LogManager.For<UnitActivationContext>();
     public BattleUnit Unit { get; }

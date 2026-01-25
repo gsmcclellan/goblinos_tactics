@@ -1,17 +1,22 @@
 ﻿using System.Collections.Generic;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
-namespace Goblinos.Scripts.Battle.Types;
+namespace Goblinos.Scripts.Battle.Preview;
 
-public class PrimaryActionPreviewResults
+/// <summary>
+/// Targeting preview for a single primary action type (attack, ability, item, etc.)
+/// from a single origin cell, with all targets already validated.
+/// </summary>
+public class PrimaryActionValidTargetsPreview
 {
     private readonly Dictionary<PrimaryActionType, IReadOnlySet<Vector2I>> _targetsByOption;
     
     /// <summary>
     /// Creates an empty previews container.
     /// </summary>
-    public PrimaryActionPreviewResults()
+    public PrimaryActionValidTargetsPreview()
     {
         _targetsByOption = new Dictionary<PrimaryActionType, IReadOnlySet<Vector2I>>();
     }

@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Core;
@@ -260,7 +261,7 @@ public partial class BattleController: IInputHandler
         
         // TODO - if click target or press enter (or controller confirm button) resolve, else Exit.
         
-        ResolveUnitActions();
+        CommitUnitActivation();
         return true;
     }
     

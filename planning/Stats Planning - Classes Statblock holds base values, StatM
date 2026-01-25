@@ -1,0 +1,171 @@
+Stats - Classes Statblock holds base values, StatModifier (primarily additive), DerivedStats returns total based on StatBlock + modifiers.
+
+StatBlock:
+	- core attributes:
+		Might (UI becomes different based on weapon type - smack, smash, slash, stab, blast)
+		Agility (scurry, sneak)
+		Vitality (grit)
+		Mind (cunning, guile, weird, trickery)
+		Presence (swagger, bluster, moxie, menace)
+	- core combat:
+		accuracy
+		evasion
+		crit
+	- damage handling
+		protection
+		armor pierce
+	- move:
+		speed
+	- status def:
+		stun resist
+		poison resist
+		bleed resist
+	- survivability:
+		max health
+
+public interface IStatModifier
+{
+    int AccuracyDelta { get; }
+    int EvasionDelta { get; }
+    int ProtectionDelta { get; }
+    // etc
+}
+
+public sealed class DerivedStats
+{
+    public int Accuracy { get; }
+    public int Evasion { get; }
+    public int CritChance { get; }
+    public int Protection { get; }
+    public int Speed { get; }
+    public int MaxHealth { get; }
+
+    public DerivedStats(
+        StatBlock baseStats,
+        IEnumerable<IStatModifier> modifiers,
+        StatCaps caps)
+    {
+        Accuracy = Clamp(
+            baseStats.Accuracy + modifiers.Sum(m => m.AccuracyDelta),
+            caps.MinAccuracy,
+            caps.MaxAccuracy
+        );
+
+        Evasion = Clamp(
+            baseStats.Evasion + modifiers.Sum(m => m.EvasionDelta),
+            caps.MinEvasion,
+            caps.MaxEvasion
+        );
+
+        Protection = Clamp(
+            baseStats.Protection + modifiers.Sum(m => m.ProtectionDelta),
+            0,
+            caps.MaxProtection
+        );
+
+        // etc...
+    }
+}
+
+Do not bake terrain, facing, height, or range into stats.
+
+Instead, introduce a resolution context:
+public sealed class CombatContext
+{
+    public int AccuracyBonus { get; init; }
+    public int EvasionBonus { get; init; }
+    public int DamageBonus { get; init; }
+
+    public static CombatContext FromGrid(
+        TerrainType terrain,
+        Facing facing,
+        HeightDelta height)
+    {
+        // small numbers only (+/- 5–10)
+    }
+}
+
+DD - philosophy - cap stats to prevent god units. Keep things deadly.
+public sealed class StatCaps
+{
+    public int MaxAccuracy { get; init; } = 120;
+    public int MinAccuracy { get; init; } = 0;
+
+    public int MaxEvasion { get; init; } = 75;
+    public int MinEvasion { get; init; } = 0;
+
+    public int MaxCritChance { get; init; } = 25;
+
+    public int MaxProtection { get; init; } = 80;
+
+    public int MaxSpeed { get; init; } = 20;
+}
+
+Hit chance: 5–95
+Crit: 0–25 (or 0–30)
+PROT: 0–80
+Resists: 0–95
+Evasion: 0–75
+
+
+## Hit Math:
+Accuracy = 60 + 2*Agility + weapon.AccBonus
+Evasion = 10 + 2*Agility + terrain.EvasionBonus
+
+- Added -5 to 5 randomness (Darkest Dungeon)
+HitChance = Clamp(Accuracy - Evasion + context.Bonus + RNG(-5,+5), 5, 95)
+
+Recommended caps:
+
+Hit chance floor/ceiling: 5–95 (or 0–100 if you want harsher)
+Evasion cap: ~75
+Accuracy cap: ~120
+
+## Damage Math - flat, id preserving, no runaway
+- damage comes from unit baseline + weapon (plus other mods)
+ex: weapon defines 4-7, might contributes flat +might bonus (small), 
+
+RawDamageRange = WeaponDamage + MightContribution + buffs
+Defender mitigation via protection (derived from vitality) w/ hard cap
+	Protection = Clamp( 2*Vitality + armor + buffs, 0, 80 )
+	FinalDamage = RawDamage * (1 - Protection/100)
+
+
+## HP / survivability (Vitality matters, but not endlessly)
+
+MaxHealth = BaseHp + 5*Vitality (flat per point)
+Make “tanky” real, but keep time-to-kill reasonable by:
+HP growth linear
+PROT capped
+status effects provide counterplay
+
+
+## Status / control (Mind as opposed resist)
+
+Use opposed checks like:
+	ApplyChance = Clamp( BaseChance + Attacker.Mind*2 - Defender.Resist, 5, 95 )
+	Defender resist derives from Mind + traits:
+
+	Resist = 20 + 2*Mind + gear + buffs
+
+Key DD rule: nothing is fully immune unless explicitly special. Even then, caps.
+Caps:
+Resist: 0–95 (or allow 100 only for special cases)
+
+
+
+Weapon adds:
+
+Base damage range
+Accuracy/crit nudges
+Damage type / armor interaction
+
+3) Context + effects (temporary)
+
+Buffs, terrain, morale, injuries:
+mostly flat modifiers
+or bounded percentages used sparingly
+
+Disarm:
+normal: AttackPayload = UnitBaseline + WeaponProfile
+disarmed: AttackPayload = UnitBaseline + UnarmedProfile (or just baseline)
