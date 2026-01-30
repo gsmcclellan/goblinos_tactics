@@ -3,12 +3,12 @@ using Godot;
 
 namespace Goblinos.Scripts.Battle.Core;
 
-public partial class Battle : Node2D
+public partial class BattleNode : Node2D
 {
     /** Signals */
 
     /** Fields */
-    private Logger _logger = LogManager.For<Battle>();
+    private Logger _logger = LogManager.For<BattleNode>();
 
     /** Properties */
 

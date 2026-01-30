@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Goblinos.Logging;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -15,7 +16,7 @@ public sealed class ManhattanRangeService
 {
     private static readonly Logger Logger = LogManager.For<ManhattanRangeService>();
 
-    private static readonly Dictionary<(int MinRange, int MaxRange), Vector2I[]> _cachedPatterns = new();
+    private static readonly Dictionary<(int MinRange, int MaxRange), Vector2I[]> CachedPatterns = new();
 
     public static Vector2I[] GetPattern(int minRange, int maxRange)
     {
@@ -28,11 +29,11 @@ public sealed class ManhattanRangeService
             maxRange = minRange;
 
         var key = (minRange, maxRange);
-        if (_cachedPatterns.TryGetValue(key, out var cached))
+        if (CachedPatterns.TryGetValue(key, out var cached))
             return cached;
 
         var pattern = ComputePattern(minRange, maxRange);
-        _cachedPatterns[key] = pattern;
+        CachedPatterns[key] = pattern;
 
         return pattern;
     }
@@ -60,4 +61,13 @@ public sealed class ManhattanRangeService
 
         return output.ToArray();
     }
+
+    public static int GetDistance(Vector2I origin, Vector2I target)
+    {
+        var delta = origin - target;
+        return Math.Abs(delta.X) + Math.Abs(delta.Y);
+    }
+
+    public static int GetDistance(Vector2 origin, Vector2 target) =>
+        GetDistance(GridNavigationUtil.ToCell(origin), GridNavigationUtil.ToCell(target));
 }

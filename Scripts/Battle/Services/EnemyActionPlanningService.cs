@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Goblinos.Logging;
@@ -18,6 +19,7 @@ public sealed class EnemyActionPlanningService
     private readonly UnitRegistry _unitRegistry;
     private readonly MoveRangeService _moveRangeService;
     private readonly PrimaryActionTargetingService _primaryActionTargetingService;
+    private readonly UnitActivationPreviewService _unitActivationPreviewService;
 
     public EnemyActionPlanningService(BattleGrid grid, UnitRegistry unitRegistry)
     {
@@ -29,6 +31,7 @@ public sealed class EnemyActionPlanningService
 
         _moveRangeService = new MoveRangeService(grid, unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(grid, unitRegistry);
+        _unitActivationPreviewService = new UnitActivationPreviewService(grid, unitRegistry);
         
         _logger.Log("Constructed", LogSeverity.Info, LogCategory.Initialization);
     }
@@ -49,30 +52,32 @@ public sealed class EnemyActionPlanningService
 
         if (!_unitRegistry.TryGetCell(actingUnit, out var originCell))
             throw new Exception($"Unable to generate action plan - unit={actingUnit.UnitName} origin cell unavailable");
-        var movePreview = _moveRangeService.GetMovementPreview(originCell, actingUnit);
-        var attackPreview =
-            _primaryActionTargetingService.BuildThreatUnion(movePreview.Cells, actingUnit, PrimaryActionType.Attack);
+        var unitActivationPreview = _unitActivationPreviewService.BuildPreview(actingUnit, originCell);
+        var attackPreview = unitActivationPreview.GetPrimaryActionPreview(PrimaryActionType.Attack);
+        // var attackPreview =
+            // _primaryActionTargetingService.BuildThreatUnion(unitActivationPreview.MoveCells, actingUnit, PrimaryActionType.Attack);
 
         // Get self move / attack preview
         // Check for units in range
         // if exists, move & attack.
 
-        Vector2I targetCell;
-        BattleUnit targetUnit;
-        var hasTarget = attackPreview.Any(potentialTargetCell =>
+        Vector2I targetCell = default;
+        BattleUnit? targetUnit = null;
+        var hasTarget = attackPreview.TargetCells.Any(potentialTargetCell =>
         {
             targetCell = potentialTargetCell;
-            return _unitRegistry.TryGetUnitAtCell(potentialTargetCell, out targetUnit);
+            return _unitRegistry.TryGetUnitAtCell(potentialTargetCell, out targetUnit) && targetUnit.IsFriendly != actingUnit.IsFriendly;
         });
 
         if (!hasTarget)
-            return BuildWaitPlan(actingUnit);
+            return BuildWaitPlan(actingUnit, originCell);
 
-        return BuildWaitPlan(actingUnit); // TODO - make simple attack plan.
+        var moveTarget = attackPreview.AttackOriginsByTargetCell[targetCell].FirstOrDefault();
+        return new EnemyActionPlan(actingUnit, originCell, moveTarget, PrimaryActionType.Attack, targetCell, targetUnit);
     }
 
-    public EnemyActionPlan BuildWaitPlan(BattleUnit unit) =>
-        new EnemyActionPlan(unit, null, PrimaryActionType.Wait, null, null);
+    public EnemyActionPlan BuildWaitPlan(BattleUnit unit, Vector2I originCell) =>
+        new EnemyActionPlan(unit, originCell, null, PrimaryActionType.Wait, null, null);
 
     // private Vector2I? TryBuildMoveTowardNearestPlayer(BattleUnit enemyUnit)
     // {

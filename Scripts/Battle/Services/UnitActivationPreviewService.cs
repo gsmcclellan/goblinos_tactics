@@ -13,7 +13,7 @@ public class UnitActivationPreviewService(BattleGrid grid, UnitRegistry unitRegi
     private readonly MoveRangeService _moveRangeService = new(grid, unitRegistry);
     private readonly PrimaryActionTargetingService _primaryActionTargetingService = new(grid, unitRegistry);
 
-    public UnitActivationPreview BuildPreview(Vector2I originCell, BattleUnit actingUnit)
+    public UnitActivationPreview BuildPreview(BattleUnit actingUnit, Vector2I originCell)
     {
         var movePreview = _moveRangeService.GetMovementPreview(originCell, actingUnit);
 

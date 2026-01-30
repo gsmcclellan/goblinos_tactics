@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using Goblinos.Logging;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -29,5 +30,14 @@ public static class GridNavigationUtil
 
         for (var i = 0; i < CardinalDirections.Length; i++)
             yield return cell + CardinalDirections[i];
+    }
+    
+    public static Vector2I ToCell(Vector2 world)
+    {
+        // If TileSize is an int, this is fine. If it's Vector2, adjust accordingly.
+        var cellX = Mathf.FloorToInt(world.X / GlobalSettings.TileSize);
+        var cellY = Mathf.FloorToInt(world.Y / GlobalSettings.TileSize);
+
+        return new Vector2I(cellX, cellY);
     }
 }

@@ -1,7 +1,10 @@
 ﻿#nullable enable
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Controllers;
+using Goblinos.Scripts.Battle.Core;
 using Goblinos.Scripts.Battle.Services;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Battle;
@@ -21,23 +24,27 @@ public partial class BattleController : Node
 
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
+    [Export] private NodePath _enemyTurnControllerPath;
     [Export] private NodePath _movementControllerPath;
     [Export] private NodePath _selectionControllerPath;
     [Export] private NodePath _turnControllerPath;
     [Export] private NodePath _unitRegistryPath;
 
-    private Core.Battle _battle;
-    private Core.GridCursor _cursor;
-    private Core.BattleGrid _grid;
+    private BattleNode _battle;
+    private GridCursor _cursor;
+    private BattleGrid _grid;
     private BattleHud _hud;
-    private Controllers.MovementController _movementController;
-    private Controllers.SelectionController _selectionController;
-    private Controllers.TurnController _turnController;
-    private Units.UnitRegistry _unitRegistry;
+
+    private EnemyTurnController _enemyTurnController;
+    private MovementController _movementController;
+    private SelectionController _selectionController;
+    private TurnController _turnController;
+    private UnitRegistry _unitRegistry;
 
     private readonly Logger _logger = LogManager.For<BattleController>();
     
     private CombatResolver _combatResolver;
+    private EnemyActionPlanningService _enemyActionPlanningService;
     private MoveRangeService _moveRangeService;
     private PrimaryActionTargetingService _primaryActionTargetingService;
     private TargetRangeService _targetRangeService;
@@ -81,19 +88,21 @@ public partial class BattleController : Node
 
     private void _InitializeBattleComponents()
     {
-        _battle = GetNode<Core.Battle>(GlobalSettings.BattlePath);
+        _battle = GetNode<BattleNode>(GlobalSettings.BattlePath);
         _cursor = _battle.Cursor;
-        _grid = GetNode<Core.BattleGrid>(_gridPath);
+        _grid = GetNode<BattleGrid>(_gridPath);
         _hud = GetNode<BattleHud>(_hudPath);
-        _movementController = GetNode<Controllers.MovementController>(_movementControllerPath);
-        _selectionController = GetNode<Controllers.SelectionController>(_selectionControllerPath);
-        _turnController = GetNode<Controllers.TurnController>(_turnControllerPath);
-        _unitRegistry = GetNode<Units.UnitRegistry>(_unitRegistryPath);
+        _enemyTurnController = GetNode<EnemyTurnController>(_enemyTurnControllerPath);
+        _movementController = GetNode<MovementController>(_movementControllerPath);
+        _selectionController = GetNode<SelectionController>(_selectionControllerPath);
+        _turnController = GetNode<TurnController>(_turnControllerPath);
+        _unitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
 
         Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
         Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
         Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
         Debug.Assert(_hud != null, "[BattleController] BattleHud must be initialized.");
+        Debug.Assert(_enemyTurnController != null, "[BattleController] EnemyTurnController must be initialized.");
         Debug.Assert(_movementController != null, "[BattleController] MovementController must be initialized.");
         Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
         Debug.Assert(_turnController != null, "[BattleController] TurnController must be initialized.");
@@ -101,6 +110,7 @@ public partial class BattleController : Node
 
         // Non-Node Components
         _combatResolver = new CombatResolver(new DamageCalculator());
+        _enemyActionPlanningService = new EnemyActionPlanningService(_grid, _unitRegistry);
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);
         _targetRangeService = new TargetRangeService(_grid);
@@ -111,9 +121,10 @@ public partial class BattleController : Node
     private void _BindBattleComponents()
     {
         _hud.Bind(this, _cursor, _selectionController, _turnController);
+        _enemyTurnController.Bind(this, _enemyActionPlanningService, _unitRegistry);
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
-        _turnController.Bind(_unitRegistry);
+        _turnController.Bind(_unitRegistry, _enemyTurnController);
     }
 
     public override void _Process(double delta)

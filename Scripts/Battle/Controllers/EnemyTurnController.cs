@@ -116,11 +116,11 @@ public sealed partial class EnemyTurnController : Node
         
         foreach (BattleUnit enemyUnit in unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly))
         {
-            _logger.Log($"Enemy unit acting: {enemyUnit.Name}", LogSeverity.Info, LogCategory.AiDecision);
+            _logger.Log($"Enemy unit acting: {enemyUnit.UnitName}", LogSeverity.Info, LogCategory.AiDecision);
 
             if (!enemyUnit.CanAct)
             {
-                _logger.Log($"Enemy unit cannot act: {enemyUnit.Name}", LogSeverity.Trace, LogCategory.AiDecision);
+                _logger.Log($"Enemy unit cannot act: {enemyUnit.UnitName}", LogSeverity.Trace, LogCategory.AiDecision);
                 continue;
             }
 
@@ -132,7 +132,7 @@ public sealed partial class EnemyTurnController : Node
 
     private Task ExecutePlanAsync(BattleController controller, BattleUnit enemyUnit, EnemyActionPlan enemyPlan)
     {
-        // TODO
+        controller.CommitUnitActivation(enemyPlan);
         return Task.CompletedTask;
     }
 }

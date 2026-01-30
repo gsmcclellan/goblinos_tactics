@@ -107,7 +107,7 @@ public class PrimaryActionTargetingService
         }
 
         var preview = previewBuilder.Build(actionType, range, originCell);
-        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={preview.TargetCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildPrimaryActionPreview)} targetableCells.Count={preview.TargetCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
         return preview;
     }
 
@@ -128,7 +128,7 @@ public class PrimaryActionTargetingService
         foreach (var inRangeCell in inRangeCells)
             AddIfValidTarget(inRangeCell, unit, actionType, targetableCells);
 
-        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildThreatUnion)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
         return targetableCells;
     }
 

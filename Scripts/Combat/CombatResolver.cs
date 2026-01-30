@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Services;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units.Stats;
@@ -39,14 +41,21 @@ public class CombatResolver
            )
             return new SimpleCombatResult();
 
+        var rangeValidationResult = ValidateAttackRange(attacker, defender);
+
+        if (!DebugUtil.Require(rangeValidationResult.AttackerInRange,
+                "Error during combat resolution, Attacker not in range."))
+            return new SimpleCombatResult();
+        
         var attackerStats = DerivedStatsCalculator.Build(attacker.Stats);
         var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
         
         var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
-        var defenderDamage = _damageCalculator.ComputeDamage(defenderStats, attackerStats);
+        var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
 
         attacker.ApplyDamage(defenderDamage);
-        defender.ApplyDamage(attackerDamage);
+        if (rangeValidationResult.DefenderInRange)
+            defender.ApplyDamage(attackerDamage);
 
         return new SimpleCombatResult(
             attacker: new UnitSnapshot(attacker.Id, attacker.UnitName),
@@ -66,12 +75,26 @@ public class CombatResolver
         // returns a result object you can log / show in UI
         
         // (optionally) applies damage to the defender via a small interface so you aren’t locked to a specific BattleUnit API.
+    }
+    
+    private CombatRangeValidationResult ValidateAttackRange(
+        BattleUnit attacker,
+        BattleUnit defender)
+    {
+        var distance = ManhattanRangeService.GetDistance(attacker.Position, defender.Position);
 
-        return new SimpleCombatResult();
+        var attackerInRange = attacker.AttackRange.InRange(distance);
+        var defenderInRange = defender.AttackRange.InRange(distance);
+
+        return new CombatRangeValidationResult(attackerInRange, defenderInRange);
     }
     
     
     
-    
-    
+}
+
+public struct CombatRangeValidationResult(bool attackerInRange, bool defenderInRange)
+{
+    public bool AttackerInRange = attackerInRange;
+    public bool DefenderInRange = defenderInRange;
 }

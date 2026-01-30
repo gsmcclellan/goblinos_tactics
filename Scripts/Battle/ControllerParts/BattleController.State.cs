@@ -323,13 +323,15 @@ public partial class BattleController
     /// This can be refactored into own class - ActionResolver
     /// If many actions or becomes complex, refactor into one class per Action Type
     /// with shared interface containing TryExecute.
-    private void CommitUnitActivation(IUnitActionPlan activation)
+    public void CommitUnitActivation(IUnitActionPlan activation)
     {
         // move already committed.
         // Handle attack / other action. TODO
         switch (activation.PrimaryAction)
         {
             case PrimaryActionType.Attack:
+                if (activation.HasMove)
+                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 ResolveCombat(activation);
                 break;
             case PrimaryActionType.Ability:
@@ -350,12 +352,14 @@ public partial class BattleController
         }
 
         var unit = activation.Unit;
-        unit.SetActivationState(UnitActivationState.Exhausted);
+        
         // Log Snapshot class for logs / after battle stats. TODO
         
-        _turnController.HandleUnitExhausted(unit);
+        
         if (IsPlayerTurn)
         {
+            unit.SetActivationState(UnitActivationState.Exhausted);
+            _turnController.HandleUnitExhausted(unit);
             ClearActivationAndUi();
             EnterFreeSelectMode();
         }
@@ -378,7 +382,9 @@ public partial class BattleController
         if (!DebugUtil.Require(activation != null,
                 $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
             return;
-
+        
+        
+        
         var results = _combatResolver.Resolve(activation);
         GD.Print(results);
     }

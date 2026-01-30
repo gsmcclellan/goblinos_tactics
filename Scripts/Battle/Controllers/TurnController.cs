@@ -24,7 +24,8 @@ public partial class TurnController : Node
     /** Components */
     private readonly Logger _logger = LogManager.For<TurnController>();
 
-    private Units.UnitRegistry _unitRegistry;
+    private UnitRegistry _unitRegistry;
+    private EnemyTurnController _enemyTurnController;
     
     /** Properties */
     public BattleSide ActiveSide { get; private set; } = BattleSide.Player;
@@ -35,10 +36,12 @@ public partial class TurnController : Node
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
     
-    public void Bind(Units.UnitRegistry unitRegistry)
+    public void Bind(UnitRegistry unitRegistry, EnemyTurnController enemyTurnController)
     {
         _unitRegistry = unitRegistry;
+        _enemyTurnController = enemyTurnController;
         Debug.Assert(_unitRegistry != null, "[TurnController] UnitRegistry must be bound.");
+        Debug.Assert(_enemyTurnController != null, "[TurnController] EnemyTurnController must be bound.");
         _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
     }
     
@@ -120,7 +123,7 @@ public partial class TurnController : Node
         BeginEnemyTurn();
     }
 
-    private void BeginEnemyTurn()
+    private async void BeginEnemyTurn()
     {
         ActiveSide = BattleSide.Enemy;
         SetPhase(TurnPhase.EnemyThinking);
@@ -129,7 +132,8 @@ public partial class TurnController : Node
         _logger.Log($"BeginEnemyTurn turn={TurnNumber}", LogSeverity.Info, LogCategory.BattleState);
 
         // Next: call your AI runner, then EndEnemyTurn when finished.
-        // TODO
+        await _enemyTurnController.RunEnemyTurnAsync();
+        
         EndEnemyTurn();
     }
 

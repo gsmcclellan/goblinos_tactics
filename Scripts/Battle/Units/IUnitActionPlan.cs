@@ -7,8 +7,11 @@ namespace Goblinos.Scripts.Battle.Units;
 public interface IUnitActionPlan
 {
     public BattleUnit Unit { get; }
+    public  Vector2I OriginCell { get; }
     public Vector2I? MoveTargetCell { get; }
     public PrimaryActionType PrimaryAction { get; }
     public Vector2I? PrimaryActionTargetCell { get; }
     public BattleUnit? PrimaryActionTargetUnit { get; }
+
+    public bool HasMove => MoveTargetCell != null;
 }

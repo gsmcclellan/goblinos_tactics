@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Goblinos.Scripts.Battle.Types;
+using Godot;
 
 namespace Goblinos.Scripts.Battle.Preview;
 
@@ -10,6 +11,15 @@ public class UnitActivationPreview
     public Dictionary<PrimaryActionType, PrimaryActionPreview> PrimaryActionPreviewsByType { get; } =
         new();
 
+    // public required IReadOnlySet<Vector2I> Cells { get; init; }
+    // public required IReadOnlyDictionary<Vector2I, int> CostByCell { get; init; }
+    // public required IReadOnlyDictionary<Vector2I, Vector2I> ParentCells { get; init; }
+    // public required Vector2I OriginCell { get; init; }
+
+    public IReadOnlySet<Vector2I> AttackCells => GetPrimaryActionPreview(PrimaryActionType.Attack)?.TargetCells ?? new HashSet<Vector2I>();
+    public IReadOnlySet<Vector2I> MoveCells => MovementPreview?.Cells ?? new HashSet<Vector2I>();
+    public Vector2I OriginCell => MovementPreview.OriginCell;
+    
     public void AddPrimaryActionPreview(PrimaryActionPreview preview)
     {
         PrimaryActionPreviewsByType[preview.ActionType] = preview;

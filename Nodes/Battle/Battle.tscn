@@ -1,11 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://ckjgg67grrl4p"]
+[gd_scene load_steps=12 format=3 uid="uid://ckjgg67grrl4p"]
 
-[ext_resource type="Script" uid="uid://hasc3ye1oy77" path="res://Scripts/Battle/Core/Battle.cs" id="1_sl1sn"]
+[ext_resource type="Script" uid="uid://cnuld20lhc8v" path="res://Scripts/Battle/Core/BattleNode.cs" id="1_sl1sn"]
 [ext_resource type="Script" uid="uid://c1h3o8qhaoubx" path="res://Scripts/Battle/BattleController.cs" id="2_2qpgi"]
 [ext_resource type="PackedScene" uid="uid://v4pdegvv5cl" path="res://Nodes/Battle/BattleUnit.tscn" id="3_o62pt"]
 [ext_resource type="PackedScene" uid="uid://dsm2xuioevf8o" path="res://Nodes/Battle/BattleGrid.tscn" id="5_43edm"]
 [ext_resource type="PackedScene" uid="uid://d2ovsrbkfw3yq" path="res://Nodes/Battle/GridCursor.tscn" id="6_7spev"]
 [ext_resource type="PackedScene" uid="uid://0yqqd78jcaet" path="res://Nodes/UI/Battle/BattleHud.tscn" id="7_7spev"]
+[ext_resource type="Script" uid="uid://co1falo38b0cg" path="res://Scripts/Battle/Controllers/EnemyTurnController.cs" id="7_b0ckj"]
 [ext_resource type="Script" uid="uid://dryqgj6imgfhh" path="res://Scripts/Battle/Controllers/MovementController.cs" id="7_sl1sn"]
 [ext_resource type="Script" uid="uid://eeyiw1om67uj" path="res://Scripts/Battle/Controllers/SelectionController.cs" id="8_b0ckj"]
 [ext_resource type="Script" uid="uid://sjmd2hgvxjkl" path="res://Scripts/Battle/Controllers/TurnController.cs" id="9_m63d6"]
@@ -36,12 +37,16 @@ script = ExtResource("2_2qpgi")
 _cursorPath = NodePath("../../Overlays/GridCursor")
 _gridPath = NodePath("../../BattleGrid")
 _hudPath = NodePath("../../Overlays/BattleHud")
+_enemyTurnControllerPath = NodePath("../EnemyTurnController")
 _movementControllerPath = NodePath("../MovementController")
 _selectionControllerPath = NodePath("../SelectionController")
 _turnControllerPath = NodePath("../TurnController")
 _unitRegistryPath = NodePath("../UnitRegistry")
 _battleUnitScene = ExtResource("3_o62pt")
 _unitsRootPath = NodePath("../../Units")
+
+[node name="EnemyTurnController" type="Node" parent="Controllers"]
+script = ExtResource("7_b0ckj")
 
 [node name="MovementController" type="Node" parent="Controllers"]
 script = ExtResource("7_sl1sn")
