@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -61,7 +63,7 @@ public sealed class MoveRangeService
     /// <summary>
     /// Returns a cached movement preview when available, otherwise computes and caches it.
     /// </summary>
-    public MovementPreview GetMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
+    public MovementPreview GetMovementPreview(Vector2I startCell, BattleUnit actingUnit)
     {
         var cacheKey = (startCell, actingUnit.Id, _gridRevision);
         if (_cache.TryGetValue(cacheKey, out var movePreview))
@@ -125,7 +127,7 @@ public sealed class MoveRangeService
     /// Computes all reachable cells within the given movement budget using Dijkstra.
     /// </summary>
     /// TODO - add function that takes multiple starting cells (for enemy threat range)
-    private MovementPreview BuildMovementPreview(Vector2I startCell, Units.BattleUnit actingUnit)
+    private MovementPreview BuildMovementPreview(Vector2I startCell, BattleUnit actingUnit)
     {
         _logger.Log("GetReachableCells", LogSeverity.Trace, LogCategory.UiNavigation);
 
@@ -174,11 +176,18 @@ public sealed class MoveRangeService
             }
         }
         
+        // if not player unit, filter out occupied cells.
+        var cells = (actingUnit.IsFriendly)
+            ? new HashSet<Vector2I>(bestCost.Keys)
+            : new HashSet<Vector2I>(
+                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out _))
+                );
+        
         _logger.Log($"GetReachableCells Count={bestCost.Count}", LogSeverity.Trace, LogCategory.UiNavigation);
         
         return new MovementPreview()
         {
-            Cells = new HashSet<Vector2I>(bestCost.Keys),
+            Cells = cells,
             CostByCell = bestCost,
             ParentCells = parentCells,
             OriginCell = startCell

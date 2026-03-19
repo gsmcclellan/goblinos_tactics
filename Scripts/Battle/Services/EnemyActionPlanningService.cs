@@ -7,6 +7,7 @@ using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
+using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle.Services;
@@ -70,7 +71,7 @@ public sealed class EnemyActionPlanningService
         });
 
         if (!hasTarget)
-            return BuildWaitPlan(actingUnit, originCell);
+            return BuildMoveCloserPlan(actingUnit, originCell);
 
         var moveTarget = attackPreview.AttackOriginsByTargetCell[targetCell].FirstOrDefault();
         return new EnemyActionPlan(actingUnit, originCell, moveTarget, PrimaryActionType.Attack, targetCell, targetUnit);
@@ -79,6 +80,49 @@ public sealed class EnemyActionPlanningService
     public EnemyActionPlan BuildWaitPlan(BattleUnit unit, Vector2I originCell) =>
         new EnemyActionPlan(unit, originCell, null, PrimaryActionType.Wait, null, null);
 
+    public EnemyActionPlan BuildMoveCloserPlan(BattleUnit unit, Vector2I originCell)
+    {
+        _logger.Log("Building move closer plan.", LogSeverity.Trace, LogCategory.AiDecision);
+        // if can't move return / do something else
+        var reachableCells = _moveRangeService.GetMovementPreview(originCell, unit).Cells;
+            // .Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out _))
+            // .ToList();
+        if (reachableCells.Count == 0)
+            return BuildWaitPlan(unit, originCell);
+        
+        // get closest enemy
+        var playerUnits = _unitRegistry.GetFriendlyUnits();
+        var closestUnitCell = originCell;
+        var closestUnitDistance = int.MaxValue;
+        foreach (var playerUnit in playerUnits)
+        {
+            if (!DebugUtil.Require(_unitRegistry.TryGetCell(playerUnit, out var playerUnitCell), "Unit Registry has unit registered with no cell"))
+                continue;
+            var distanceTo = ManhattanRangeService.GetDistance(originCell, playerUnitCell);
+            if (distanceTo >= closestUnitDistance) 
+                continue;
+            
+            closestUnitDistance = distanceTo;
+            closestUnitCell = playerUnitCell;
+        }
+        
+        // get closest cell in movement range to closestUnitCell
+        // move towards it.
+        var bestDestinationCell = originCell;
+        var bestDestinationDistance = ManhattanRangeService.GetDistance(originCell, closestUnitCell);
+
+        foreach (var reachableCell in reachableCells)
+        {
+            var distanceFromReachableCellToTarget = ManhattanRangeService.GetDistance(reachableCell, closestUnitCell);
+            if (distanceFromReachableCellToTarget >= bestDestinationDistance)
+                continue;
+
+            bestDestinationDistance = distanceFromReachableCellToTarget;
+            bestDestinationCell = reachableCell;
+        }
+
+        return new EnemyActionPlan(unit, originCell, bestDestinationCell, PrimaryActionType.Wait, null, null);
+    }
     // private Vector2I? TryBuildMoveTowardNearestPlayer(BattleUnit enemyUnit)
     // {
     //     _logger.Log($"TryBuildMoveTowardNearestPlayer unit={enemyUnit.Name}", LogSeverity.Trace, LogCategory.AiMovement);

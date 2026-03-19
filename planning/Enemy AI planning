@@ -4,8 +4,9 @@ Steps:
 1. Gather context
 2. Compute possible moves - compute values
 3. Compute possible primary actions - compute values
-4. Rank values against priorities / weights
-5. Commit action.
+4. Prune candidates to top X per category (prevent too many iterations)
+5. Rank values against priorities / weights
+6. Commit action.
 
 
 Step 0: Gather context (cheap caches)
@@ -74,3 +75,81 @@ Return:
 	MoveTargetCell (maybe null)
 	PrimaryAction + target (maybe null)
 	Optional: “face direction”, “use ability variant”, etc.
+
+
+Must-have
+
+Kill bonus (huge)
+	Expected net HP swing:
+		damageDealt - damageTakenByCounter
+	Death risk penalty:
+		if tile is threatened by strong player units, penalize
+	Target value weighting
+		attacking a healer > attacking a tank (or whatever your roles are)
+
+Nice-to-have (still cheap)
+	Focus fire bonus
+		prefer targets already damaged (increases kill likelihood)
+	Isolation penalty
+		don’t run far from allies unless you’re an assassin-type
+	Objective pressure
+		path toward capture points / player backline
+
+
+Minimax / lookahead (with shallow depth)
+
+What it is: simulate “enemy does X, player responds” for 1 ply (or 2 ply).
+	Pros
+		Much smarter positioning
+		Captures traps / sacrifices
+	Cons
+		Expensive and needs a fast simulator
+		Hard if combat has lots of randomness
+		Use it if: later, when you have a stable fast combat resolver and want “hard mode”.
+
+Candidate structure:
+Candidate = (MoveEndPoint m, Action A, Target t)
+
+PositionScore: what it should include in FE-style (move+act)
+Since the unit will end the activation on m, PositionScore should estimate next player phase danger + strategic value.
+
+Minimum viable PositionScore terms
+
+	Exposure / risk
+		count (or weight) how many player units can attack m next turn
+		heavier penalty if “high damage” units threaten it
+	Terrain / tile defense
+		cover/avoid/def bonuses, choke points, etc.
+	Ally support
+		bonus for being within X of allies (prevents lone suicides)
+	Objective proximity
+		(optional now) closer to goal, threaten capture points, etc.
+	Important: avoid double-counting
+
+If ActionScore already includes “counterattack damage,” PositionScore should mostly be about future damage (next player turn), not “damage taken during this combat.”
+
+
+ActionScore: what it should include (immediate outcome)
+	Attack action
+		Core terms:
+			Kill bonus (big)
+			Expected damage dealt (or deterministic damage)
+			Expected counter damage taken (penalty)
+			Target value weighting
+				healer / high offense / low HP etc.
+		Nice but optional:
+			Focus fire bonus (prefer finishing damaged units)
+				focus fire setup - small bonus favoring target with multiple attack spots open.
+			Overkill waste penalty (small)
+
+	Heal action
+		Core:
+			Effective heal amount (actual missing HP healed)
+			Save-from-death bonus (if ally would likely die next player turn)
+			Healed unit value (healing a carry > healing a tank, depending)
+		Disable / debuff action
+			Core:
+				Disable strength (stun > slow, etc.)
+				Target value
+				“Prevents kill” estimate
+					e.g., disabling a unit that threatens many enemies is valuable

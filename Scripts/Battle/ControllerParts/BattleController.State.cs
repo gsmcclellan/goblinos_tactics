@@ -344,6 +344,8 @@ public partial class BattleController
                 _logger.Warn($"{nameof(CommitUnitActivation)} - Trade not implemented.");
                 break;
             case PrimaryActionType.Wait:
+                if (activation.HasMove)
+                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 break;
             case PrimaryActionType.None:
                 throw new ArgumentOutOfRangeException();;
