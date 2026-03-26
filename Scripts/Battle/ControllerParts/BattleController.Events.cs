@@ -167,7 +167,7 @@ public partial class BattleController
         _moveRangeService.InvalidateCache();
     }
 
-    private void OnUnitUnregistered(Units.BattleUnit unit, Vector2I cell)
+    private void OnUnitUnregistered(Units.BattleUnit unit, Vector2I cell, bool isUnitDeath)
     {
         _moveRangeService.InvalidateCache();
     }

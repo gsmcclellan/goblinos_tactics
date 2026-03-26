@@ -23,7 +23,7 @@ public partial class UnitRegistry: Node
     [Signal]
     public delegate void UnitRegisteredEventHandler(BattleUnit unit, Vector2I cell);
     [Signal]
-    public delegate void UnitUnregisteredEventHandler(BattleUnit unit, Vector2I cell);
+    public delegate void UnitUnregisteredEventHandler(BattleUnit unit, Vector2I cell, bool isDeath);
     
     // [Signal]
     // public delegate void UnitDiedEventHandler(BattleUnit unit, Vector2I cell);
@@ -98,7 +98,7 @@ public partial class UnitRegistry: Node
     /// <summary>
     /// Unregisters a unit from the battle.
     /// </summary>
-    public void UnregisterUnit(BattleUnit unit)
+    public void UnregisterUnit(BattleUnit unit, bool isDeath = false)
     {
         _logger.Log("UnregisterUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "Cannot unregister null unit."))
@@ -114,8 +114,17 @@ public partial class UnitRegistry: Node
         _cellsByUnit.Remove(unit);
 
         _AssertInvariants();
-        EmitSignal(SignalName.UnitUnregistered, unit, cell);
+        EmitSignal(SignalName.UnitUnregistered, unit, cell, isDeath);
     }
+
+    public void DestroyUnit(BattleUnit unit)
+    {
+        _logger.Log("DestroyUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
+        UnregisterUnit(unit, true);
+        unit.QueueFree();
+    }
+
+    public void DestroyUnit(string unitId) => DestroyUnit(GetUnitById(unitId));
 
     /// <summary>
     /// Clears all registered units. Intended for battle teardown.
@@ -156,6 +165,11 @@ public partial class UnitRegistry: Node
     public IEnumerable<BattleUnit> GetFriendlyUnits()
     {
         return GetUnitsWhere(unit => unit.IsFriendly);
+    }
+
+    public BattleUnit GetUnitById(string unitId)
+    {
+        return _units.Find(unit => unit.Id == unitId);
     }
 
     public IEnumerable<BattleUnit> GetUnitsWhere(Func<BattleUnit, bool> predicate)
@@ -240,6 +254,7 @@ public partial class UnitRegistry: Node
         var fromCellMatches = unitCell == fromCell;
         var isDestinationEmpty = !_unitsByCell.ContainsKey(toCell);
 
+        // TODO - unit already moved if player unit. Need to confirm.
         if (!DebugUtil.Require(fromCellMatches, "[UnitRegistry] fromCell does not match existing location.") ||
             !DebugUtil.Require(isDestinationEmpty, "[UnitRegistry] toCell not empty"))
             return;

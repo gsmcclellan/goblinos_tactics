@@ -10,4 +10,6 @@ public class UnitTemplate
     public string ImageFileName;
     public StatBlock BaseStats;
     public StatGrowthProfile StatGrowthProfile;
+    public int MinRange = 1;
+    public int MaxRange = 1;
 }

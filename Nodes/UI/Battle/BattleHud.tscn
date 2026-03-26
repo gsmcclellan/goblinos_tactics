@@ -31,10 +31,8 @@ layout_mode = 0
 anchors_preset = 0
 anchor_top = 0.0
 anchor_bottom = 0.0
-offset_left = 1.0
-offset_top = 522.0
-offset_right = 201.0
-offset_bottom = 647.0
+offset_top = 523.0
+offset_bottom = 648.0
 grow_vertical = 1
 
 [node name="BattleControllerInputState" type="Label" parent="."]
@@ -47,6 +45,10 @@ text = "Free Select"
 [node name="PrimaryActionSelect" parent="." instance=ExtResource("3_rfvvm")]
 
 [node name="PrimaryActionConfirmationPanel" parent="." instance=ExtResource("4_kr30i")]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 42.0
+offset_bottom = 42.0
 
 [node name="TurnPanel" type="Panel" parent="."]
 anchors_preset = 1

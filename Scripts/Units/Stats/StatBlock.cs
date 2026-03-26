@@ -1,4 +1,5 @@
-﻿using Goblinos.Scripts.Units.Stats.Types;
+﻿using System;
+using Goblinos.Scripts.Units.Stats.Types;
 
 namespace Goblinos.Scripts.Units.Stats;
 
@@ -47,5 +48,33 @@ public class StatBlock
         MaxHitPoints = maxHitPoints;
         Defense = defense;
         Resistance = resistance;
+    }
+
+    public int Get(StatName statName)
+    {
+        // Can only get core / base stats
+        if (StatNameInfo.GetTier(statName) == StatTier.Derived)
+            throw new ArgumentException(
+                $"Stat '{statName}' is a derived stat and cannot be retrieved directly from {nameof(StatBlock)}.",
+                nameof(statName));
+        
+        return statName switch
+        {
+            // Core
+            StatName.Might => Might,
+            StatName.Agility => Agility,
+            StatName.Vitality => Vitality,
+            StatName.Mind => Mind,
+            StatName.Presence => Presence,
+            StatName.Luck => Luck,
+
+            // Base
+            StatName.Movement => Movement,
+            StatName.MaxHitPoints => MaxHitPoints,
+            StatName.Defense => Defense,
+            StatName.Resistance => Resistance,
+
+            _ => throw new ArgumentOutOfRangeException(nameof(statName), statName, null)
+        };
     }
 }

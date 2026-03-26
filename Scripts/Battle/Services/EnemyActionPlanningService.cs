@@ -74,7 +74,15 @@ public sealed class EnemyActionPlanningService
             return BuildMoveCloserPlan(actingUnit, originCell);
 
         var moveTarget = attackPreview.AttackOriginsByTargetCell[targetCell].FirstOrDefault();
-        return new EnemyActionPlan(actingUnit, originCell, moveTarget, PrimaryActionType.Attack, targetCell, targetUnit);
+        
+        return new EnemyActionPlan(
+            actingUnit, 
+            originCell, 
+            (moveTarget != originCell) ? moveTarget: null, 
+            PrimaryActionType.Attack, 
+            targetCell, 
+            targetUnit
+            );
     }
 
     public EnemyActionPlan BuildWaitPlan(BattleUnit unit, Vector2I originCell) =>
@@ -85,8 +93,6 @@ public sealed class EnemyActionPlanningService
         _logger.Log("Building move closer plan.", LogSeverity.Trace, LogCategory.AiDecision);
         // if can't move return / do something else
         var reachableCells = _moveRangeService.GetMovementPreview(originCell, unit).Cells;
-            // .Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out _))
-            // .ToList();
         if (reachableCells.Count == 0)
             return BuildWaitPlan(unit, originCell);
         
@@ -123,10 +129,4 @@ public sealed class EnemyActionPlanningService
 
         return new EnemyActionPlan(unit, originCell, bestDestinationCell, PrimaryActionType.Wait, null, null);
     }
-    // private Vector2I? TryBuildMoveTowardNearestPlayer(BattleUnit enemyUnit)
-    // {
-    //     _logger.Log($"TryBuildMoveTowardNearestPlayer unit={enemyUnit.Name}", LogSeverity.Trace, LogCategory.AiMovement);
-    //
-    //     
-    // }
 }

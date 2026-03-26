@@ -11,6 +11,7 @@ script = ExtResource("1_tyjm8")
 _label = NodePath("PrimaryActionConfirmationPanel/PrimaryActionConfirmationLabel")
 
 [node name="PrimaryActionConfirmationPanel" type="Panel" parent="."]
+layout_mode = 0
 offset_left = 953.0
 offset_top = 167.0
 offset_right = 1153.0

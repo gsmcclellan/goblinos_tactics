@@ -5,7 +5,7 @@
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "PowerLabel")]
+[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -15,59 +15,76 @@ grow_vertical = 0
 mouse_filter = 2
 theme = SubResource("Theme_oq75t")
 script = ExtResource("1_5tlod")
-UnitNameLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/UnitName")
-IsFriendlyLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/IsFriendly")
-HitPointsLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/hitPoints")
-PowerLabel = NodePath("MarginContainer/HBoxContainer/RightColumn/Power")
+UnitNameLabel = NodePath("MarginContainer/HBoxContainer/Column1/UnitName")
+IsFriendlyLabel = NodePath("MarginContainer/HBoxContainer/Col 3/IsFriendly")
+HitPointsLabel = NodePath("MarginContainer/HBoxContainer/Column1/hitPoints")
+MightLabel = NodePath("MarginContainer/HBoxContainer/Column1/Might")
+AgilityLabel = NodePath("MarginContainer/HBoxContainer/Column2/Agility")
+VitalityLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Vitality")
+MindLabel = NodePath("MarginContainer/HBoxContainer/Column1/Mind")
+PresenceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Presence")
+LuckLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Luck")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 0
+offset_right = 200.0
+offset_bottom = 125.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="LeftColumn" type="Control" parent="MarginContainer/HBoxContainer"]
-custom_minimum_size = Vector2(80, 0)
+[node name="Column1" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 
-[node name="VboxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/LeftColumn"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-offset_left = 4.0
-offset_right = 84.0
-offset_bottom = 131.0
-
-[node name="UnitNameLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
-layout_mode = 2
-text = "Name:"
-
-[node name="IsFriendlyLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
-layout_mode = 2
-text = "IsFriend:"
-
-[node name="HitPointsLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
-layout_mode = 2
-text = "HP:"
-
-[node name="PowerLabel" type="Label" parent="MarginContainer/HBoxContainer/LeftColumn/VboxContainer"]
-layout_mode = 2
-text = "Pow:"
-
-[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="UnitName" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+[node name="UnitName" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
 layout_mode = 2
 text = "Goblino"
 
-[node name="IsFriendly" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
-layout_mode = 2
-text = "True"
-
-[node name="hitPoints" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+[node name="hitPoints" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
 layout_mode = 2
 text = "20 / 20 hp"
 
-[node name="Power" type="Label" parent="MarginContainer/HBoxContainer/RightColumn"]
+[node name="Might" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
 layout_mode = 2
-text = "10"
+text = "Mgt: 10"
+
+[node name="Mind" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+layout_mode = 2
+text = "Mnd: 10"
+
+[node name="Column2" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+
+[node name="Empty" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+layout_mode = 2
+
+[node name="Empty1" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+layout_mode = 2
+
+[node name="Agility" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+layout_mode = 2
+text = "Agi: 10"
+
+[node name="Presence" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+layout_mode = 2
+text = "Prs: 10"
+
+[node name="Col 3" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="IsFriendly" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+layout_mode = 2
+text = "(Friend)"
+
+[node name="Empty" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+layout_mode = 2
+
+[node name="Vitality" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+layout_mode = 2
+text = "Vit: 10"
+
+[node name="Luck" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+layout_mode = 2
+text = "Lck: 10"

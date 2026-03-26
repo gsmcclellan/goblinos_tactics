@@ -6,6 +6,7 @@ using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
+using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -55,8 +56,7 @@ public partial class BattleController
         if (!_turnController.RequestEndPlayerTurn())
             return;
         
-        ClearUnitActivation();
-        ClearPreviews();
+        AbortActivationToFreeSelect();
     }
     
     private void AbortActivationToFreeSelect()
@@ -193,14 +193,6 @@ public partial class BattleController
         // TODO - set cursor position
         ShowCursor();
         InputState = BattleInputState.PrimaryActionTargeting;
-    }
-
-    private void ExitPrimaryActionSelectMode()
-    {
-        _logger.Log("ExitPrimaryActionSelectMode", LogSeverity.Trace, LogCategory.Input);
-        
-        if (TryUndoMove() && DebugUtil.Require(UnitActivation != null, "[BattleController] ExitPrimaryActionSelectMode - no UnitActivationContext"))
-            EnterMoveTargetingMode(UnitActivation.Unit);
     }
     
     /// <summary>
@@ -388,7 +380,16 @@ public partial class BattleController
         
         
         var results = _combatResolver.Resolve(activation);
+        HandleCombatResults(results);
         GD.Print(results);
+    }
+
+    public void HandleCombatResults(SimpleCombatResult results)
+    {
+        if (results.AttackerDied)
+            _unitRegistry.DestroyUnit(results.Attacker.UnitId);
+        if (results.DefenderDied)
+            _unitRegistry.DestroyUnit(results.Defender.UnitId);
     }
 
     private void ShowCursor()
@@ -405,8 +406,8 @@ public partial class BattleController
             return true;
         if (!UnitActivation.CanUndoMove)
             return false;
-        if (!_movementController.TryMoveToCell(UnitActivation.Unit, UnitActivation.OriginCell))
-            return false;
+        
+        _movementController.UndoPendingMove(UnitActivation.Unit);
 
         UnitActivation.ClearMoveTargetCell();
         _selectionController.UpdateHovered();

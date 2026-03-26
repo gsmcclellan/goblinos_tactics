@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Services;
@@ -28,6 +29,8 @@ public sealed partial class EnemyTurnController : Node
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     
     private bool _isRunning;
+
+    private const float DelayBetweenEnemyActionsSeconds = .5f;
 
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -90,7 +93,7 @@ public sealed partial class EnemyTurnController : Node
 
         try
         {
-            await ExecuteAllEnemyUnitsAsync(_unitRegistry, _enemyActionPlanner, _battleController);
+            await ExecuteAllEnemyUnitTurnsAsync(_unitRegistry, _enemyActionPlanner, _battleController);
         }
         finally
         {
@@ -106,7 +109,7 @@ public sealed partial class EnemyTurnController : Node
     /// <summary>
     /// Iterates all enemy units that can act, planning and committing actions sequentially.
     /// </summary>
-    private async Task ExecuteAllEnemyUnitsAsync(
+    private async Task ExecuteAllEnemyUnitTurnsAsync(
         UnitRegistry unitRegistry,
         EnemyActionPlanningService enemyActionPlanner,
         BattleController battleController
@@ -114,9 +117,17 @@ public sealed partial class EnemyTurnController : Node
     {
         _logger.Log("ExecuteAllEnemyUnitsAsync", LogSeverity.Info, LogCategory.AiDecision);
         
-        foreach (BattleUnit enemyUnit in unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly))
+        var enemyUnits = unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly)
+            .ToList();
+        
+        foreach (BattleUnit enemyUnit in enemyUnits)
         {
             _logger.Log($"Enemy unit acting: {enemyUnit.UnitName}", LogSeverity.Info, LogCategory.AiDecision);
+            
+            await ToSignal(
+                GetTree().CreateTimer(DelayBetweenEnemyActionsSeconds),
+                SceneTreeTimer.SignalName.Timeout
+            );
 
             if (!enemyUnit.CanAct)
             {

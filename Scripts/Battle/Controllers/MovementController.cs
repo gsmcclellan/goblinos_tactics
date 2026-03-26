@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -11,8 +12,8 @@ public partial class MovementController: Node
     private Logger _logger = LogManager.For<MovementController>();
     
     private BattleGrid _grid;
-    private Units.UnitRegistry _unitRegistry;
-
+    private UnitRegistry _unitRegistry;
+    
     public void Bind(BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
@@ -24,7 +25,7 @@ public partial class MovementController: Node
         _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
     }
 
-    public bool TryMoveToCell(Units.BattleUnit unit, Vector2I targetCell)
+    public bool TryMoveToCell(Units.BattleUnit unit, Vector2I targetCell, bool commitMovement = false)
     {
         _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "[MovementController] Unable to move, no unit."))
@@ -44,15 +45,34 @@ public partial class MovementController: Node
         if (_unitRegistry.IsCellOccupied(targetCell))
             return false;
 
-        CommitMove(unit, fromCell, targetCell);
+        if (commitMovement)
+            CommitMove(unit, fromCell, targetCell);
+        else
+            CreatePendingMove(unit, fromCell, targetCell);
         return true;
     }
 
-    public void CommitMove(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    public void CommitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
         // TODO - animations & stuff
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
         _unitRegistry.ApplyUnitMove(unit, fromCell, toCell);
+    }
+
+    public void CreatePendingMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    {
+        _logger.Log($"CreatePendingMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        // TODO - animations & stuff
+
+        unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
+    }
+
+    public void UndoPendingMove(BattleUnit unit)
+    {
+        if (!_unitRegistry.TryGetCell(unit, out var originCell))
+            return;
+        // TODO - check that unit can undo (should be current unit activation, not exhausted)
+        unit.GlobalPosition = _grid.GetGlobalPositionForCell(originCell);
     }
 }

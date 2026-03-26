@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Test;
@@ -17,6 +19,7 @@ public partial class BattleController
     [Export] private NodePath _unitsRootPath;
     private Node _unitsRoot;
 
+    private UnitFactory _unitFactory = new UnitFactory();
     private RandomNumberGenerator _random = new RandomNumberGenerator();
 
     
@@ -27,37 +30,58 @@ public partial class BattleController
         Debug.Assert(_battleUnitScene != null, $"[{nameof(BattleController)}.Test] Init failed - no Packed scene for {nameof(BattleUnit)}.");
         Debug.Assert(_unitsRootPath != null, $"[{nameof(BattleController)}.Test] Init failed - no Units Root Node.");
         
-        CreateTestUnits();
+        SpawnTestUnits();
         _logger.Log("Ready_Test", LogSeverity.Info, LogCategory.Initialization);
     }
     
-    private void CreateTestUnits()
+    private void SpawnTestUnits()
     {
-        var battleUnitFactory = new BattleUnitFactory();
-        var unitFactory = new UnitFactory();
-        var templates = TestUnitTemplates.Dict;
+        List<(string, int)> friendlyUnitTypes = new()
+        {
+            ("gob_stab", 1),
+            ("gob_shield", 1),
+            ("gob_sneak", 1),
+            ("gob_snipe", 1)
+        };
+        List<(string, int)> enemyUnitTypes = new()
+        {
+            ("hum_spear", 1),
+            ("hum_captain", 1),
+            ("hum_crossbow", 1),
+            ("hum_guard", 1)
+        };
 
+        var friends = friendlyUnitTypes.SelectMany(fut => CreateTestUnits(fut.Item1, fut.Item2)).ToList();
+        var enemies = enemyUnitTypes.SelectMany(fut => CreateTestUnits(fut.Item1, fut.Item2)).ToList();
 
-        var gob1 = unitFactory.CreateFromTemplate(templates["gob_stab"]);
-        var gob2 = unitFactory.CreateFromTemplate(templates["gob_stab"]);
-        var gob3 = unitFactory.CreateFromTemplate(templates["gob_shield"]);
-        var gob4 = unitFactory.CreateFromTemplate(templates["gob_shield"]);
-        var friends = new List<Unit>() {gob1, gob2, gob3, gob4};
-        
-        var enemy1 = unitFactory.CreateFromTemplate(templates["hum_spear"]);
-        var enemy2 = unitFactory.CreateFromTemplate(templates["hum_spear"]);
-        var enemy3 = unitFactory.CreateFromTemplate(templates["hum_spear"]);
-        var enemy4 = unitFactory.CreateFromTemplate(templates["hum_spear"]);
-        var enemies = new List<Unit>() {enemy1, enemy2, enemy3, enemy4};
-
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < friends.Count; i++)
         {
             friends[i].IsFriendly = true;
             Spawn(friends[i], new Vector2I(i, _random.RandiRange(0, 15)));
+        }
+        for (var i = 0; i < enemies.Count; i++)
+        {
             Spawn(enemies[i], new Vector2I(8+i, _random.RandiRange(0, 15)));
         }
         
         _registerExistingBattleUnitNodes();
+    }
+
+    private IEnumerable<Unit> CreateTestUnits(string unitTemplateId, int numUnits = 1)
+    {
+        var units = new List<Unit>();
+        for (var i = 0; i < numUnits; i++)
+        {
+            units.Add(CreateTestUnit(unitTemplateId));
+        }
+
+        return units;
+    }
+
+    private Unit CreateTestUnit(string unitTemplateId)
+    {
+        var templates = TestUnitTemplates.Dict;
+        return _unitFactory.CreateFromTemplate(templates[unitTemplateId]);
     }
     
     /// <summary>

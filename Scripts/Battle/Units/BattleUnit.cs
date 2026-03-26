@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Units.Stats;
+using Goblinos.Scripts.Units.Stats.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -23,8 +26,10 @@ public partial class BattleUnit : Area2D
 
     [Export] private Sprite2D _imageSprite;
     [Export] private ProgressBar _hpBar;
+    [Export] private PackedScene _floatingDamageScene;
+    
     private Sprite2D _isSelectedNode;
-
+    
     /** Fields */
     private int _currentHitPoints;
     
@@ -38,7 +43,8 @@ public partial class BattleUnit : Area2D
     public UnitActivationState State { get; private set; } = UnitActivationState.Ready;
     
     /** Facade Properties */
-    public RangeBand AttackRange => new RangeBand(1, 1); // TODO - base on weapon.
+    public int GetStat(StatName statName) => Stats.Get(statName);
+    public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
     public bool CanAct => State != UnitActivationState.Exhausted;
     public String Id => _unit.Id;
     public bool IsDefeated => CurrentHitPoints <= 0;
@@ -125,11 +131,17 @@ public partial class BattleUnit : Area2D
     /// <summary>
     /// Applies damage to CurrentHitpoints.
     /// </summary>
-    public void ApplyDamage(int damage)
+    public async void ApplyDamage(int damage)
     {
         _logger.Log("[BattleUnit] ApplyDamage " + damage, LogSeverity.Info, LogCategory.UnitLifecycle);
+        if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
+            return;
+        
+        await DisplayFloatingDamage(damage);
         SetHitPoints(CurrentHitPoints - damage);
+        
     }
+    
     public void Select()
     {
         ToggleSelected(true);
@@ -171,6 +183,18 @@ public partial class BattleUnit : Area2D
     // ---------------------------------------------------------------------
     // Private Methods
     // ---------------------------------------------------------------------
+
+    private async Task DisplayFloatingDamage(int damage)
+    {
+        _logger.Log("DisplayFloatingDamage damage=" + damage, LogSeverity.Trace, LogCategory.CombatResolution);
+        if (!DebugUtil.Require(_floatingDamageScene != null, "Floating Damage Label scene not instantiated."))
+            return;
+
+        var floatingDamageText = _floatingDamageScene.Instantiate<FloatingDamageText>();
+        AddChild(floatingDamageText);
+        floatingDamageText.GlobalPosition = GlobalPosition;
+        await floatingDamageText.ShowValue(damage);
+    }
 
     private void Refresh()
     {

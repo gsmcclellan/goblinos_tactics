@@ -22,4 +22,7 @@ public partial class GlobalSettings : Node
     public const InputDeviceMode DefaultInputMode = InputDeviceMode.MouseAndKeyboard; // TODO move to user settings
 
     public static readonly Random Random = new Random();
+    
+    // Battle Related
+    public const int MinimumCombatDamage = 0;
 }

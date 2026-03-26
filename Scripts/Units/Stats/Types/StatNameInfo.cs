@@ -69,4 +69,53 @@ public static class StatNameInfo
         // Luck - ??
         return statName.ToString();
     }
+    
+    /// <summary>
+    /// Shortened version of the stat name.
+    /// </summary>
+    /// <param name="statName"></param>
+    /// <returns></returns>
+    public static string GetAbbreviatedDisplayName(StatName statName)
+    {
+        Dictionary<StatName, string> abbreviatedNamesDict = new Dictionary<StatName, string>()
+        {
+            // Core
+            { StatName.Might, "Mgt" },
+            { StatName.Agility, "Agi" },
+            { StatName.Vitality, "Vit" },
+            { StatName.Mind, "Mnd" },
+            { StatName.Presence, "Pre" },
+            { StatName.Luck, "Lck" },
+
+            // Base
+            { StatName.Movement, "Mov" },
+            { StatName.MaxHitPoints, "HP" },
+            { StatName.Defense, "Def" },
+            { StatName.Resistance, "Res" },
+
+            // Derived
+            { StatName.AttackSpeed, "AtkSpd" },
+            { StatName.Accuracy, "Acc" },
+            { StatName.Evasion, "Eva" },
+            { StatName.CritChance, "Crit" },
+            { StatName.CritDefense, "CritDef" },
+            { StatName.PhysicalProtection, "PhysProt" },
+            { StatName.MagicProtection, "MagProt" },
+            { StatName.ArmorPierce, "ArmPierce" },
+            { StatName.MagicPenetration, "MagPen" }
+        };
+        
+        // Might - Smack, Smash, Slash, Stab, Blast
+        // Agility - Scurry, Sneak
+        // Vitality - Grit, Meatiness
+        // Mind - Cunning, Guile, Weird, Trickery
+        // Presence - Swagger, Bluster, Moxie, Menace
+        // Luck - ??
+        if (abbreviatedNamesDict.TryGetValue(statName, out var abbreviation))
+            return abbreviation;
+
+        return GetDisplayName(statName);
+    }
+    
+    
 }

@@ -2,6 +2,7 @@
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Test;
 using Goblinos.Scripts.Units.Stats;
+using Goblinos.Scripts.Units.Stats.Types;
 using Godot;
 
 namespace Goblinos.Scripts.Units;
@@ -13,6 +14,8 @@ public class Unit
     public string TemplateId;
     public string UnitName;
     public UnitStats Stats;
+    
+    public RangeBand AttackRange = new RangeBand(1, 1); // TODO - base on weapon.
     
     public int Level;
     public int Experience;
@@ -27,4 +30,6 @@ public class Unit
     // inventory, equipment slots
     // learned abilities
     // long-term flags (injuries, traits, bonds)
+
+    public int GetStat(StatName statName) => Stats.Get(statName);
 }

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Units.Stats.Types;
 using Godot;
 using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 
@@ -14,7 +15,12 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     [Export] public Label? UnitNameLabel;
     [Export] public Label? IsFriendlyLabel;
     [Export] public Label? HitPointsLabel;
-    [Export] public Label? PowerLabel;
+    [Export] public Label? MightLabel;
+    [Export] public Label? AgilityLabel;
+    [Export] public Label? VitalityLabel;
+    [Export] public Label? MindLabel;
+    [Export] public Label? PresenceLabel;
+    [Export] public Label? LuckLabel;
 
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;
@@ -30,7 +36,12 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(UnitNameLabel != null, "[UnitInfoPanel].  Not Initialized. UnitNameLabel is required.");
         Debug.Assert(IsFriendlyLabel != null, "[UnitInfoPanel].  Not Initialized. IsFriendlyPanel is required.");
         Debug.Assert(HitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. HitPointsLabel is required.");
-        Debug.Assert(PowerLabel != null, "[UnitInfoPanel].  Not Initialized. PowerLabel is required.");
+        Debug.Assert(MightLabel != null, "[UnitInfoPanel].  Not Initialized. MightLabel is required.");
+        Debug.Assert(AgilityLabel != null, "[UnitInfoPanel].  Not Initialized. AgilityLabel is required.");
+        Debug.Assert(VitalityLabel != null, "[UnitInfoPanel].  Not Initialized. VitalityLabel is required.");
+        Debug.Assert(MindLabel != null, "[UnitInfoPanel].  Not Initialized. MindLabel is required.");
+        Debug.Assert(PresenceLabel != null, "[UnitInfoPanel].  Not Initialized. PresenceLabel is required.");
+        Debug.Assert(LuckLabel != null, "[UnitInfoPanel].  Not Initialized. LuckLabel is required.");
     }
     // ---------------------------------------------------------------------
     // Signal / Event Callbacks
@@ -69,9 +80,61 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
 
     private void UpdateUnitLabels() {
         _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
-        if (UnitNameLabel != null) UnitNameLabel.Text = Unit?.UnitName ?? "";
-        if (IsFriendlyLabel != null) IsFriendlyLabel.Text = Unit?.IsFriendly.ToString() ?? "";
-        if (HitPointsLabel != null) HitPointsLabel.Text = $"{Unit?.CurrentHitPoints} / {Unit?.MaxHitPoints} HP";
-        if (PowerLabel != null) PowerLabel.Text = Unit?.Unit.Stats.BaseStats.Might.ToString();
+        UpdateNameLabel(Unit);
+        UpdateIsFriendlyLabel(Unit);
+        UpdateHitPointsLabel(Unit);
+        
+        foreach(var statName in StatNameInfo.CoreStats)
+            UpdateStatLabel(Unit, statName);
+    }
+
+    private void UpdateNameLabel(BattleUnit? unit)
+    {
+        var text = "";
+        if (unit != null)
+            text = unit.UnitName;
+        if (UnitNameLabel != null)
+            UnitNameLabel.Text = text;
+    }
+
+    private void UpdateIsFriendlyLabel(BattleUnit? unit)
+    {
+        var text = "";
+        if (unit != null)
+            text = unit.IsFriendly ? "(Friend)" : "(Foe)";
+        if (IsFriendlyLabel != null)
+            IsFriendlyLabel.Text = text;
+    }
+
+    private void UpdateHitPointsLabel(BattleUnit? unit)
+    {
+        var text = $"{unit?.CurrentHitPoints.ToString() ?? ""} / {unit?.MaxHitPoints.ToString() ?? ""} hp";
+        if (HitPointsLabel != null)
+            HitPointsLabel.Text = text;
+    }
+
+    private void UpdateStatLabel(BattleUnit? unit, StatName statName)
+    {
+        var text = "";
+        var label = GetStatLabel(statName);
+        
+        if (unit != null)
+            text = $"{StatNameInfo.GetAbbreviatedDisplayName(statName)}: {unit.GetStat(statName)}";
+        if (label != null)
+            label.Text = text;
+    }
+    
+    private Label? GetStatLabel(StatName statName)
+    {
+        return statName switch
+        {
+            StatName.Might => MightLabel,
+            StatName.Agility => AgilityLabel,
+            StatName.Vitality => VitalityLabel,
+            StatName.Mind => MindLabel,
+            StatName.Presence => PresenceLabel,
+            StatName.Luck => LuckLabel,
+            _ => null
+        };
     }
 }

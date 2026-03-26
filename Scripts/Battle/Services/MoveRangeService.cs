@@ -180,7 +180,7 @@ public sealed class MoveRangeService
         var cells = (actingUnit.IsFriendly)
             ? new HashSet<Vector2I>(bestCost.Keys)
             : new HashSet<Vector2I>(
-                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out _))
+                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit)
                 );
         
         _logger.Log($"GetReachableCells Count={bestCost.Count}", LogSeverity.Trace, LogCategory.UiNavigation);

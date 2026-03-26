@@ -53,9 +53,9 @@ public class CombatResolver
         var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
         var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
 
-        attacker.ApplyDamage(defenderDamage);
+        defender.ApplyDamage(attackerDamage);
         if (rangeValidationResult.DefenderInRange)
-            defender.ApplyDamage(attackerDamage);
+            attacker.ApplyDamage(defenderDamage);
 
         return new SimpleCombatResult(
             attacker: new UnitSnapshot(attacker.Id, attacker.UnitName),
@@ -88,8 +88,6 @@ public class CombatResolver
 
         return new CombatRangeValidationResult(attackerInRange, defenderInRange);
     }
-    
-    
     
 }
 

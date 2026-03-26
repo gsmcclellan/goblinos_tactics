@@ -1,5 +1,6 @@
 ﻿using System;
 using Goblinos.Logging;
+using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units.Stats;
 
 namespace Goblinos.Scripts.Units
@@ -20,12 +21,13 @@ namespace Goblinos.Scripts.Units
 
             var unit = new Unit
             {
-                Id = new Guid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 TemplateId = template.Id,
                 UnitName = template.DisplayName,
                 Level = 1,
                 Experience = 0,
-                Stats = new UnitStats(template.BaseStats)
+                Stats = new UnitStats(template.BaseStats),
+                AttackRange = new RangeBand(template.MinRange, template.MaxRange)
             };
 
             // Growth profile is typically stored on Unit, or referenced via class/template.
