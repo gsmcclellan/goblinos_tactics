@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3 uid="uid://bic5nu8iwepe7"]
+
+[ext_resource type="Script" uid="uid://delpprpor41k0" path="res://Scripts/UI/Battle/CombatPreviewPanel.cs" id="1_p6dn5"]
+
+[node name="CombatPreviewPanel" type="Panel" node_paths=PackedStringArray("AttackerNameLabel", "AttackerCurrentHitPointsLabel", "AttackerExpectedHitPointsLabel", "DefenderNameLabel", "DefenderCurrentHitPointsLabel", "DefenderExpectedHitPointsLabel")]
+offset_left = 876.0
+offset_top = 210.0
+offset_right = 1154.0
+offset_bottom = 371.0
+script = ExtResource("1_p6dn5")
+AttackerNameLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/Name")
+AttackerCurrentHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/CurrentHitPoints")
+AttackerExpectedHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/ExpectedHitPoints")
+DefenderNameLabel = NodePath("HBoxContainer/Defender/VBoxContainer/Name")
+DefenderCurrentHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/CurrentHitPoints")
+DefenderExpectedHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/ExpectedHitPoints")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Attacker" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Attacker"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+layout_mode = 2
+text = "Goblino"
+
+[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+layout_mode = 2
+text = "20 / 20 HP"
+
+[node name="Divider" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+layout_mode = 2
+text = "..."
+
+[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+layout_mode = 2
+text = "10 / 20 HP"
+
+[node name="Defender" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Defender"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+layout_mode = 2
+text = "Human"
+
+[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+layout_mode = 2
+text = "20  / 20 HP"
+
+[node name="Divider" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+layout_mode = 2
+text = "..."
+
+[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+layout_mode = 2
+text = "15 / 20 HP"

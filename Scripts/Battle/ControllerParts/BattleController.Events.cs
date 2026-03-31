@@ -1,7 +1,9 @@
 ﻿#nullable enable
 using System;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Util;
@@ -19,7 +21,10 @@ public partial class BattleController
     public delegate void InputStateChangedEventHandler(int state);
     // Units
     [Signal]
-    public delegate void UnitActionsResolvedEventHandler(Units.BattleUnit unit); // TODO - put unit context snapshot here.
+    public delegate void UnitActionsResolvedEventHandler(BattleUnit unit); // TODO - put unit context snapshot here.
+
+    [Signal]
+    public delegate void CombatPreviewUpdatedEventHandler(CombatPreview? combatPreview);
     
 
     /** Events */
@@ -91,17 +96,25 @@ public partial class BattleController
         switch (hoveredNode)
         {
             // In FreeSelect, change move preview when hovered unit changes.
-            case Units.BattleUnit when InputState == BattleInputState.FreeSelect:
+            case BattleUnit when InputState == BattleInputState.FreeSelect:
                 ResetPreviews();
+                break;
+            // In PrimaryActionTargeting, update combat preview
+            case BattleUnit when InputState == BattleInputState.PrimaryActionTargeting:
+                UpdateCombatPreview();
                 break;
             case null when InputState == BattleInputState.FreeSelect:
                 ClearPreviews();
+                break;
+            case null when InputState == BattleInputState.PrimaryActionTargeting:
+                SetCombatPreview(null);
                 break;
         }
     }
 
     private void OnPrimaryActionFocused(int actionIndex)
     {
+        // When menu item for primary action is hovered or tabbed / navigated to with buttons
         var action = (PrimaryActionType)actionIndex;
         _logger.Log($"OnPrimaryActionFocused - action={action}", LogSeverity.Info, LogCategory.Signal);
         DisplayPrimaryActionPreview((PrimaryActionType)actionIndex);
@@ -151,23 +164,23 @@ public partial class BattleController
         // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
     }
 
-    private void OnUnitActionsResolved(Units.BattleUnit unit)
+    private void OnUnitActionsResolved(BattleUnit unit)
     {
         _moveRangeService.InvalidateCache();
         // TODO - Check for all units resolved/exhausted - enter enemy turn
     }
 
-    private void OnUnitMoveResolved(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
     }
 
-    private void OnUnitRegistered(Units.BattleUnit unit, Vector2I cell)
+    private void OnUnitRegistered(BattleUnit unit, Vector2I cell)
     {
         _moveRangeService.InvalidateCache();
     }
 
-    private void OnUnitUnregistered(Units.BattleUnit unit, Vector2I cell, bool isUnitDeath)
+    private void OnUnitUnregistered(BattleUnit unit, Vector2I cell, bool isUnitDeath)
     {
         _moveRangeService.InvalidateCache();
     }

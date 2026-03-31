@@ -26,6 +26,7 @@ namespace Goblinos.Scripts.UI.Battle
         
         /** Components */
         [Export] private NodePath _panelsRootPath;
+        [Export] private NodePath _combatPreviewPath;
         [Export] private NodePath _primaryActionSelectPath;
         [Export] private NodePath _primaryActionConfirmPath;
         
@@ -78,6 +79,7 @@ namespace Goblinos.Scripts.UI.Battle
             _panelsRoot = GetNode(_panelsRootPath);
             _primaryActionConfirm = GetNode<PrimaryActionConfirm>(_primaryActionConfirmPath);
             _primaryActionSelect = GetNode<PrimaryActionSelect>(_primaryActionSelectPath);
+            
             DebugUtil.Require(_panelsRoot != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
             DebugUtil.Require(_primaryActionConfirm != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
             DebugUtil.Require(_primaryActionSelect != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
@@ -103,7 +105,8 @@ namespace Goblinos.Scripts.UI.Battle
                 throw new InvalidOperationException("[BattleHud] Bind called before _Ready. _primaryActionSelect is not initialized.");
 
             _battleController.InputStateChanged += OnBattleControllerInputStateChanged;
-
+            _battleController.CombatPreviewUpdated += OnCombatPreviewUpdated;
+            
             _cursor.GridCursorFocusChanged += OnHoveredCellChanged;
 
             _endTurnButton.Pressed += OnEndTurnButtonPressed;
@@ -123,6 +126,7 @@ namespace Goblinos.Scripts.UI.Battle
             _logger.Log("UnsubscribeFromEvents", LogSeverity.Info, LogCategory.Exit);
             
             _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
+            _battleController.CombatPreviewUpdated -= OnCombatPreviewUpdated;
             
             _cursor.GridCursorFocusChanged -= OnHoveredCellChanged;
             
@@ -160,7 +164,6 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         // Public Methods
         // ---------------------------------------------------------------------
-
         public void HidePrimaryActionConfirm()
         {
             _primaryActionConfirm.Visible = false;
@@ -213,10 +216,18 @@ namespace Goblinos.Scripts.UI.Battle
         private void OnBattleControllerInputStateChanged(int s)
         {
             var state = (BattleInputState) s;
-            var node = GetNode<Label>("BattleControllerInputState");
             _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
             
+            var node = GetNode<Label>("BattleControllerInputState"); // TODO - make this a IBattleHudPanel (or add to terrain info)
             node.Text = state.ToString();
+            
+            _panels.ForEach(panel => panel.OnBattleInputStateChanged(s));
+        }
+
+        private void OnCombatPreviewUpdated(CombatPreview? combatPreview)
+        {
+            _logger.Log($"OnCombatPreviewUpdated", LogSeverity.Info, LogCategory.UiNavigation);
+            _panels.ForEach(panel => panel.OnCombatPreviewUpdated(combatPreview));
         }
 
         private void OnEndTurnButtonPressed()

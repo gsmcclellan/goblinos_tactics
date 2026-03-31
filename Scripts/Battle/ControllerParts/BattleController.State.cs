@@ -18,6 +18,7 @@ public partial class BattleController
     private BattleInputState _inputState = BattleInputState.FreeSelect;
     
     private PrimaryActionValidTargetsPreview? _primaryActionPreviews;
+    private CombatPreview? _combatPreview;
     
     /** Properties */
     public UnitActivationContext? UnitActivation;
@@ -36,9 +37,9 @@ public partial class BattleController
     public bool IsPlayerTurn => _turnController.ActiveSide == BattleSide.Player;
     public bool IsUnitSelected => _selectionController.IsUnitSelected;
     public Vector2I HoveredCell => _selectionController.HoveredCell;
-    public Units.BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
+    public BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
     public Vector2I? SelectedCell => _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
-    public Units.BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
+    public BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
     
     
     
@@ -75,6 +76,7 @@ public partial class BattleController
 
     private void ClearPreviews()
     {
+        SetCombatPreview(null);
         _grid.ClearOverlays();
     }
 
@@ -122,7 +124,7 @@ public partial class BattleController
         ShowCursor();
     }
 
-    private void EnterMoveTargetingMode(Units.BattleUnit unit)
+    private void EnterMoveTargetingMode(BattleUnit unit)
     {
         _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
 
@@ -308,6 +310,35 @@ public partial class BattleController
         
         UnitActivation.Reset();
     }
+
+    private void SetCombatPreview(CombatPreview? preview)
+    {
+        _combatPreview = preview;
+        EmitSignal(SignalName.CombatPreviewUpdated, preview); 
+    }
+
+    private void UpdateCombatPreview()
+    {
+        CombatPreview? preview = null;
+
+        if (UnitActivation == null || UnitActivation.PrimaryAction != PrimaryActionType.Attack)
+        {
+            SetCombatPreview(preview);
+            return;
+        }
+            
+        BattleUnit? attacker = UnitActivation.Unit;
+        BattleUnit? defender = UnitActivation.PrimaryActionTargetUnit ?? HoveredUnit;
+
+        if (defender == null || defender.IsFriendly)
+        {
+            SetCombatPreview(null);
+            return;
+        }
+        
+        var combatPreview = _combatResolver.GetCombatPreview(attacker, defender);
+        SetCombatPreview(combatPreview);
+    }
     
     /// <summary>
     /// Resolved all pending actions, move + attack/ability/wait
@@ -340,9 +371,9 @@ public partial class BattleController
                     _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 break;
             case PrimaryActionType.None:
-                throw new ArgumentOutOfRangeException();;
+                throw new ArgumentOutOfRangeException(nameof(activation), activation, "Unhandled property 'activation.PrimaryAction' - type None");
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new NotImplementedException();
         }
 
         var unit = activation.Unit;
@@ -370,7 +401,7 @@ public partial class BattleController
         CommitUnitActivation(UnitActivation);
     }
 
-    public void ResolveCombat(IUnitActionPlan activation)
+    public async void ResolveCombat(IUnitActionPlan activation)
     {
         // TODO - check units are in range
         if (!DebugUtil.Require(activation != null,
@@ -379,7 +410,7 @@ public partial class BattleController
         
         
         
-        var results = _combatResolver.Resolve(activation);
+        var results = await _combatResolver.Resolve(activation);
         HandleCombatResults(results);
         GD.Print(results);
     }

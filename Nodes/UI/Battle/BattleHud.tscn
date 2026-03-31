@@ -1,16 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://0yqqd78jcaet"]
+[gd_scene load_steps=7 format=3 uid="uid://0yqqd78jcaet"]
 
 [ext_resource type="Script" uid="uid://b1v83afs0nq7i" path="res://Scripts/UI/Battle/BattleHud.cs" id="1_8w1vy"]
 [ext_resource type="PackedScene" uid="uid://ddrrh4301j2v6" path="res://Nodes/UI/Battle/TerrainInfoPanel.tscn" id="2_at2nw"]
 [ext_resource type="PackedScene" uid="uid://btuxwrm08l1n2" path="res://Nodes/UI/Battle/UnitInfoPanel.tscn" id="3_6em5t"]
 [ext_resource type="PackedScene" uid="uid://cixx1r5qwd8im" path="res://Nodes/UI/Battle/PrimaryActionSelect.tscn" id="3_rfvvm"]
 [ext_resource type="PackedScene" uid="uid://dr6d1tddeftk2" path="res://Nodes/UI/Battle/PrimaryActionConfirm.tscn" id="4_kr30i"]
+[ext_resource type="PackedScene" uid="uid://bic5nu8iwepe7" path="res://Nodes/UI/Battle/CombatPreviewPanel.tscn" id="4_u1gru"]
 
 [node name="BattleHud" type="CanvasLayer" node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton")]
 script = ExtResource("1_8w1vy")
 _panelsRootPath = NodePath("BattleHudPanels")
-_primaryActionSelectPath = NodePath("PrimaryActionSelect")
-_primaryActionConfirmPath = NodePath("PrimaryActionConfirmationPanel")
+_primaryActionSelectPath = NodePath("BattleHudPanels/PrimaryActionSelect")
+_primaryActionConfirmPath = NodePath("BattleHudPanels/PrimaryActionConfirmationPanel")
 _turnNumberLabel = NodePath("TurnPanel/MarginContainer/VBoxContainer/HBoxContainer/TurnNumber")
 _endTurnButton = NodePath("TurnPanel/MarginContainer/VBoxContainer/EndTurnButton")
 
@@ -35,20 +36,47 @@ offset_top = 523.0
 offset_bottom = 648.0
 grow_vertical = 1
 
+[node name="CombatPreviewPanel" parent="BattleHudPanels" instance=ExtResource("4_u1gru")]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -278.0
+offset_top = -80.5
+offset_right = 0.0
+offset_bottom = 80.5
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="PrimaryActionSelect" parent="BattleHudPanels" instance=ExtResource("3_rfvvm")]
+layout_mode = 0
+offset_left = 691.0
+offset_top = 267.0
+offset_right = 750.0
+offset_bottom = 439.0
+
+[node name="PrimaryActionConfirmationPanel" parent="BattleHudPanels" instance=ExtResource("4_kr30i")]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 80.0
+offset_right = 0.0
+offset_bottom = 179.0
+grow_horizontal = 0
+grow_vertical = 2
+
 [node name="BattleControllerInputState" type="Label" parent="."]
 offset_left = 965.0
 offset_top = 497.0
 offset_right = 1049.0
 offset_bottom = 520.0
 text = "Free Select"
-
-[node name="PrimaryActionSelect" parent="." instance=ExtResource("3_rfvvm")]
-
-[node name="PrimaryActionConfirmationPanel" parent="." instance=ExtResource("4_kr30i")]
-offset_left = 2.0
-offset_top = 2.0
-offset_right = 42.0
-offset_bottom = 42.0
 
 [node name="TurnPanel" type="Panel" parent="."]
 anchors_preset = 1

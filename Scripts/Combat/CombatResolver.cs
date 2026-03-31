@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Services;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
@@ -29,7 +31,7 @@ public class CombatResolver
         _logger.Log("Constructed.", LogSeverity.Trace, LogCategory.Initialization);
     }
 
-    public SimpleCombatResult Resolve(IUnitActionPlan activationContext)
+    public async Task<SimpleCombatResult> Resolve(IUnitActionPlan activationContext)
     {
         // Simplified combat resolution - change later. 
         // Both units deal damage to each other, no hit, crit, order, multi attack.
@@ -53,10 +55,15 @@ public class CombatResolver
         var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
         var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
 
-        defender.ApplyDamage(attackerDamage);
+        var defTask = defender.ApplyDamage(attackerDamage);
         if (rangeValidationResult.DefenderInRange)
-            attacker.ApplyDamage(defenderDamage);
-
+        {
+            var attackTask = attacker.ApplyDamage(defenderDamage);
+            await Task.WhenAll(defTask, attackTask);
+        }
+        else
+            await defTask;
+        
         return new SimpleCombatResult(
             attacker: new UnitSnapshot(attacker.Id, attacker.UnitName),
             defender: new UnitSnapshot(defender.Id, defender.UnitName),
@@ -77,6 +84,25 @@ public class CombatResolver
         // (optionally) applies damage to the defender via a small interface so you aren’t locked to a specific BattleUnit API.
     }
     
+    public CombatPreview GetCombatPreview(BattleUnit attacker, BattleUnit defender)
+    {
+        var attackerStats = DerivedStatsCalculator.Build(attacker.Stats); // TODO - these can be cached.
+        var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
+
+        var rangeValidationResult = ValidateAttackRange(attacker, defender);
+        
+        var attackerDamage = _damageCalculator.ComputePreviewDamage(attackerStats, defenderStats);
+        var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputePreviewDamage(defenderStats, attackerStats): 0;
+
+        return new CombatPreview()
+        {
+            Attacker = attacker,
+            Defender = defender,
+            AttackerDamage = attackerDamage,
+            DefenderDamage = defenderDamage
+        };
+    }
+    
     private CombatRangeValidationResult ValidateAttackRange(
         BattleUnit attacker,
         BattleUnit defender)
@@ -88,7 +114,6 @@ public class CombatResolver
 
         return new CombatRangeValidationResult(attackerInRange, defenderInRange);
     }
-    
 }
 
 public struct CombatRangeValidationResult(bool attackerInRange, bool defenderInRange)

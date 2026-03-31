@@ -2,13 +2,11 @@
 
 [ext_resource type="Script" uid="uid://bxcmmdemklc7l" path="res://Scripts/UI/Battle/PrimaryActionSelect.cs" id="1_ye3in"]
 
-[node name="PrimaryActionSelect" type="Control"]
-layout_mode = 3
-anchors_preset = 0
+[node name="PrimaryActionSelect" type="Panel"]
 offset_left = 951.0
 offset_top = 295.0
-offset_right = 991.0
-offset_bottom = 335.0
+offset_right = 1010.0
+offset_bottom = 467.0
 script = ExtResource("1_ye3in")
 
 [node name="ButtonContainer" type="VBoxContainer" parent="."]

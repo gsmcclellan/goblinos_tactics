@@ -8,7 +8,7 @@ using Godot;
 
 namespace Goblinos.Scripts.UI.Battle;
 
-public partial class PrimaryActionSelect : Control
+public partial class PrimaryActionSelect : Panel, IBattleHudPanel
 {
     [Signal]
     public delegate void ActionFocusedEventHandler(int action);

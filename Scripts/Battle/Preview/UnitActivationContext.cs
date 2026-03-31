@@ -44,6 +44,7 @@ public sealed class UnitActivationContext: IUnitActionPlan
     public bool CanUndoPrimaryAction => HasSelectedPrimaryAction && !BlockUndoPrimaryAction;
     public bool HasMoved => MoveTargetCell.HasValue;
     public bool HasSelectedPrimaryAction => PrimaryAction != PrimaryActionType.None;
+    public bool HasCombatPreview => PrimaryAction == PrimaryActionType.Attack && PrimaryActionTargetUnit != null;
     public UnitActivationPhase UndoTarget {
         get
         {

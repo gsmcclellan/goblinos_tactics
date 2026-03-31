@@ -17,7 +17,7 @@ public static class TestUnitTemplates
             DisplayName = "Goblin Stabber",
             ImageFileName = "GoblinStabber",
             BaseStats = new StatBlock(
-                might: 9,
+                might: 10,
                 agility: 6,
                 vitality: 5,
                 mind: 2,
@@ -42,8 +42,8 @@ public static class TestUnitTemplates
             DisplayName = "Goblin Blocker",
             ImageFileName = "GoblinShielder",
             BaseStats = new StatBlock(
-                might: 6,
-                agility: 7,
+                might: 8,
+                agility: 4,
                 vitality: 4,
                 mind: 2,
                 presence: 3,
@@ -70,7 +70,7 @@ public static class TestUnitTemplates
             BaseStats = new StatBlock(
                 might: 10,
                 agility: 10,
-                vitality: 4,
+                vitality: 2,
                 mind: 2,
                 presence: 3,
                 luck: 2,
@@ -95,7 +95,7 @@ public static class TestUnitTemplates
             MinRange = 2,
             MaxRange = 2,
             BaseStats = new StatBlock(
-                might: 10,
+                might: 12,
                 agility: 12,
                 vitality: 2,
                 mind: 2,
@@ -120,14 +120,14 @@ public static class TestUnitTemplates
             DisplayName = "Spearman",
             ImageFileName = "HumanSpearman",
             BaseStats = new StatBlock(
-                might: 8,
+                might: 10,
                 agility: 7,
                 vitality: 4,
                 mind: 2,
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 18,
+                maxHitPoints: 20,
                 defense: 4,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -170,7 +170,7 @@ public static class TestUnitTemplates
             MinRange = 2,
             MaxRange = 2,
             BaseStats = new StatBlock(
-                might: 4,
+                might: 10,
                 agility: 10,
                 vitality: 4,
                 mind: 2,

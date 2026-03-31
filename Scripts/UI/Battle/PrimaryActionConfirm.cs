@@ -4,7 +4,7 @@ using Godot;
 
 namespace Goblinos.Scripts.UI.Battle;
 
-public partial class PrimaryActionConfirm : Control
+public partial class PrimaryActionConfirm : Panel, IBattleHudPanel
 {
     [Export] private Label _label;
 

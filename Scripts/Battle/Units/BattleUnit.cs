@@ -131,15 +131,13 @@ public partial class BattleUnit : Area2D
     /// <summary>
     /// Applies damage to CurrentHitpoints.
     /// </summary>
-    public async void ApplyDamage(int damage)
+    public async Task ApplyDamage(int damage)
     {
         _logger.Log("[BattleUnit] ApplyDamage " + damage, LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
             return;
-        
-        await DisplayFloatingDamage(damage);
         SetHitPoints(CurrentHitPoints - damage);
-        
+        await DisplayFloatingDamage(damage);
     }
     
     public void Select()
@@ -184,7 +182,7 @@ public partial class BattleUnit : Area2D
     // Private Methods
     // ---------------------------------------------------------------------
 
-    private async Task DisplayFloatingDamage(int damage)
+    private async Task DisplayFloatingDamage(int damage) // TODO - move to battle or UI so not reliant on unit existing / color
     {
         _logger.Log("DisplayFloatingDamage damage=" + damage, LogSeverity.Trace, LogCategory.CombatResolution);
         if (!DebugUtil.Require(_floatingDamageScene != null, "Floating Damage Label scene not instantiated."))

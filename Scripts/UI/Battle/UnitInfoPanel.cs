@@ -42,6 +42,8 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(MindLabel != null, "[UnitInfoPanel].  Not Initialized. MindLabel is required.");
         Debug.Assert(PresenceLabel != null, "[UnitInfoPanel].  Not Initialized. PresenceLabel is required.");
         Debug.Assert(LuckLabel != null, "[UnitInfoPanel].  Not Initialized. LuckLabel is required.");
+        
+        SetVisible();
     }
     // ---------------------------------------------------------------------
     // Signal / Event Callbacks
@@ -71,11 +73,18 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
             return;
         
         UpdateUnitLabels();
+        SetVisible();
     }
     private void SetSelectedUnit(BattleUnit? unit)
     {
         _selectedUnit = unit;
         UpdateUnitLabels();
+        SetVisible();
+    }
+
+    private void SetVisible()
+    {
+        Visible = Unit != null;
     }
 
     private void UpdateUnitLabels() {
