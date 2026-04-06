@@ -1,4 +1,5 @@
-﻿using Goblinos.Scripts.Combat.Types;
+﻿using Goblinos.Scripts.Combat;
+using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Test;
 using Goblinos.Scripts.Units.Stats;
@@ -16,6 +17,7 @@ public class Unit
     public UnitStats Stats;
     
     public RangeBand AttackRange = new RangeBand(1, 1); // TODO - base on weapon.
+    public AbilityDefinition Ability;
     
     public int Level;
     public int Experience;

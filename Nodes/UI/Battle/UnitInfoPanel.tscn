@@ -5,7 +5,7 @@
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel")]
+[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -17,13 +17,15 @@ theme = SubResource("Theme_oq75t")
 script = ExtResource("1_5tlod")
 UnitNameLabel = NodePath("MarginContainer/HBoxContainer/Column1/UnitName")
 IsFriendlyLabel = NodePath("MarginContainer/HBoxContainer/Col 3/IsFriendly")
-HitPointsLabel = NodePath("MarginContainer/HBoxContainer/Column1/hitPoints")
+HitPointsLabel = NodePath("MarginContainer/HBoxContainer/Column1/HitPoints")
 MightLabel = NodePath("MarginContainer/HBoxContainer/Column1/Might")
 AgilityLabel = NodePath("MarginContainer/HBoxContainer/Column2/Agility")
 VitalityLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Vitality")
 MindLabel = NodePath("MarginContainer/HBoxContainer/Column1/Mind")
 PresenceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Presence")
 LuckLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Luck")
+DefenseLabel = NodePath("MarginContainer/HBoxContainer/Column1/Defense")
+ResistanceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Resistance")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 0
@@ -41,7 +43,7 @@ layout_mode = 2
 layout_mode = 2
 text = "Goblino"
 
-[node name="hitPoints" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="HitPoints" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
 layout_mode = 2
 text = "20 / 20 hp"
 
@@ -52,6 +54,10 @@ text = "Mgt: 10"
 [node name="Mind" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
 layout_mode = 2
 text = "Mnd: 10"
+
+[node name="Defense" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+layout_mode = 2
+text = "Def: 4"
 
 [node name="Column2" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 custom_minimum_size = Vector2(60, 0)
@@ -70,6 +76,10 @@ text = "Agi: 10"
 [node name="Presence" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
 layout_mode = 2
 text = "Prs: 10"
+
+[node name="Resistance" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+layout_mode = 2
+text = "Res: 2"
 
 [node name="Col 3" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2

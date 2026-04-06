@@ -160,6 +160,7 @@ public partial class SelectionController : Node
     {
         _logger.Log("TriggerSelection", LogSeverity.Trace, LogCategory.Input);
         DeselectUnit();
+        UpdateHovered();
     }
     
     public void TriggerSelection()

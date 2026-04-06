@@ -177,6 +177,12 @@ public class PrimaryActionTargetingService
                 mustBeEnemies = true;
                 mustBeFriends = false;
                 break;
+            case PrimaryActionType.Ability:
+                requiresUnit = actingUnit.Ability.RequiresTarget;
+                mustBeEnemies = actingUnit.Ability.CanTargetEnemies && !actingUnit.Ability.CanTargetSelf &&
+                                !actingUnit.Ability.CanTargetFriends;
+                mustBeFriends = !actingUnit.Ability.CanTargetEnemies;
+                break;
             default:
                 _logger.Warn($"[{nameof(PrimaryActionTargetingService)}].{nameof(AddIfValidTarget)} - No case for PrimaryActionType={actionType}.");
                 requiresUnit = false;
@@ -211,6 +217,8 @@ public class PrimaryActionTargetingService
         {
             case PrimaryActionType.Attack:
                 return unit.AttackRange;
+            case PrimaryActionType.Ability:
+                return unit.Ability.Range;
             default:
                 _logger.Warn($"[{nameof(PrimaryActionTargetingService)}].{nameof(GetRange)} - No case for PrimaryActionType={actionType}.");
                 return new RangeBand(0, 0);

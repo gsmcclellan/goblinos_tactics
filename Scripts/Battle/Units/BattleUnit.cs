@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Units;
@@ -44,6 +45,7 @@ public partial class BattleUnit : Area2D
     
     /** Facade Properties */
     public int GetStat(StatName statName) => Stats.Get(statName);
+    public AbilityDefinition Ability => Unit.Ability;
     public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
     public bool CanAct => State != UnitActivationState.Exhausted;
     public String Id => _unit.Id;

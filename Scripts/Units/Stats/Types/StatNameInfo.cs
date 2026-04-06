@@ -39,6 +39,10 @@ public static class StatNameInfo
         };
     }
 
+    public static IReadOnlyList<StatName> Stats { get; } = Enum.GetValues(typeof(StatName))
+        .Cast<StatName>()
+        .ToList();
+
     public static IReadOnlyList<StatName> CoreStats { get; } = Enum.GetValues(typeof(StatName))
             .Cast<StatName>()
             .Where(sn => GetTier(sn) == StatTier.Core)

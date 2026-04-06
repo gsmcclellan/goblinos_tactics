@@ -1,0 +1,31 @@
+﻿add 4 abilities -
+    x push
+    swap
+    disable movement
+    
+add camera with panning
+
+damage types / conditions
+    bleed
+    poison
+    armor pierce
+    
+weapons with stats and types
+    - sword
+    - axe
+    - spear
+    - dagger
+    - bow
+    - hammer
+    - gun
+weapon triangle - 
+     sword > axe > spear > sword
+     hammer & gun armor pierce
+     
+     
+ enemy hover preview toggling
+ 
+ 
+ BUGS:
+ 
+ - When moving one square (adjacent to origin) push shows origin as target

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
@@ -120,6 +121,7 @@ public partial class BattleController
     private void EnterFreeSelectMode()
     {
         InputState = BattleInputState.FreeSelect;
+        _cursor.TriggerUpdateFocus();
         GenerateHoverPreview();
         ShowCursor();
     }
@@ -180,7 +182,7 @@ public partial class BattleController
         
         HideCursor();
         GeneratePrimaryActionTargetPreviewForActiveUnit();
-        _hud.ShowPrimaryActionSelectMenu(_primaryActionPreviews);
+        _hud.ShowPrimaryActionSelectMenu(UnitActivation.Unit, _primaryActionPreviews);
         
         InputState = BattleInputState.PrimaryActionSelect;
     }
@@ -346,7 +348,7 @@ public partial class BattleController
     /// This can be refactored into own class - ActionResolver
     /// If many actions or becomes complex, refactor into one class per Action Type
     /// with shared interface containing TryExecute.
-    public void CommitUnitActivation(IUnitActionPlan activation)
+    public async void CommitUnitActivation(IUnitActionPlan activation)
     {
         // move already committed.
         // Handle attack / other action. TODO
@@ -358,7 +360,9 @@ public partial class BattleController
                 ResolveCombat(activation);
                 break;
             case PrimaryActionType.Ability:
-                _logger.Warn($"{nameof(CommitUnitActivation)} - Ability not implemented.");
+                if (activation.HasMove)
+                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
+                await ResolveAbility(activation);
                 break;
             case PrimaryActionType.Item:
                 _logger.Warn($"{nameof(CommitUnitActivation)} - Item not implemented.");
@@ -384,10 +388,9 @@ public partial class BattleController
         if (IsPlayerTurn)
         {
             unit.SetActivationState(UnitActivationState.Exhausted);
-            _turnController.HandleUnitExhausted(unit);
-            ClearActivationAndUi();
-            EnterFreeSelectMode();
         }
+
+        EmitSignal(nameof(UnitActionsResolved), unit);
     }
 
     private void CommitUnitActivation()
@@ -401,6 +404,17 @@ public partial class BattleController
         CommitUnitActivation(UnitActivation);
     }
 
+    public async Task ResolveAbility(IUnitActionPlan activation)
+    {
+        _logger.Log("ResolveAbility", LogSeverity.Info, LogCategory.CombatResolution);
+        // TODO - check units are in range
+        if (!DebugUtil.Require(activation != null,
+                $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
+            return;
+
+        await _abilityResolver.Resolve(activation);
+    }
+
     public async void ResolveCombat(IUnitActionPlan activation)
     {
         // TODO - check units are in range
@@ -412,7 +426,6 @@ public partial class BattleController
         
         var results = await _combatResolver.Resolve(activation);
         HandleCombatResults(results);
-        GD.Print(results);
     }
 
     public void HandleCombatResults(SimpleCombatResult results)
@@ -425,6 +438,7 @@ public partial class BattleController
 
     private void ShowCursor()
     {
+        _cursor.TriggerUpdateFocus();
         _cursor.Visible = true;
     }
 

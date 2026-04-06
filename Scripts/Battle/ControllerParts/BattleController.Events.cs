@@ -22,10 +22,8 @@ public partial class BattleController
     // Units
     [Signal]
     public delegate void UnitActionsResolvedEventHandler(BattleUnit unit); // TODO - put unit context snapshot here.
-
     [Signal]
     public delegate void CombatPreviewUpdatedEventHandler(CombatPreview? combatPreview);
-    
 
     /** Events */
 
@@ -141,7 +139,7 @@ public partial class BattleController
                 EnterPrimaryActionTargetMode(action);
                 break;
             case PrimaryActionType.Ability:
-                _logger.Warn("Ability primary action not implemented");
+                EnterPrimaryActionTargetMode(action);
                 break;
             case PrimaryActionType.Item:
                 _logger.Warn("Item primary action not implemented");
@@ -167,12 +165,16 @@ public partial class BattleController
     private void OnUnitActionsResolved(BattleUnit unit)
     {
         _moveRangeService.InvalidateCache();
-        // TODO - Check for all units resolved/exhausted - enter enemy turn
+        _turnController.HandleUnitExhausted(unit);
+        ClearActivationAndUi();
+        EnterFreeSelectMode();
+        AbortActivationToFreeSelect();
     }
 
     private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
+        _cursor.TriggerUpdateFocus();
     }
 
     private void OnUnitRegistered(BattleUnit unit, Vector2I cell)

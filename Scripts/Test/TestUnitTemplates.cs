@@ -2,6 +2,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Units.Stats;
 
@@ -16,6 +17,7 @@ public static class TestUnitTemplates
             Id = "gob_stab",
             DisplayName = "Goblin Stabber",
             ImageFileName = "GoblinStabber",
+            Ability = AbilityType.Push,
             BaseStats = new StatBlock(
                 might: 10,
                 agility: 6,

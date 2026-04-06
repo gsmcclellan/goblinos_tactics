@@ -4,27 +4,34 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
+using Goblinos.Scripts.Combat;
+using Goblinos.Scripts.Units;
 using Godot;
 
 namespace Goblinos.Scripts.UI.Battle;
 
 public partial class PrimaryActionSelect : Panel, IBattleHudPanel
 {
+    /** Signals */
     [Signal]
     public delegate void ActionFocusedEventHandler(int action);
     [Signal]
     public delegate void ActionSelectedEventHandler(int action);
-
+    
+    
+    /** Components */
     private readonly Logger _logger = LogManager.For<PrimaryActionSelect>();
 
     private NodePath _buttonContainerPath = "ButtonContainer";
     private Dictionary<PrimaryActionType, Button> _buttons = new();
+    
+    private Button? hoveredButton;
+    private Button? selectedButton;
 
     private PrimaryActionType? hoveredAction;
     private PrimaryActionType? selectedAction;
-
-    private Button? hoveredButton;
-    private Button? selectedButton;
+    
     
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -125,5 +132,16 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     {
         _logger.Log($"OnButtonPressed - action={action}", LogSeverity.Trace, LogCategory.UiNavigation);
         EmitSignal(SignalName.ActionSelected, (int)action);
+    }
+
+    public void OnSelectedUnitChanged(BattleUnit? selectedUnit)
+    {
+        _logger.Log($"OnSelectedUnitChanged - unit={selectedUnit?.UnitName}", LogSeverity.Trace, LogCategory.UiNavigation);
+        var abilityButton = _buttons[PrimaryActionType.Ability];
+        
+        abilityButton.Text = selectedUnit?.Ability?.DisplayName ?? "None";
+        abilityButton.Disabled = selectedUnit?.Ability?.Type == AbilityType.None;
+        
+        return;
     }
 }

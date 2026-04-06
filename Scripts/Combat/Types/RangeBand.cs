@@ -17,6 +17,9 @@ public readonly struct RangeBand
     public int Min { get; } = 1;
     public int Max { get; } = 1;
 
+    public static RangeBand Default = new RangeBand(1, 1);
+    public static RangeBand One = new RangeBand(1, 1);
+
     public bool InRange(int distance)
     {
         return distance >= Min && distance <= Max;

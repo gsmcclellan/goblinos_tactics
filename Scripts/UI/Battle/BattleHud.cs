@@ -7,6 +7,7 @@ using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.UI.Battle;
 using Godot;
 using Goblinos.Scripts.Util;
@@ -184,7 +185,7 @@ namespace Goblinos.Scripts.UI.Battle
         /// <summary>
         /// Shows the primary action menu, disables actions with no valid targets, and focuses the first enabled action.
         /// </summary>
-        public void ShowPrimaryActionSelectMenu(PrimaryActionValidTargetsPreview? previews)
+        public void ShowPrimaryActionSelectMenu(BattleUnit actingUnit, PrimaryActionValidTargetsPreview? previews)
         {
             _primaryActionSelect.Visible = true;
             
@@ -196,12 +197,11 @@ namespace Goblinos.Scripts.UI.Battle
 
                 var requiresTarget = PrimaryActionInfo.RequiresTarget(actionType);
                 var hasTargets = previews != null && previews.HasTargets(actionType);
+                var isNoneAbility = actionType == PrimaryActionType.Ability &&
+                                    actingUnit.Ability.Type == AbilityType.None;
+                var isItem = actionType == PrimaryActionType.Item; // TODO - enable items
 
-                // For now, allow Wait even if it has no targets (it is always valid).
-                if (actionType == PrimaryActionType.Wait)
-                    hasTargets = true;
-
-                _primaryActionSelect.SetActionEnabled(actionType, !requiresTarget || hasTargets);
+                _primaryActionSelect.SetActionEnabled(actionType, !isNoneAbility && !isItem && (!requiresTarget || hasTargets));
             }
             
             // Pick a deterministic "top" action (don’t rely on enum order)

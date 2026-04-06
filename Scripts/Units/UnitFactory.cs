@@ -1,5 +1,6 @@
 ﻿using System;
 using Goblinos.Logging;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units.Stats;
 
@@ -27,7 +28,8 @@ namespace Goblinos.Scripts.Units
                 Level = 1,
                 Experience = 0,
                 Stats = new UnitStats(template.BaseStats),
-                AttackRange = new RangeBand(template.MinRange, template.MaxRange)
+                AttackRange = new RangeBand(template.MinRange, template.MaxRange),
+                Ability = AbilityDefinitions.Get(template.Ability)
             };
 
             // Growth profile is typically stored on Unit, or referenced via class/template.

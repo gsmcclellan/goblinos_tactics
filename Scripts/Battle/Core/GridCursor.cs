@@ -142,4 +142,9 @@ public partial class GridCursor : Node2D
         
         _logger.Log($"_UpdateFocus [FocusedCell]={FocusedCell}", LogSeverity.Extra, LogCategory.UiNavigation);
     }
+
+    public void TriggerUpdateFocus()
+    {
+        _UpdateFocus();
+    }
 }

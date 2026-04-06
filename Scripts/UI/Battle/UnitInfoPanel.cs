@@ -21,6 +21,8 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     [Export] public Label? MindLabel;
     [Export] public Label? PresenceLabel;
     [Export] public Label? LuckLabel;
+    [Export] public Label? DefenseLabel;
+    [Export] public Label? ResistanceLabel;
 
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;
@@ -42,6 +44,8 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(MindLabel != null, "[UnitInfoPanel].  Not Initialized. MindLabel is required.");
         Debug.Assert(PresenceLabel != null, "[UnitInfoPanel].  Not Initialized. PresenceLabel is required.");
         Debug.Assert(LuckLabel != null, "[UnitInfoPanel].  Not Initialized. LuckLabel is required.");
+        Debug.Assert(DefenseLabel != null, "[UnitInfoPanel].  Not Initialized. DefenseLabel is required.");
+        Debug.Assert(ResistanceLabel != null, "[UnitInfoPanel].  Not Initialized. ResistanceLabel is required.");
         
         SetVisible();
     }
@@ -93,7 +97,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         UpdateIsFriendlyLabel(Unit);
         UpdateHitPointsLabel(Unit);
         
-        foreach(var statName in StatNameInfo.CoreStats)
+        foreach(var statName in StatNameInfo.Stats)
             UpdateStatLabel(Unit, statName);
     }
 
@@ -124,13 +128,11 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
 
     private void UpdateStatLabel(BattleUnit? unit, StatName statName)
     {
-        var text = "";
         var label = GetStatLabel(statName);
+        if (label == null)
+            return;
         
-        if (unit != null)
-            text = $"{StatNameInfo.GetAbbreviatedDisplayName(statName)}: {unit.GetStat(statName)}";
-        if (label != null)
-            label.Text = text;
+        label.Text = (unit != null) ? $"{StatNameInfo.GetAbbreviatedDisplayName(statName)}: {unit.GetStat(statName)}" : "";
     }
     
     private Label? GetStatLabel(StatName statName)
@@ -143,6 +145,9 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
             StatName.Mind => MindLabel,
             StatName.Presence => PresenceLabel,
             StatName.Luck => LuckLabel,
+            
+            StatName.Defense => DefenseLabel,
+            StatName.Resistance => ResistanceLabel,
             _ => null
         };
     }
