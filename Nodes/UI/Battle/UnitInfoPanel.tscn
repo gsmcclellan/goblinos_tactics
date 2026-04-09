@@ -5,7 +5,7 @@
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel")]
+[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel", "MovementLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -26,6 +26,7 @@ PresenceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Presence")
 LuckLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Luck")
 DefenseLabel = NodePath("MarginContainer/HBoxContainer/Column1/Defense")
 ResistanceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Resistance")
+MovementLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Movement")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 0
@@ -98,3 +99,6 @@ text = "Vit: 10"
 [node name="Luck" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
 layout_mode = 2
 text = "Lck: 10"
+
+[node name="Movement" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+layout_mode = 2

@@ -15,7 +15,7 @@ public sealed class MoveRangeService
     private readonly Logger _logger = LogManager.For<MoveRangeService>();
     
     private readonly Core.BattleGrid _grid;
-    private readonly Units.UnitRegistry _unitRegistry;
+    private readonly UnitRegistry _unitRegistry;
 
     private int _gridRevision;
 
@@ -26,7 +26,7 @@ public sealed class MoveRangeService
     // Lifecycle / Setup Methods
     // ---------------------------------------------------------------------
     
-    public MoveRangeService(Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
+    public MoveRangeService(Core.BattleGrid grid, UnitRegistry unitRegistry)
     {
         _grid = grid;
         _unitRegistry = unitRegistry;
@@ -36,9 +36,13 @@ public sealed class MoveRangeService
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public bool CanMoveTo(Units.BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    public bool CanMoveTo(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _logger.Log($"CanMoveTo unit={unit.Name} from={fromCell} to={toCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+        
+        // Unit is movement disabled
+        if (unit.IsMovementDisabled)
+            return false;
         
         // Destination must exist and be walkable.
         if (!_grid.TryGetTerrainAtCell(toCell, out var destinationTerrain))
@@ -129,7 +133,7 @@ public sealed class MoveRangeService
     /// TODO - add function that takes multiple starting cells (for enemy threat range)
     private MovementPreview BuildMovementPreview(Vector2I startCell, BattleUnit actingUnit)
     {
-        _logger.Log("GetReachableCells", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log(nameof(BuildMovementPreview), LogSeverity.Trace, LogCategory.UiNavigation);
 
         var bestCost = new Dictionary<Vector2I, int>();
         var parentCells = new Dictionary<Vector2I, Vector2I>();
@@ -180,7 +184,7 @@ public sealed class MoveRangeService
         var cells = (actingUnit.IsFriendly)
             ? new HashSet<Vector2I>(bestCost.Keys)
             : new HashSet<Vector2I>(
-                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit)
+                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit) // Prevent enemies from going on top of each other.
                 );
         
         _logger.Log($"GetReachableCells Count={bestCost.Count}", LogSeverity.Trace, LogCategory.UiNavigation);

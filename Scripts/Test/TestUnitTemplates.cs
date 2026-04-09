@@ -17,7 +17,7 @@ public static class TestUnitTemplates
             Id = "gob_stab",
             DisplayName = "Goblin Stabber",
             ImageFileName = "GoblinStabber",
-            Ability = AbilityType.Push,
+            Ability = AbilityId.Push,
             BaseStats = new StatBlock(
                 might: 10,
                 agility: 6,
@@ -43,6 +43,7 @@ public static class TestUnitTemplates
             Id = "gob_shield",
             DisplayName = "Goblin Blocker",
             ImageFileName = "GoblinShielder",
+            Ability = AbilityId.Haste,
             BaseStats = new StatBlock(
                 might: 8,
                 agility: 4,
@@ -69,6 +70,7 @@ public static class TestUnitTemplates
             DisplayName = "Goblin Sneak",
             ImageFileName = "GoblinSneak",
             MaxRange = 2,
+            Ability = AbilityId.DisableMovement,
             BaseStats = new StatBlock(
                 might: 10,
                 agility: 10,
@@ -96,6 +98,7 @@ public static class TestUnitTemplates
             ImageFileName = "GoblinSniper",
             MinRange = 2,
             MaxRange = 2,
+            Ability = AbilityId.Swap,
             BaseStats = new StatBlock(
                 might: 12,
                 agility: 12,

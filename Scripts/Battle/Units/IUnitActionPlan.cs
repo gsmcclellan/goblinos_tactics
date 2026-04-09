@@ -13,5 +13,6 @@ public interface IUnitActionPlan
     public Vector2I? PrimaryActionTargetCell { get; }
     public BattleUnit? PrimaryActionTargetUnit { get; }
 
+    public Vector2I DestinationCell => MoveTargetCell ?? OriginCell;
     public bool HasMove => MoveTargetCell != null;
 }

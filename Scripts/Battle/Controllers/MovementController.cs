@@ -25,7 +25,7 @@ public partial class MovementController: Node
         _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
     }
 
-    public bool TryMoveToCell(Units.BattleUnit unit, Vector2I targetCell, bool commitMovement = false)
+    public bool TryMoveToCell(BattleUnit unit, Vector2I targetCell, bool commitMovement = false)
     {
         _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "[MovementController] Unable to move, no unit."))
@@ -52,6 +52,22 @@ public partial class MovementController: Node
         return true;
     }
 
+    public bool TrySwapUnits(BattleUnit actingUnit, Vector2I actingUnitCell, Vector2I targetCell)
+    {
+        _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
+        if (!DebugUtil.Require(actingUnit != null, "[MovementController] Unable to swap, no unit."))
+            return false;
+
+        var hasTargetUnit = _unitRegistry.TryGetUnitAtCell(targetCell, out var targetUnit);
+        
+        actingUnit.GlobalPosition = _grid.GetGlobalPositionForCell(targetCell);
+        if (hasTargetUnit)
+            targetUnit.GlobalPosition = _grid.GetGlobalPositionForCell(actingUnitCell);
+        
+        _unitRegistry.ApplyUnitMove(actingUnit, actingUnitCell, targetCell, true);
+        return true;
+    }
+
     public void CommitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
@@ -66,6 +82,7 @@ public partial class MovementController: Node
         // TODO - animations & stuff
 
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
+        _unitRegistry.AddPendingMove(unit, fromCell, toCell);
     }
 
     public void UndoPendingMove(BattleUnit unit)
@@ -74,5 +91,6 @@ public partial class MovementController: Node
             return;
         // TODO - check that unit can undo (should be current unit activation, not exhausted)
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(originCell);
+        _unitRegistry.ClearPendingMove();
     }
 }

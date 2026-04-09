@@ -23,6 +23,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     [Export] public Label? LuckLabel;
     [Export] public Label? DefenseLabel;
     [Export] public Label? ResistanceLabel;
+    [Export] public Label? MovementLabel;
 
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;
@@ -46,6 +47,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(LuckLabel != null, "[UnitInfoPanel].  Not Initialized. LuckLabel is required.");
         Debug.Assert(DefenseLabel != null, "[UnitInfoPanel].  Not Initialized. DefenseLabel is required.");
         Debug.Assert(ResistanceLabel != null, "[UnitInfoPanel].  Not Initialized. ResistanceLabel is required.");
+        Debug.Assert(MovementLabel != null, "[UnitInfoPanel].  Not Initialized. MovementLabel is required.");
         
         SetVisible();
     }
@@ -148,6 +150,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
             
             StatName.Defense => DefenseLabel,
             StatName.Resistance => ResistanceLabel,
+            StatName.Movement => MovementLabel,
             _ => null
         };
     }

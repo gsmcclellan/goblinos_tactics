@@ -1,9 +1,15 @@
-﻿add 4 abilities -
+﻿add activated 4 abilities -
     x push
-    swap
-    disable movement
+    x swap
+    x disable (movement)
+    x haste
+    disarm (need weapons first)
     
+Add modifier calculations to derived stats.
+
 add camera with panning
+map with walls/stairs - more interesting features
+better ai decision making
 
 damage types / conditions
     bleed
@@ -17,15 +23,29 @@ weapons with stats and types
     - dagger
     - bow
     - hammer
-    - gun
+    - gun - triangle pattern
+    - fire - burns certain types of terrain, creates burn status effect
+    
 weapon triangle - 
      sword > axe > spear > sword
      hammer & gun armor pierce
      
+ weapon abilities?
+    - hammer - knock back
+    - spear - first strike
+    - sword - 
+    - axe - 
+    - shield - 
+     
      
  enemy hover preview toggling
+    - allow user to toggle on/off for each enemy
+    - allow button to toggle all
  
  
  BUGS:
  
- - When moving one square (adjacent to origin) push shows origin as target
+ - enemy preview shows able to attack move only target
+    STR:
+    1. disable archer
+    2. hover preview the archer

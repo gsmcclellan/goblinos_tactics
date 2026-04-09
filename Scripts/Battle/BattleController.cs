@@ -110,7 +110,7 @@ public partial class BattleController : Node
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
 
         // Non-Node Components
-        _abilityResolver = new AbilityResolver(_movementController);
+        _abilityResolver = new AbilityResolver(_movementController, _unitRegistry);
         _combatResolver = new CombatResolver(new DamageCalculator());
         _enemyActionPlanningService = new EnemyActionPlanningService(_grid, _unitRegistry);
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);

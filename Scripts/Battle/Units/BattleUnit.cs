@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
@@ -40,11 +41,11 @@ public partial class BattleUnit : Area2D
 
     public int CurrentHitPoints => _currentHitPoints;
     public List<StatModifier> BattleModifiers { get; } = [];
+    public List<CombatCondition> Conditions { get; } = [];
 
     public UnitActivationState State { get; private set; } = UnitActivationState.Ready;
     
     /** Facade Properties */
-    public int GetStat(StatName statName) => Stats.Get(statName);
     public AbilityDefinition Ability => Unit.Ability;
     public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
     public bool CanAct => State != UnitActivationState.Exhausted;
@@ -52,10 +53,13 @@ public partial class BattleUnit : Area2D
     public bool IsDefeated => CurrentHitPoints <= 0;
     public bool IsFriendly => _unit.IsFriendly;
     public int MaxHitPoints => _unit.Stats.BaseStats.MaxHitPoints;
-    public int Movement => _unit.Stats.BaseStats.Movement;
+    public int Movement => (IsMovementDisabled) ? 0 : GetStat(StatName.Movement);
     public UnitStats Stats => _unit.Stats;
     public Unit Unit => _unit;
     public string UnitName => _unit.UnitName;
+    
+    // Conditions
+    public bool IsMovementDisabled => Conditions.Any(cond => cond.Type == CombatConditionType.DisableMovement);
     
     // Realtime Properties
     private bool _isSelected = false;
@@ -140,6 +144,33 @@ public partial class BattleUnit : Area2D
             return;
         SetHitPoints(CurrentHitPoints - damage);
         await DisplayFloatingDamage(damage);
+    }
+
+    public void ApplyCondition(CombatCondition condition)
+    {
+        var existingCondition = Conditions.Find(cond => cond.Type == condition.Type);
+
+        if (existingCondition == null)
+            Conditions.Add(condition);
+        else
+            existingCondition.AddStacks(condition.Stacks);
+    }
+
+    public void ApplyStatModifier(StatModifier statMod)
+    {
+        var existingMod = BattleModifiers.Find(mod => mod.Equals(statMod));
+        if (existingMod != null)
+            existingMod.Add(statMod);
+        else
+            BattleModifiers.Add(statMod);
+    }
+
+    public int GetStat(StatName statName)
+    {
+        // TODO - more complex calculations - split to pre/post op. - move to derived stats
+        var statValue = Stats.Get(statName);
+        var statMods = BattleModifiers.Where(sm => sm.StatName == statName);
+        return statMods.Aggregate(statValue, (acc, x) => acc + x.Value);
     }
     
     public void Select()

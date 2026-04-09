@@ -13,5 +13,5 @@ public class UnitTemplate
     public StatGrowthProfile StatGrowthProfile;
     public int MinRange = 1;
     public int MaxRange = 1;
-    public AbilityType Ability = AbilityType.None;
+    public AbilityId Ability = AbilityId.None;
 }

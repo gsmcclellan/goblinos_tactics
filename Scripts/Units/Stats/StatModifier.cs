@@ -7,7 +7,7 @@ public sealed class StatModifier
 {
     public string SourceId { get;  }
     public StatName StatName { get; }
-    public int Value { get; }
+    public int Value { get; private set; }
     public StatModifierExpiration ExpiresAt { get; }
 
     public StatTier StatTier { get; }
@@ -33,5 +33,17 @@ public sealed class StatModifier
             StatTier.Derived => StatModifierStage.PostCompute,
             _ => throw new ArgumentOutOfRangeException(nameof(statName), statName, "Unhandled StatName.")
         };
+    }
+
+    public void Add(StatModifier statMod)
+    {
+        Value += statMod.Value;
+    }
+
+    public bool Equals(StatModifier statMod)
+    {
+        return StatName == statMod.StatName           &&
+               ModifierStage == statMod.ModifierStage &&
+               ExpiresAt == statMod.ExpiresAt;
     }
 }

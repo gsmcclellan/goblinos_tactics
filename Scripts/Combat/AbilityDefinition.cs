@@ -7,9 +7,11 @@ namespace Goblinos.Scripts.Combat;
 
 public partial class AbilityDefinition: Resource
 {
-    public string DisplayName = "None";
+    public AbilityId Id = AbilityId.None;
     public AbilityType Type = AbilityType.None;
-    public AbilityTargetMode TargetMode;
+    public string DisplayName = "None";
+    public AbilityTargetMode TargetMode = AbilityTargetMode.None;
+    public int Magnitude = 1;
     
     public bool CanTargetSelf;
     public bool CanTargetFriends;
@@ -17,9 +19,7 @@ public partial class AbilityDefinition: Resource
 
     public RangeBand Range;
 
-    public bool RequiresTarget => TargetMode == AbilityTargetMode.SingleTarget ||
-                                  TargetMode == AbilityTargetMode.MultiTarget || 
-                                  TargetMode == AbilityTargetMode.Area;
+    public bool RequiresTarget => TargetMode is AbilityTargetMode.SingleTarget or AbilityTargetMode.MultiTarget or AbilityTargetMode.Area;
 }
 
 
@@ -32,21 +32,29 @@ public enum AbilityTargetMode
     Area
 }
 
-public static class AbilityDefinitions
+public static class AbilityDefinitionTemplates
 {
-    public static AbilityDefinition Get(AbilityType type)
+    public static AbilityDefinition Get(AbilityId id) => id switch
     {
-        var field = typeof(AbilityDefinitions).GetField(
-            type.ToString(),
-            BindingFlags.Public | BindingFlags.Static);
-
-        if (field == null)
-            return new AbilityDefinition();
-
-        return (AbilityDefinition)field.GetValue(null)!;
-    }
+        AbilityId.Haste => Haste,
+        // AbilityId.Shield => Shield,
+        AbilityId.DisableMovement => DisableMovement,
+        AbilityId.Push => Push,
+        AbilityId.Swap => Swap,
+        AbilityId.None => new AbilityDefinition(),
+        _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
+    };
     
-    public static AbilityDefinition Push = new AbilityDefinition()
+    public static AbilityDefinition DisableMovement => new()
+    {
+        Type = AbilityType.DisableMovement,
+        DisplayName = "Disable",
+        TargetMode = AbilityTargetMode.SingleTarget,
+        Range = RangeBand.One,
+        CanTargetEnemies = true
+    };
+    
+    public static AbilityDefinition Push => new()
     {
         Type = AbilityType.Push,
         DisplayName = "Push",
@@ -55,10 +63,43 @@ public static class AbilityDefinitions
         CanTargetFriends = true,
         CanTargetEnemies = true
     };
+
+    public static AbilityDefinition Swap => new()
+    {
+        Type = AbilityType.Swap,
+        DisplayName = "Swap",
+        TargetMode = AbilityTargetMode.SingleTarget,
+        Range = RangeBand.One,
+        CanTargetFriends = true,
+        CanTargetEnemies = true
+    };
+
+    public static AbilityDefinition Haste => new AbilityDefinition()
+    {
+        Type = AbilityType.StatModifier,
+        DisplayName = "Haste",
+        TargetMode = AbilityTargetMode.SingleTarget,
+        Range = RangeBand.One,
+        CanTargetFriends = true,
+        Magnitude = 2
+    };
 }
 
 public enum AbilityType
 {
     None,
-    Push
+    DisableMovement,
+    Push,
+    StatModifier,
+    Swap
+}
+
+public enum AbilityId
+{
+    None,
+    Haste,
+    Shield,
+    DisableMovement,
+    Push,
+    Swap
 }

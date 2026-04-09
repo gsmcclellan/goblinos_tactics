@@ -350,18 +350,17 @@ public partial class BattleController
     /// with shared interface containing TryExecute.
     public async void CommitUnitActivation(IUnitActionPlan activation)
     {
-        // move already committed.
+        // commit move
+        if (activation.HasMove)
+            _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
+        
         // Handle attack / other action. TODO
         switch (activation.PrimaryAction)
         {
             case PrimaryActionType.Attack:
-                if (activation.HasMove)
-                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 ResolveCombat(activation);
                 break;
             case PrimaryActionType.Ability:
-                if (activation.HasMove)
-                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 await ResolveAbility(activation);
                 break;
             case PrimaryActionType.Item:
@@ -371,8 +370,6 @@ public partial class BattleController
                 _logger.Warn($"{nameof(CommitUnitActivation)} - Trade not implemented.");
                 break;
             case PrimaryActionType.Wait:
-                if (activation.HasMove)
-                    _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
                 break;
             case PrimaryActionType.None:
                 throw new ArgumentOutOfRangeException(nameof(activation), activation, "Unhandled property 'activation.PrimaryAction' - type None");

@@ -29,7 +29,7 @@ namespace Goblinos.Scripts.Units
                 Experience = 0,
                 Stats = new UnitStats(template.BaseStats),
                 AttackRange = new RangeBand(template.MinRange, template.MaxRange),
-                Ability = AbilityDefinitions.Get(template.Ability)
+                Ability = AbilityDefinitionTemplates.Get(template.Ability)
             };
 
             // Growth profile is typically stored on Unit, or referenced via class/template.

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,6 +35,7 @@ public partial class UnitRegistry: Node
     private readonly List<BattleUnit> _units = new();
     private readonly Dictionary<Vector2I, BattleUnit> _unitsByCell = new();
     private readonly Dictionary<BattleUnit, Vector2I> _cellsByUnit = new();
+    private (BattleUnit Unit, Vector2I Origin, Vector2I Target)? _pendingMove;
 
     /* Properties */
 
@@ -136,6 +138,24 @@ public partial class UnitRegistry: Node
         _unitsByCell.Clear();
         _cellsByUnit.Clear();
     }
+
+    public void AddPendingMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    {
+        if (!DebugUtil.Require(fromCell != toCell, "Cannot add pending move - non op, fromCell == toCell") || 
+            !DebugUtil.Require(TryGetCell(unit, out var currentCell), "Cannot add pending move - unregistered unit") ||
+            !DebugUtil.Require(currentCell == fromCell, "Cannot add pending move - fromCell does not match existing registered cell.") ||
+            !DebugUtil.Require(_pendingMove == null, "Cannot add pending move - existing move already pending."))
+            return;
+
+        _pendingMove = (unit, fromCell, toCell);
+    }
+
+    public void ClearPendingMove()
+    {
+        if (!DebugUtil.Require(_pendingMove != null, "[UnitRegistry].[ClearPendingMove] failed - No Pending move"))
+            return;
+        _pendingMove = null;
+    }
     
     // ---------------------------------------------------------------------
     // Queries / Filtering
@@ -220,11 +240,17 @@ public partial class UnitRegistry: Node
     /// <param name="cell"></param>
     /// <param name="unit"></param>
     /// <returns>true if cell is occupied</returns>
-    public bool TryGetUnitAtCell(Vector2I cell, out BattleUnit unit)
+    public bool TryGetUnitAtCell(Vector2I cell, out BattleUnit? unit)
     {
-        var hasUnit = _unitsByCell.TryGetValue(cell, out unit);
+        bool hasUnit;
+        BattleUnit? existingUnit = null;
+        if (_pendingMove.HasValue && _pendingMove.Value.Origin == cell)
+            hasUnit = false;
+        else
+            hasUnit = _unitsByCell.TryGetValue(cell, out existingUnit);
         
-        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={unit}", LogSeverity.Extra, LogCategory.DebugOnly);
+        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={existingUnit}", LogSeverity.Extra, LogCategory.DebugOnly);
+        unit = existingUnit;
         return hasUnit;
     }
     
@@ -235,13 +261,16 @@ public partial class UnitRegistry: Node
     /// <summary>
     /// Updates the registry when a unit moves between cells.
     /// </summary>
-    public void ApplyUnitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
+    public void ApplyUnitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell, bool allowSwapping = false)
     {
         // TODO - currently allows only move to empty cell, add additional functionality for shove, swap, etc.
         _logger.Log($"ApplyUnitMove [unit]={unit.UnitName} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
 
-        if (!DebugUtil.Require(unit != null, "[UnitRegistry] Cannot move null unit."))
-            return;
+        if (_pendingMove.HasValue)
+        {
+            DebugUtil.Require(_pendingMove.Value == (unit, fromCell, toCell), "Invalid Pending Move");
+            ClearPendingMove();
+        }
         
         var isUnitRegistered = TryGetCell(unit, out var unitCell);
         if (!DebugUtil.Require(isUnitRegistered, "[UnitRegistry] Cannot move unregistered unit."))
@@ -254,14 +283,23 @@ public partial class UnitRegistry: Node
         var fromCellMatches = unitCell == fromCell;
         var isDestinationEmpty = !_unitsByCell.ContainsKey(toCell);
 
-        // TODO - unit already moved if player unit. Need to confirm.
         if (!DebugUtil.Require(fromCellMatches, "[UnitRegistry] fromCell does not match existing location.") ||
-            !DebugUtil.Require(isDestinationEmpty, "[UnitRegistry] toCell not empty"))
+            !DebugUtil.Require(isDestinationEmpty || allowSwapping, "[UnitRegistry] toCell not empty"))
             return;
 
+        BattleUnit? existingUnit = null;
+        if (!isDestinationEmpty)
+            existingUnit = _unitsByCell[toCell];
+            
         _cellsByUnit[unit] = toCell;
         _unitsByCell.Remove(fromCell);
         _unitsByCell[toCell] = unit;
+
+        if (!isDestinationEmpty)
+        {
+            _cellsByUnit[existingUnit] = fromCell;
+            _unitsByCell[fromCell] = existingUnit;
+        }
 
         _logger.Info($"[Signal] UnitMoveResolved unit={unit.UnitName}, fromCell={fromCell}, toCell={toCell}", LogCategory.Signal);
         _AssertInvariants();
