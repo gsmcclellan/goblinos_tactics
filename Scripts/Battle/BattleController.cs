@@ -41,7 +41,7 @@ public partial class BattleController : Node
     private TurnController _turnController;
     private UnitRegistry _unitRegistry;
 
-    private readonly Logger _logger = LogManager.For<BattleController>();
+    private readonly GobLogger _logger = GobLogManager.For<BattleController>();
 
     private AbilityResolver _abilityResolver;
     private CombatResolver _combatResolver;
@@ -78,7 +78,7 @@ public partial class BattleController : Node
 
         HandleStartOfBattle();
 
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     public override void _ExitTree()
@@ -117,7 +117,7 @@ public partial class BattleController : Node
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);
         _targetRangeService = new TargetRangeService(_grid);
 
-        _logger.Log("Battle Components Initialized", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Battle Components Initialized", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     private void _BindBattleComponents()
@@ -146,7 +146,7 @@ public partial class BattleController : Node
 
     public void HandleEndOfBattle(bool isVictory)
     {
-        _logger.Log("Battle End", LogSeverity.Info, LogCategory.Exit);
+        _logger.Log("Battle End", GobLogSeverity.Info, GobLogCategory.Exit);
         // Show results screen
         // remove self from input router
         _inputRouter.Pop(this);

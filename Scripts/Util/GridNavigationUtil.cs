@@ -26,7 +26,7 @@ public static class GridNavigationUtil
     /// </summary>
     public static IEnumerable<Vector2I> GetCardinalNeighbors(Vector2I cell)
     {
-        LogManager.Log("[GridNavigation] GetCardinalNeighbors", LogSeverity.Trace, LogCategory.DebugOnly);
+        GobLogManager.Log("[GridNavigation] GetCardinalNeighbors", GobLogSeverity.Trace, GobLogCategory.DebugOnly);
 
         for (var i = 0; i < CardinalDirections.Length; i++)
             yield return cell + CardinalDirections[i];

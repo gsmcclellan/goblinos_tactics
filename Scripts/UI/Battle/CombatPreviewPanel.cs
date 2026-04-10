@@ -10,7 +10,7 @@ namespace Goblinos.Scripts.UI.Battle;
 
 public partial class CombatPreviewPanel : Panel, IBattleHudPanel
 {
-    private readonly Logger _logger = LogManager.For<CombatPreviewPanel>();
+    private readonly GobLogger _logger = GobLogManager.For<CombatPreviewPanel>();
     
     [ExportGroup("Label Nodes")]
     [Export] public Label AttackerNameLabel = null!;
@@ -47,7 +47,7 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
     public void OnBattleInputStateChanged(int s)
     {
         var state = (BattleInputState) s;
-        _logger.Log($"OnBattleInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"OnBattleInputStateChanged - state={state.ToString()}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
 
         switch (state)
         {
@@ -66,7 +66,7 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
 
     public void OnCombatPreviewUpdated(CombatPreview? combatPreview)
     {
-        _logger.Log($"OnCombatPreviewUpdated - hasPreview={combatPreview != null}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"OnCombatPreviewUpdated - hasPreview={combatPreview != null}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         if (combatPreview == null)
         {
             SetVisible(false);

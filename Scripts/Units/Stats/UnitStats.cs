@@ -9,7 +9,7 @@ namespace Goblinos.Scripts.Units.Stats;
 
 public sealed class UnitStats
 {
-    private readonly Logger _logger = LogManager.For<UnitStats>();
+    private readonly GobGobLogger _logger = GobLogManager.For<UnitStats>();
     
     public StatBlock BaseStats { get; }
     public HashSet<StatModifier> PermanentModifiers { get; } = [];
@@ -26,7 +26,7 @@ public sealed class UnitStats
     /// </summary>
     public void AddPermanentModifier(StatModifier modifier)
     {
-        _logger.Log($"[{nameof(UnitStats)}] {nameof(AddPermanentModifier)} " + modifier.SourceId, LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"[{nameof(UnitStats)}] {nameof(AddPermanentModifier)} " + modifier.SourceId, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
         PermanentModifiers.Add(modifier);
         StatsChanged?.Invoke();

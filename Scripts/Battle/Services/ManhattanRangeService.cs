@@ -14,13 +14,13 @@ namespace Goblinos.Scripts.Battle.Services;
 /// </summary>
 public sealed class ManhattanRangeService
 {
-    private static readonly Logger Logger = LogManager.For<ManhattanRangeService>();
+    private static readonly Logger Logger = GobLogManager.For<ManhattanRangeService>();
 
     private static readonly Dictionary<(int MinRange, int MaxRange), Vector2I[]> CachedPatterns = new();
 
     public static Vector2I[] GetPattern(int minRange, int maxRange)
     {
-        Logger.Log("GetPattern", LogSeverity.Extra, LogCategory.UiNavigation);
+        Logger.Log("GetPattern", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
 
         if (!DebugUtil.Check(minRange >= 0, $"Invalid range set, maxRange={maxRange}, minRange={minRange}"))
             minRange = 0;
@@ -43,7 +43,7 @@ public sealed class ManhattanRangeService
     /// </summary>
     private static Vector2I[] ComputePattern(int minRange, int maxRange)
     {
-        Logger.Log("ComputePattern", LogSeverity.Extra, LogCategory.UiNavigation);
+        Logger.Log("ComputePattern", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
 
         var output = new List<Vector2I>();
 

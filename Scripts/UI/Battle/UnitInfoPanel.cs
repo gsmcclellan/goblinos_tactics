@@ -10,7 +10,7 @@ namespace Goblinos.Scripts.UI.Battle;
 
 public partial class UnitInfoPanel : Panel, IBattleHudPanel
 {
-    private readonly Logger _logger = LogManager.For<UnitInfoPanel>();
+    private readonly GobLogger _logger = GobLogManager.For<UnitInfoPanel>();
     [ExportGroup("Label Nodes")]
     [Export] public Label? UnitNameLabel;
     [Export] public Label? IsFriendlyLabel;
@@ -57,13 +57,13 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
 
     public void OnHoveredUnitChanged(BattleUnit? hoveredUnit)
     {
-        _logger.Log($"{nameof(OnHoveredUnitChanged)} - hoveredUnit={hoveredUnit?.UnitName}", LogSeverity.Extra, LogCategory.Signal);
+        _logger.Log($"{nameof(OnHoveredUnitChanged)} - hoveredUnit={hoveredUnit?.UnitName}", GobLogSeverity.Extra, GobLogCategory.Signal);
         SetHoveredUnit(hoveredUnit);
     }
 
     public void OnSelectedUnitChanged(BattleUnit? selectedUnit)
     {
-        _logger.Log($"{nameof(OnSelectedUnitChanged)} - selectedUnit={selectedUnit?.UnitName}", LogSeverity.Extra, LogCategory.Signal);
+        _logger.Log($"{nameof(OnSelectedUnitChanged)} - selectedUnit={selectedUnit?.UnitName}", GobLogSeverity.Extra, GobLogCategory.Signal);
         SetSelectedUnit(selectedUnit);
     }
     
@@ -94,7 +94,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     }
 
     private void UpdateUnitLabels() {
-        _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(UpdateUnitLabels)} - Unit={Unit?.UnitName}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         UpdateNameLabel(Unit);
         UpdateIsFriendlyLabel(Unit);
         UpdateHitPointsLabel(Unit);

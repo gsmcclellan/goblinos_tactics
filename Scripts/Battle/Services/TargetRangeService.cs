@@ -8,7 +8,7 @@ namespace Goblinos.Scripts.Battle.Services;
 
 public sealed class TargetRangeService
 {
-    private readonly Logger _logger = LogManager.For<TargetRangeService>();
+    private readonly GobLogger _logger = GobLogManager.For<TargetRangeService>();
 
     private readonly Core.BattleGrid _grid;
 
@@ -68,7 +68,7 @@ public sealed class TargetRangeService
     {
         var results = new HashSet<Vector2I>();
         AddThreatUnionFromCells(originCells, minRange, maxRange, results);
-        _logger.Log($"BuildAttackThreatUnionFromCells - results.Count={results.Count}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"BuildAttackThreatUnionFromCells - results.Count={results.Count}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         return results;
     }
     

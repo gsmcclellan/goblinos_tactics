@@ -17,7 +17,7 @@ namespace Goblinos.Scripts.Combat;
 
 public class AbilityResolver
 {
-    private readonly Logger _logger = LogManager.For<AbilityResolver>();
+    private readonly GobLogger _logger = GobLogManager.For<AbilityResolver>();
     private MovementController _movementController;
     private UnitRegistry _unitRegistry;
 
@@ -32,7 +32,7 @@ public class AbilityResolver
 
     public Task<bool> Resolve(IUnitActionPlan unitActivation)
     {
-        _logger.Log($"{nameof(Resolve)} abilityType={unitActivation.Unit.Ability.DisplayName}", LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log($"{nameof(Resolve)} abilityType={unitActivation.Unit.Ability.DisplayName}", GobLogSeverity.Info, GobLogCategory.CombatResolution);
         
         switch (unitActivation.Unit.Ability.Type)
         {
@@ -73,7 +73,7 @@ public class AbilityResolver
     
     private async Task<bool> ResolveDisableMovementAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log(nameof(ResolveDisableMovementAbility), LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log(nameof(ResolveDisableMovementAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
         
         // apply disabled condition
         targetUnit.ApplyCondition(CombatConditionTemplates.Get(CombatConditionType.DisableMovement));
@@ -83,7 +83,7 @@ public class AbilityResolver
 
     private async Task<bool> ResolvePushAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log(nameof(ResolvePushAbility), LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log(nameof(ResolvePushAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
         // check valid positioning of actor and target, 
         
         var distance =
@@ -99,7 +99,7 @@ public class AbilityResolver
 
     private async Task<bool> ResolveStatModifierAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log(nameof(ResolveStatModifierAbility), LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log(nameof(ResolveStatModifierAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
         var statMod = new StatModifier(actingUnit.Id, StatName.Movement, actingUnit.Ability.Magnitude,
             StatModifierExpiration.EndOfRound);
         targetUnit.ApplyStatModifier(statMod);
@@ -108,7 +108,7 @@ public class AbilityResolver
 
     private async Task<bool> ResolveSwapAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log(nameof(ResolveSwapAbility), LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log(nameof(ResolveSwapAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
         return _movementController.TrySwapUnits(actingUnit, actingUnitCell, targetCell);
     }
     

@@ -12,7 +12,7 @@ namespace Goblinos.Scripts.Battle.Services;
 
 public sealed class MoveRangeService
 {
-    private readonly Logger _logger = LogManager.For<MoveRangeService>();
+    private readonly GobLogger _logger = GobLogManager.For<MoveRangeService>();
     
     private readonly Core.BattleGrid _grid;
     private readonly UnitRegistry _unitRegistry;
@@ -38,7 +38,7 @@ public sealed class MoveRangeService
 
     public bool CanMoveTo(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
-        _logger.Log($"CanMoveTo unit={unit.Name} from={fromCell} to={toCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"CanMoveTo unit={unit.Name} from={fromCell} to={toCell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         
         // Unit is movement disabled
         if (unit.IsMovementDisabled)
@@ -80,7 +80,7 @@ public sealed class MoveRangeService
     public void InvalidateCache()
     {
         _gridRevision++;
-        _logger.Log($"InvalidateCache rev={_gridRevision}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"InvalidateCache rev={_gridRevision}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
     }
     
     public static List<Vector2I> ReconstructPath(IReadOnlyDictionary<Vector2I, Vector2I> parentCells, Vector2I startCell,
@@ -117,8 +117,8 @@ public sealed class MoveRangeService
         }
 
         outputPath.Reverse();
-        LogManager.LogInternal(typeof(MoveRangeService), nameof(MoveRangeService), $"ReconstructPath :: {string.Join(" -> ", outputPath)}", LogSeverity.Extra, LogCategory.UiNavigation);
-        LogManager.LogInternal(typeof(MoveRangeService), nameof(MoveRangeService), $"ReconstructPath :: pathLen={outputPath.Count}", LogSeverity.Extra, LogCategory.UiNavigation);
+        GobLogManager.LogInternal(typeof(MoveRangeService), nameof(MoveRangeService), $"ReconstructPath :: {string.Join(" -> ", outputPath)}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
+        GobLogManager.LogInternal(typeof(MoveRangeService), nameof(MoveRangeService), $"ReconstructPath :: pathLen={outputPath.Count}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         return outputPath;
     }
     
@@ -133,7 +133,7 @@ public sealed class MoveRangeService
     /// TODO - add function that takes multiple starting cells (for enemy threat range)
     private MovementPreview BuildMovementPreview(Vector2I startCell, BattleUnit actingUnit)
     {
-        _logger.Log(nameof(BuildMovementPreview), LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log(nameof(BuildMovementPreview), GobLogSeverity.Trace, GobLogCategory.UiNavigation);
 
         var bestCost = new Dictionary<Vector2I, int>();
         var parentCells = new Dictionary<Vector2I, Vector2I>();
@@ -187,7 +187,7 @@ public sealed class MoveRangeService
                 bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit) // Prevent enemies from going on top of each other.
                 );
         
-        _logger.Log($"GetReachableCells Count={bestCost.Count}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"GetReachableCells Count={bestCost.Count}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         
         return new MovementPreview()
         {

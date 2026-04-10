@@ -19,7 +19,7 @@ namespace Goblinos.Scripts.Battle.Services;
 /// </summary>
 public class PrimaryActionTargetingService
 {
-    private readonly Logger _logger = LogManager.For<PrimaryActionTargetingService>();
+    private readonly GobLogger _logger = GobLogManager.For<PrimaryActionTargetingService>();
 
     private readonly BattleGrid _grid;
     private readonly TargetRangeService _targetRangeService;
@@ -44,7 +44,7 @@ public class PrimaryActionTargetingService
         UnitActivationContext unitActivation,
         IEnumerable<PrimaryActionType> primaryActionTypes)
     {
-        _logger.Log($"{nameof(BuildPrimaryActionValidTargetPreviews)}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildPrimaryActionValidTargetPreviews)}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
 
         var previewResults = new PrimaryActionValidTargetsPreview();
 
@@ -75,7 +75,7 @@ public class PrimaryActionTargetingService
         foreach (var inRangeCell in inRangeCells)
             AddIfValidTarget(inRangeCell, unit, primaryActionType, targetableCells);
 
-        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(GetValidTargets)} targetableCells.Count={targetableCells.Count}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         return targetableCells;
     }
 
@@ -107,7 +107,7 @@ public class PrimaryActionTargetingService
         }
 
         var preview = previewBuilder.Build(actionType, range, originCell);
-        _logger.Log($"{nameof(BuildPrimaryActionPreview)} targetableCells.Count={preview.TargetCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildPrimaryActionPreview)} targetableCells.Count={preview.TargetCells.Count}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         return preview;
     }
 
@@ -128,7 +128,7 @@ public class PrimaryActionTargetingService
         foreach (var inRangeCell in inRangeCells)
             AddIfValidTarget(inRangeCell, unit, actionType, targetableCells);
 
-        _logger.Log($"{nameof(BuildThreatUnion)} targetableCells.Count={targetableCells.Count}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(BuildThreatUnion)} targetableCells.Count={targetableCells.Count}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         return targetableCells;
     }
 
@@ -142,7 +142,7 @@ public class PrimaryActionTargetingService
         var isValidTarget = IsValidTargetNoRangeCheck(targetCell, actingUnit, actionType);
         
         _logger.Log($"{nameof(IsValidTarget)} originCell={originCell}, targetCell={targetCell}, actingUnit={actingUnit.UnitName}, " +
-                    $"actionType={actionType}, inRange={inRange}, isValidTarget={isValidTarget}", LogSeverity.Info, LogCategory.UiNavigation);
+                    $"actionType={actionType}, inRange={inRange}, isValidTarget={isValidTarget}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         return inRange && isValidTarget;
     }
 
@@ -165,7 +165,7 @@ public class PrimaryActionTargetingService
     /// </summary>
     private bool IsValidTargetNoRangeCheck(Vector2I cell, BattleUnit actingUnit, PrimaryActionType actionType)
     {
-        _logger.Log($"{nameof(IsValidTargetNoRangeCheck)} cell={cell} actionType={actionType}", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log($"{nameof(IsValidTargetNoRangeCheck)} cell={cell} actionType={actionType}", GobLogSeverity.Extra, GobLogCategory.Input);
         
         bool requiresUnit;
         bool mustBeEnemies;

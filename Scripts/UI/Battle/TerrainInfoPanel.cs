@@ -12,7 +12,7 @@ using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
 
 public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 {
-    private readonly Logger _logger = LogManager.For<TerrainInfoPanel>();
+    private readonly GobLogger _logger = GobLogManager.For<TerrainInfoPanel>();
     
     [ExportGroup("Label Nodes")]
     [Export] public Label TerrainNameLabel;
@@ -63,7 +63,7 @@ public partial class TerrainInfoPanel : Panel, IBattleHudPanel
 
     public void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
     {
-        _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         _cell = newCell;
         UpdateCellLabels();
     }

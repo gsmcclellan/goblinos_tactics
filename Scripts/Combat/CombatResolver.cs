@@ -19,7 +19,7 @@ namespace Goblinos.Scripts.Combat;
 /// </summary>
 public class CombatResolver
 {
-    private readonly Logger _logger = LogManager.For<CombatResolver>();
+    private readonly GobGobLogger _logger = GobLogManager.For<CombatResolver>();
     
     // private readonly HitCalculator _hitCalculator;
     private readonly DamageCalculator _damageCalculator;
@@ -28,7 +28,7 @@ public class CombatResolver
     public CombatResolver(DamageCalculator damageCalculator)
     {
         _damageCalculator = damageCalculator;
-        _logger.Log("Constructed.", LogSeverity.Trace, LogCategory.Initialization);
+        _logger.Log("Constructed.", GobLogSeverity.Trace, GobLogCategory.Initialization);
     }
 
     public async Task<SimpleCombatResult> Resolve(IUnitActionPlan activationContext)

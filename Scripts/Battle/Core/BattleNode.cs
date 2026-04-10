@@ -8,7 +8,7 @@ public partial class BattleNode : Node2D
     /** Signals */
 
     /** Fields */
-    private Logger _logger = LogManager.For<BattleNode>();
+    private GobLogger _logger = GobLogManager.For<BattleNode>();
 
     /** Properties */
 
@@ -17,9 +17,9 @@ public partial class BattleNode : Node2D
     
     public override void _Ready()
     {
-        LogManager.MinimumLoggingSeverity = LogSeverity.Info;
+        GobLogManager.MinimumLoggingSeverity = GobLogSeverity.Info;
         Cursor = GetNode<GridCursor>("Overlays/GridCursor");
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
         
         
     }

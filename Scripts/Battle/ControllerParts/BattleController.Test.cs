@@ -31,7 +31,7 @@ public partial class BattleController
         Debug.Assert(_unitsRootPath != null, $"[{nameof(BattleController)}.Test] Init failed - no Units Root Node.");
         
         SpawnTestUnits();
-        _logger.Log("Ready_Test", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready_Test", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
     private void SpawnTestUnits()
@@ -89,7 +89,7 @@ public partial class BattleController
     /// </summary>
     private BattleUnit Spawn(Unit unit, Vector2I cell)
     {
-        _logger.Log("[BattleUnitSpawner] Spawn " + unit.UnitName, LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log("[BattleUnitSpawner] Spawn " + unit.UnitName, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         
         var node = _battleUnitScene.Instantiate<BattleUnit>();
         _unitsRoot.AddChild(node);
@@ -113,6 +113,6 @@ public partial class BattleController
                 _unitRegistry.RegisterUnit(bUnit, _grid.GetCellAtGlobalPosition(bUnit.GlobalPosition));
         }
         
-        _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 }

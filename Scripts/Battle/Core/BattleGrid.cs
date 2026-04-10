@@ -20,7 +20,7 @@ public partial class BattleGrid : Node2D
     [Export(PropertyHint.Dir)] public string TerrainDbFolder = "res://Terrain";
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    private readonly Logger _logger = LogManager.For<BattleGrid>();
+    private readonly GobLogger _logger = GobLogManager.For<BattleGrid>();
     
     /** Fields */
     private const int BasicGroundTilesAtlasId = 0;
@@ -57,7 +57,7 @@ public partial class BattleGrid : Node2D
         _defaultTerrain = _terrainById.TryGetValue("default", out var t) ? t
             : (_terrainById.Count > 0 ? FirstTerrain() : null);
         
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
     /// <summary>
@@ -109,7 +109,7 @@ public partial class BattleGrid : Node2D
         } while (file != "");
         dir.ListDirEnd();
 
-        _logger.Log("Loaded TerrainTypes: {_terrainById.Count}", 0, LogCategory.Initialization);
+        _logger.Log("Loaded TerrainTypes: {_terrainById.Count}", 0, GobLogCategory.Initialization);
     }
     
     // ---------------------------------------------------------------------
@@ -122,7 +122,7 @@ public partial class BattleGrid : Node2D
         var terrain = GetTerrainAtCell(cell);
         var canFocus = terrain is { BlocksCursor: false };
         
-        _logger.Log("CanFocusCell cell={cell} :: {canFocus}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log("CanFocusCell cell={cell} :: {canFocus}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         return canFocus;
     }
 
@@ -367,7 +367,7 @@ public partial class BattleGrid : Node2D
         if (renderedCells.Count == 0)
             _actionPreviewLayer.Visible = false; // hide empty overlay
         
-        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", LogSeverity.Extra, LogCategory.BattleState);
+        _logger.Log($"RedrawOverlay cellCount={renderedCells.Count}", GobLogSeverity.Extra, GobLogCategory.BattleState);
     }
 }
 

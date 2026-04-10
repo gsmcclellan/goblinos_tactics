@@ -17,11 +17,11 @@ namespace Goblinos.Scripts.Test
     /// </summary>
     public partial class TestBattleRunner : Node
     {
-        private readonly Logger _logger = LogManager.For<TestBattleRunner>();
+        private readonly GobLogger _logger = GobLogManager.For<TestBattleRunner>();
 
         public override void _Ready()
         {
-            _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
 
             var unitFactory = new UnitFactory();
             var battleUnitFactory = new BattleUnitFactory();
@@ -106,14 +106,14 @@ namespace Goblinos.Scripts.Test
         /// </summary>
         private void RunSimpleDuel(BattleUnit attacker, BattleUnit defender)
         {
-            _logger.Log("RunSimpleDuel", LogSeverity.Info, LogCategory.UnitLifecycle);
+            _logger.Log("RunSimpleDuel", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
             var random = new Random(12345);
             var round = 1;
 
             while (!attacker.IsDefeated && !defender.IsDefeated && round <= 25)
             {
-                _logger.Log("Round " + round, LogSeverity.Info, LogCategory.UnitLifecycle);
+                _logger.Log("Round " + round, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
                 ResolveAttack(attacker, defender, random);
                 if (defender.IsDefeated)
@@ -124,7 +124,7 @@ namespace Goblinos.Scripts.Test
             }
 
             var winner = attacker.IsDefeated ? defender.UnitName : attacker.UnitName;
-            _logger.Log("Winner: " + winner, LogSeverity.Info, LogCategory.UnitLifecycle);
+            _logger.Log("Winner: " + winner, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         }
 
         /// <summary>
@@ -133,8 +133,8 @@ namespace Goblinos.Scripts.Test
         private void ResolveAttack(BattleUnit attacker, BattleUnit defender, Random random)
         {
             _logger.Log("ResolveAttack " + attacker.UnitName + " -> " + defender.UnitName,
-                LogSeverity.Info,
-                LogCategory.UnitLifecycle);
+                GobLogSeverity.Info,
+                GobLogCategory.UnitLifecycle);
 
             // For now, use simple hit chance derived from Agility vs Agility.
             var attackerAccuracy = 70 + attacker.Unit.Stats.BaseStats.Agility * 2;
@@ -145,8 +145,8 @@ namespace Goblinos.Scripts.Test
             if (roll > hitChance)
             {
                 _logger.Log("Miss (roll " + roll + " vs " + hitChance + ")",
-                    LogSeverity.Info,
-                    LogCategory.UnitLifecycle);
+                    GobLogSeverity.Info,
+                    GobLogCategory.UnitLifecycle);
                 return;
             }
 
@@ -157,8 +157,8 @@ namespace Goblinos.Scripts.Test
             defender.ApplyDamage(damage);
 
             _logger.Log("Hit for " + damage + " (HP now " + defender.CurrentHitPoints + ")",
-                LogSeverity.Info,
-                LogCategory.UnitLifecycle);
+                GobLogSeverity.Info,
+                GobLogCategory.UnitLifecycle);
         }
     }
 }

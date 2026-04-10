@@ -22,7 +22,7 @@ public partial class TurnController : Node
     public delegate void PhaseChangedEventHandler(TurnPhase phase);
 
     /** Components */
-    private readonly Logger _logger = LogManager.For<TurnController>();
+    private readonly GobLogger _logger = GobLogManager.For<TurnController>();
 
     private UnitRegistry _unitRegistry;
     private EnemyTurnController _enemyTurnController;
@@ -42,7 +42,7 @@ public partial class TurnController : Node
         _enemyTurnController = enemyTurnController;
         Debug.Assert(_unitRegistry != null, "[TurnController] UnitRegistry must be bound.");
         Debug.Assert(_enemyTurnController != null, "[TurnController] EnemyTurnController must be bound.");
-        _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Bind Complete", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
     // ---------------------------------------------------------------------
@@ -51,7 +51,7 @@ public partial class TurnController : Node
 
     public void HandleUnitExhausted(BattleUnit unit)
     {
-        _logger.Log($"NotifyUnitExhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.BattleState);
+        _logger.Log($"NotifyUnitExhausted unit={unit.UnitName}", GobLogSeverity.Trace, GobLogCategory.BattleState);
 
         if (ActiveSide != BattleSide.Player)
             return;
@@ -61,7 +61,7 @@ public partial class TurnController : Node
 
     public bool RequestEndPlayerTurn()
     {
-        _logger.Log("RequestEndPlayerTurn", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("RequestEndPlayerTurn", GobLogSeverity.Info, GobLogCategory.BattleState);
 
         if (!DebugUtil.Require(_unitRegistry != null, "[TurnController] No UnitRegistry."))
             return false;
@@ -97,7 +97,7 @@ public partial class TurnController : Node
     
     public void StartBattle()
     {
-        _logger.Log("StartBattle", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("StartBattle", GobLogSeverity.Info, GobLogCategory.BattleState);
         BeginPlayerTurn();
     }
 
@@ -112,13 +112,13 @@ public partial class TurnController : Node
         _unitRegistry.SetFriendlyUnitsActivationState(UnitActivationState.Ready);
 
         EmitSignal(SignalName.TurnStarted, (int)ActiveSide, TurnNumber);
-        _logger.Log($"BeginPlayerTurn turn={TurnNumber}", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log($"BeginPlayerTurn turn={TurnNumber}", GobLogSeverity.Info, GobLogCategory.BattleState);
     }
 
     private void EndPlayerTurn()
     {
         EmitSignal(SignalName.TurnEnded, (int)ActiveSide, TurnNumber);
-        _logger.Log($"EndPlayerTurn turn={TurnNumber}", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log($"EndPlayerTurn turn={TurnNumber}", GobLogSeverity.Info, GobLogCategory.BattleState);
 
         BeginEnemyTurn();
     }
@@ -129,7 +129,7 @@ public partial class TurnController : Node
         SetPhase(TurnPhase.EnemyThinking);
 
         EmitSignal(SignalName.TurnStarted, (int)ActiveSide, TurnNumber);
-        _logger.Log($"BeginEnemyTurn turn={TurnNumber}", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log($"BeginEnemyTurn turn={TurnNumber}", GobLogSeverity.Info, GobLogCategory.BattleState);
 
         // Next: call your AI runner, then EndEnemyTurn when finished.
         await _enemyTurnController.RunEnemyTurnAsync();
@@ -140,7 +140,7 @@ public partial class TurnController : Node
     public void EndEnemyTurn()
     {
         EmitSignal(SignalName.TurnEnded, (int)ActiveSide, TurnNumber);
-        _logger.Log($"EndEnemyTurn turn={TurnNumber}", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log($"EndEnemyTurn turn={TurnNumber}", GobLogSeverity.Info, GobLogCategory.BattleState);
 
         TurnNumber += 1;
         BeginPlayerTurn();
@@ -157,6 +157,6 @@ public partial class TurnController : Node
 
         Phase = phase;
         EmitSignal(SignalName.PhaseChanged, (int)Phase);
-        _logger.Log($"PhaseChanged phase={Phase}", LogSeverity.Trace, LogCategory.BattleState);
+        _logger.Log($"PhaseChanged phase={Phase}", GobLogSeverity.Trace, GobLogCategory.BattleState);
     }
 }

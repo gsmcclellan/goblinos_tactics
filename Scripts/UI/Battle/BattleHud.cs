@@ -42,7 +42,7 @@ namespace Goblinos.Scripts.UI.Battle
         private SelectionController _selectionController;
         private TurnController _turnController;
         
-        private Logger _logger = LogManager.For<BattleHud>();
+        private GobLogger _logger = GobLogManager.For<BattleHud>();
         
         /** Fields */
         private readonly List<IBattleHudPanel> _panels = new();
@@ -55,7 +55,7 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         public void Bind(BattleController battleController, Scripts.Battle.Core.GridCursor cursor, SelectionController selectionController, TurnController turnController)
         {
-            _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
             
             _battleController = battleController;
             _cursor = cursor;
@@ -91,17 +91,17 @@ namespace Goblinos.Scripts.UI.Battle
             CachePanels();
             WirePanels();
             
-            _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
         }
         public override void _ExitTree()
         {
-            _logger.Log("_ExitTree", LogSeverity.Info, LogCategory.Exit);
+            _logger.Log("_ExitTree", GobLogSeverity.Info, GobLogCategory.Exit);
             _UnsubscribeFromEvents();
         }
         
         private void _SubscribeToEvents()
         {
-            _logger.Log("SubscribeToEvents", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("SubscribeToEvents", GobLogSeverity.Info, GobLogCategory.Initialization);
             if (_primaryActionSelect == null)
                 throw new InvalidOperationException("[BattleHud] Bind called before _Ready. _primaryActionSelect is not initialized.");
 
@@ -124,7 +124,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void _UnsubscribeFromEvents()
         {
-            _logger.Log("UnsubscribeFromEvents", LogSeverity.Info, LogCategory.Exit);
+            _logger.Log("UnsubscribeFromEvents", GobLogSeverity.Info, GobLogCategory.Exit);
             
             _battleController.InputStateChanged -= OnBattleControllerInputStateChanged;
             _battleController.CombatPreviewUpdated -= OnCombatPreviewUpdated;
@@ -154,12 +154,12 @@ namespace Goblinos.Scripts.UI.Battle
                     _panels.Add(panel);
             }
             
-            _logger.Log($"CachePanels count={_panels.Count}", LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log($"CachePanels count={_panels.Count}", GobLogSeverity.Info, GobLogCategory.Initialization);
         }
 
         private void WirePanels()
         {
-            _logger.Log("WirePanels count=" + _panels.Count, LogSeverity.Info, LogCategory.Initialization);
+            _logger.Log("WirePanels count=" + _panels.Count, GobLogSeverity.Info, GobLogCategory.Initialization);
         }
         
         // ---------------------------------------------------------------------
@@ -216,7 +216,7 @@ namespace Goblinos.Scripts.UI.Battle
         private void OnBattleControllerInputStateChanged(int s)
         {
             var state = (BattleInputState) s;
-            _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", LogSeverity.Info, LogCategory.UiNavigation);
+            _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
             
             var node = GetNode<Label>("BattleControllerInputState"); // TODO - make this a IBattleHudPanel (or add to terrain info)
             node.Text = state.ToString();
@@ -226,33 +226,33 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void OnCombatPreviewUpdated(CombatPreview? combatPreview)
         {
-            _logger.Log($"OnCombatPreviewUpdated", LogSeverity.Extra, LogCategory.UiNavigation);
+            _logger.Log($"OnCombatPreviewUpdated", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
             _panels.ForEach(panel => panel.OnCombatPreviewUpdated(combatPreview));
         }
 
         private void OnEndTurnButtonPressed()
         {
-            _logger.Log("OnEndTurnButtonPressed", LogSeverity.Info, LogCategory.UiNavigation);
+            _logger.Log("OnEndTurnButtonPressed", GobLogSeverity.Info, GobLogCategory.UiNavigation);
             _battleController.RequestEndTurn();
         }
         
         private void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
         {
-            _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", LogSeverity.Trace, LogCategory.UiNavigation);
+            _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             foreach (var panel in _panels)
                 panel.OnHoveredCellChanged(newCell, oldCell);
         }
         
         private void OnHoveredTerrainChanged(TerrainType? terrain)
         {
-            _logger.Log("OnHoveredTerrainChanged", LogSeverity.Trace, LogCategory.UiNavigation);
+            _logger.Log("OnHoveredTerrainChanged", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             foreach (var panel in _panels)
                 panel.OnHoveredTerrainChanged(terrain);
         }
         
         private void OnHoveredUnitChanged(Node? hoveredUnit)
         {
-            _logger.Log("OnHoveredUnitChanged", LogSeverity.Trace, LogCategory.UiNavigation);
+            _logger.Log("OnHoveredUnitChanged", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             if (hoveredUnit != null && hoveredUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
             
@@ -262,7 +262,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void OnSelectedUnitChanged(Node? selectedUnit)
         {
-            _logger.Log("OnSelectedUnitChanged", LogSeverity.Trace, LogCategory.UiNavigation);
+            _logger.Log("OnSelectedUnitChanged", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             if (selectedUnit != null && selectedUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
 
@@ -272,13 +272,13 @@ namespace Goblinos.Scripts.UI.Battle
         
         private void OnPrimaryActionFocused(int action)
         {
-            _logger.Log("OnPrimaryActionFocused", LogSeverity.Trace, LogCategory.Signal);
+            _logger.Log("OnPrimaryActionFocused", GobLogSeverity.Trace, GobLogCategory.Signal);
             EmitSignal(SignalName.PrimaryActionFocused, action);
         }
 
         private void OnPrimaryActionSelected(int action)
         {
-            _logger.Log("OnPrimaryActionSelected", LogSeverity.Trace, LogCategory.Signal);
+            _logger.Log("OnPrimaryActionSelected", GobLogSeverity.Trace, GobLogCategory.Signal);
             EmitSignal(SignalName.PrimaryActionSelected, action);
         }
         

@@ -46,12 +46,12 @@ public partial class BattleController: IInputHandler
         
         _inputRouter.Push(this);
         
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     private void _Process_Input(double delta)
     {
-        _logger.Log("_Process_Input", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("_Process_Input", GobLogSeverity.Extra, GobLogCategory.Input);
         
         // Holding direction to repeatedly move cursor
         if (_heldDirection == InputDirection.None) return;
@@ -78,7 +78,7 @@ public partial class BattleController: IInputHandler
     }
     public bool Handle(InputEvent e)
     {
-        _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", GobLogSeverity.Extra, GobLogCategory.Input);
 
         // Camera panning
         if (e.IsActionPressed("camera_pan_up"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Up); }
@@ -129,7 +129,7 @@ public partial class BattleController: IInputHandler
 
         if (e.IsActionPressed("TEST"))
         {
-            _logger.Log("DEBUG button pressed - TEST", LogSeverity.Warn, LogCategory.DebugOnly);
+            _logger.Log("DEBUG button pressed - TEST", GobLogSeverity.Warn, GobLogCategory.DebugOnly);
             ClearPreviews();
             return true;
         }
@@ -149,7 +149,7 @@ public partial class BattleController: IInputHandler
     /// </summary>
     private bool HandleAcceptAtFocusedCell(InputEvent e)
     {
-        _logger.Log("HandleAcceptAtFocusedCell", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleAcceptAtFocusedCell", GobLogSeverity.Trace, GobLogCategory.Input);
 
         var cell = _cursor.FocusedCell;
         var focus = _selectionController.GetFocus(cell);
@@ -176,7 +176,7 @@ public partial class BattleController: IInputHandler
     
     private bool HandleAccept_FreeSelect(CellFocus cellFocus)
     {
-        _logger.Log("HandleAccept_FreeSelect", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleAccept_FreeSelect", GobLogSeverity.Trace, GobLogCategory.Input);
         
         if (cellFocus.Unit != null)
         {
@@ -195,7 +195,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleAccept_MoveTargeting(CellFocus cellFocus)
     {
-        _logger.Log("HandleAccept_MoveTargeting", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleAccept_MoveTargeting", GobLogSeverity.Trace, GobLogCategory.Input);
 
         if (!DebugUtil.Require(UnitActivation != null,
                 "[BattleController.Input].HandleAccept_MoveTargeting - No UnitActivationContext") ||
@@ -241,7 +241,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleAccept_PrimaryActionSelect(CellFocus cellFocus)
     {
-        _logger.Log("HandleAccept_PrimaryActionSelect", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleAccept_PrimaryActionSelect", GobLogSeverity.Trace, GobLogCategory.Input);
 
         if (!DebugUtil.Require(IsUnitSelected, "[BattleController.Input].HandleAccept_PrimaryActionSelect - No selected attacker"))
         {
@@ -292,7 +292,7 @@ public partial class BattleController: IInputHandler
     
     private bool HandleCancel(InputEvent e)
     {
-        _logger.Log("HandleCancel", LogSeverity.Info, LogCategory.Input);
+        _logger.Log("HandleCancel", GobLogSeverity.Info, GobLogCategory.Input);
         switch (_inputState)
         {
             case BattleInputState.FreeSelect:
@@ -315,7 +315,7 @@ public partial class BattleController: IInputHandler
     
     private bool HandleDirection(InputDirection? dir)
     {
-        _logger.Log("HandleDirection", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleDirection", GobLogSeverity.Trace, GobLogCategory.Input);
         if (!dir.HasValue)
             dir = ReadHeldDirection();
         if (dir == InputDirection.None)
@@ -332,7 +332,7 @@ public partial class BattleController: IInputHandler
 
     private bool HandleDirectionReleased()
     {
-        _logger.Log("HandleDirectionReleased", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleDirectionReleased", GobLogSeverity.Trace, GobLogCategory.Input);
         _heldDirection = ReadHeldDirection();
         _repeatMoveTimer = 0.0;
         return true;
@@ -340,28 +340,28 @@ public partial class BattleController: IInputHandler
 
     private bool HandleMouseClick(InputEventMouseButton e)
     {
-        _logger.Log("HandleMouseClick", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleMouseClick", GobLogSeverity.Trace, GobLogCategory.Input);
         _selectionController.TriggerSelection();
         return true;
     }
     
     private bool HandleMouseRightClick(InputEventMouseButton e)
     {
-        _logger.Log("HandleMouseRightClick", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleMouseRightClick", GobLogSeverity.Trace, GobLogCategory.Input);
         HandleCancel(e);
         return true;
     }
 
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
-        _logger.Log("HandleMouseMotion", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("HandleMouseMotion", GobLogSeverity.Extra, GobLogCategory.Input);
         _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition());
         return true;
     }
     
     private InputDirection ReadHeldDirection()
     {
-        _logger.Log("ReadHeldDirection", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("ReadHeldDirection", GobLogSeverity.Extra, GobLogCategory.Input);
         // Priority order if multiple are held
         if (Godot.Input.IsActionPressed("ui_up")) return InputDirection.Up;
         if (Godot.Input.IsActionPressed("ui_down")) return InputDirection.Down;

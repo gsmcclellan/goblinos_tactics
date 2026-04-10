@@ -14,7 +14,7 @@ namespace Goblinos.Scripts.Battle;
 
 public sealed partial class EnemyTurnController : Node
 {
-    private readonly Logger _logger = LogManager.For<EnemyTurnController>();
+    private readonly GobLogger _logger = GobLogManager.For<EnemyTurnController>();
 
     [Signal]
     public delegate void EnemyTurnStartedEventHandler();
@@ -38,7 +38,7 @@ public sealed partial class EnemyTurnController : Node
 
     public override void _Ready()
     {
-        _logger.Log($"[{nameof(EnemyTurnController)}] Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log($"[{nameof(EnemyTurnController)}] Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public sealed partial class EnemyTurnController : Node
         UnitRegistry unitRegistry
     )
     {
-        _logger.Log("Initialize", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Initialize", GobLogSeverity.Info, GobLogCategory.Initialization);
 
         _battleController = battleController;
         _enemyActionPlanner = enemyActionPlanner;
@@ -70,11 +70,11 @@ public sealed partial class EnemyTurnController : Node
     /// </summary>
     public async Task RunEnemyTurnAsync()
     {
-        _logger.Log("RunEnemyTurnAsync", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("RunEnemyTurnAsync", GobLogSeverity.Info, GobLogCategory.BattleState);
 
         if (_isRunning)
         {
-            _logger.Log("RunEnemyTurnAsync ignored: already running.", LogSeverity.Warn, LogCategory.BattleState);
+            _logger.Log("RunEnemyTurnAsync ignored: already running.", GobLogSeverity.Warn, GobLogCategory.BattleState);
             return;
         }
 
@@ -115,14 +115,14 @@ public sealed partial class EnemyTurnController : Node
         BattleController battleController
     )
     {
-        _logger.Log("ExecuteAllEnemyUnitsAsync", LogSeverity.Info, LogCategory.AiDecision);
+        _logger.Log("ExecuteAllEnemyUnitsAsync", GobLogSeverity.Info, GobLogCategory.AiDecision);
         
         var enemyUnits = unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly)
             .ToList();
         
         foreach (BattleUnit enemyUnit in enemyUnits)
         {
-            _logger.Log($"Enemy unit acting: {enemyUnit.UnitName}", LogSeverity.Info, LogCategory.AiDecision);
+            _logger.Log($"Enemy unit acting: {enemyUnit.UnitName}", GobLogSeverity.Info, GobLogCategory.AiDecision);
             
             await ToSignal(
                 GetTree().CreateTimer(DelayBetweenEnemyActionsSeconds),
@@ -131,7 +131,7 @@ public sealed partial class EnemyTurnController : Node
 
             if (!enemyUnit.CanAct)
             {
-                _logger.Log($"Enemy unit cannot act: {enemyUnit.UnitName}", LogSeverity.Trace, LogCategory.AiDecision);
+                _logger.Log($"Enemy unit cannot act: {enemyUnit.UnitName}", GobLogSeverity.Trace, GobLogCategory.AiDecision);
                 continue;
             }
 

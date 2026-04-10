@@ -27,7 +27,7 @@ public partial class SelectionController : Node
     // HoveredCell
 
     /** Components */
-    private Logger _logger = LogManager.For<SelectionController>();
+    private GobLogger _logger = GobLogManager.For<SelectionController>();
 
     private Core.GridCursor _cursor;
     private Core.BattleGrid _grid;
@@ -71,12 +71,12 @@ public partial class SelectionController : Node
 
     public override void _Ready()
     {
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     public void Bind(Core.GridCursor cursor, Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
-        _logger.Log("Bind", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
         if (_cursor != null || _grid != null || _unitRegistry != null)
             _UnsubscribeFromEvents();
         
@@ -105,14 +105,14 @@ public partial class SelectionController : Node
         if (_cursor != null)
             _cursor.GridCursorFocusChanged += OnCursorFocusChanged;
         
-        _logger.Log("Subscriptions Initialized", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Subscriptions Initialized", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     private void _UnsubscribeFromEvents()
     {   if (_cursor != null)
             _cursor.GridCursorFocusChanged -= OnCursorFocusChanged;
         
-        _logger.Log("Subscriptions Removed", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Subscriptions Removed", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     // ---------------------------------------------------------------------
@@ -145,38 +145,38 @@ public partial class SelectionController : Node
         
         if (unit.State == UnitActivationState.Exhausted)
         {
-            _logger.Log($"SelectUnit blocked: unit exhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.UiNavigation);
+            _logger.Log($"SelectUnit blocked: unit exhausted unit={unit.UnitName}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             return;
         }
         
         _selectedUnit?.Deselect();
         unit.Select();
         _selectedUnit = unit;
-        _logger.Log($"Unit Selected unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"Unit Selected unit={unit?.UnitName}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         EmitSignalSelectedUnitChanged(_selectedUnit);
     }
     
     public void TriggerClearSelection()
     {
-        _logger.Log("TriggerSelection", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("TriggerSelection", GobLogSeverity.Trace, GobLogCategory.Input);
         DeselectUnit();
         UpdateHovered();
     }
     
     public void TriggerSelection()
     {
-        _logger.Log("TriggerSelection", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("TriggerSelection", GobLogSeverity.Trace, GobLogCategory.Input);
         
         // TODO - add deselection rules / other types of selection
         if (_hoveredUnit == null)
         {
-            _logger.Log("TriggerSelection - No Hovered Unit, return", LogSeverity.Trace, LogCategory.Input);
+            _logger.Log("TriggerSelection - No Hovered Unit, return", GobLogSeverity.Trace, GobLogCategory.Input);
             return;
         }
         
         if (_hoveredUnit.State == UnitActivationState.Exhausted)
         {
-            _logger.Log("TriggerSelection - Unit is exhausted, return", LogSeverity.Trace, LogCategory.Input);
+            _logger.Log("TriggerSelection - Unit is exhausted, return", GobLogSeverity.Trace, GobLogCategory.Input);
             return;
         }
         
@@ -197,7 +197,7 @@ public partial class SelectionController : Node
 
     private void OnCursorFocusChanged(Vector2I newCell, Vector2I oldCell)
     {
-        _logger.Log($"Cursor focus changed newCell={newCell}, oldCell={oldCell}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"Cursor focus changed newCell={newCell}, oldCell={oldCell}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         UpdateHoveredFromCell(newCell);
     }
 
@@ -214,20 +214,20 @@ public partial class SelectionController : Node
         
         _selectedUnit.Deselect();
         _selectedUnit = null;
-        _logger.Log("Unit Deselected", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log("Unit Deselected", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         EmitSignalSelectedUnitChanged(_selectedUnit);
     }
     
     private void SetHoveredTerrain(TerrainType? terrain)
     {
-        _logger.Log($"Update hovered terrain={terrain?.Id}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"Update hovered terrain={terrain?.Id}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         _hoveredTerrain = terrain;
         EmitSignalHoveredTerrainChanged(terrain);
     }
 
     private void SetHoveredUnit(Units.BattleUnit? unit)
     {
-        _logger.Log($"Update hovered unit={unit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"Update hovered unit={unit?.Name}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         _hoveredUnit = unit;
         EmitSignalHoveredUnitChanged(unit);
     }
@@ -250,6 +250,6 @@ public partial class SelectionController : Node
         if (hoveredUnit != _hoveredUnit)
             SetHoveredUnit(hoveredUnit);
         
-        _logger.Log($"Update hovered from cell={cell}, terrain={hoveredTerrain?.Id}, unit={hoveredUnit?.Name}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"Update hovered from cell={cell}, terrain={hoveredTerrain?.Id}, unit={hoveredUnit?.Name}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
     }
 }

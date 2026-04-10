@@ -14,7 +14,7 @@ namespace Goblinos.Scripts.Battle.Services;
 
 public sealed class EnemyActionPlanningService
 {
-    private readonly Logger _logger = LogManager.For<EnemyActionPlanningService>();
+    private readonly GobLogger _logger = GobLogManager.For<EnemyActionPlanningService>();
 
     private readonly BattleGrid _grid;
     private readonly UnitRegistry _unitRegistry;
@@ -34,7 +34,7 @@ public sealed class EnemyActionPlanningService
         _primaryActionTargetingService = new PrimaryActionTargetingService(grid, unitRegistry);
         _unitActivationPreviewService = new UnitActivationPreviewService(grid, unitRegistry);
         
-        _logger.Log("Constructed", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Constructed", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     public void StartEnemyTurn()
@@ -49,7 +49,7 @@ public sealed class EnemyActionPlanningService
     /// </summary>
     public EnemyActionPlan BuildSimplePlan(BattleUnit actingUnit)
     {
-        _logger.Log($"BuildPlan unit={actingUnit.UnitName}", LogSeverity.Trace, LogCategory.AiDecision);
+        _logger.Log($"BuildPlan unit={actingUnit.UnitName}", GobLogSeverity.Trace, GobLogCategory.AiDecision);
 
         if (!_unitRegistry.TryGetCell(actingUnit, out var originCell))
             throw new Exception($"Unable to generate action plan - unit={actingUnit.UnitName} origin cell unavailable");
@@ -90,7 +90,7 @@ public sealed class EnemyActionPlanningService
 
     public EnemyActionPlan BuildMoveCloserPlan(BattleUnit unit, Vector2I originCell)
     {
-        _logger.Log("Building move closer plan.", LogSeverity.Trace, LogCategory.AiDecision);
+        _logger.Log("Building move closer plan.", GobLogSeverity.Trace, GobLogCategory.AiDecision);
         // if can't move return / do something else
         var reachableCells = _moveRangeService.GetMovementPreview(originCell, unit).Cells;
         if (reachableCells.Count == 0)

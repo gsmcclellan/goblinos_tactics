@@ -49,7 +49,7 @@ public partial class BattleController
         Debug.Assert(_unitRegistry != null, "[BattleController.Units] Not Initialized. Unable to register UnitRegistry.");
         _registerExistingBattleUnitNodes();
         
-        _logger.Log("_Ready_State", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("_Ready_State", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
 
@@ -63,7 +63,7 @@ public partial class BattleController
     
     private void AbortActivationToFreeSelect()
     {
-        _logger.Log("AbortActivationToFreeSelect", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log("AbortActivationToFreeSelect", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         // Cancel unit activation, go back to free select.
         if (InputState == BattleInputState.FreeSelect) return;
         
@@ -98,7 +98,7 @@ public partial class BattleController
 
     private void DisplayPrimaryActionPreview(PrimaryActionType actionType)
     {
-        _logger.Log($"[{nameof(DisplayPrimaryActionPreview)}] actionType={actionType}", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log($"[{nameof(DisplayPrimaryActionPreview)}] actionType={actionType}", GobLogSeverity.Trace, GobLogCategory.Input);
         if (!DebugUtil.Check(_primaryActionPreviews != null,
                 $"[{nameof(BattleController)}].{nameof(DisplayPrimaryActionPreview)} - Previews not initialized."))
         {
@@ -128,7 +128,7 @@ public partial class BattleController
 
     private void EnterMoveTargetingMode(BattleUnit unit)
     {
-        _logger.Log("EnterMovementMode", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("EnterMovementMode", GobLogSeverity.Trace, GobLogCategory.Input);
 
         if (!DebugUtil.Require(unit != null, "[BattleController.Input] failed to enter MovementMode, no unit"))
         {
@@ -138,7 +138,7 @@ public partial class BattleController
 
         if (unit.State == UnitActivationState.Exhausted)
         {
-            _logger.Log($"EnterMoveTargetingMode blocked: unit exhausted unit={unit.UnitName}", LogSeverity.Trace, LogCategory.BattleState);
+            _logger.Log($"EnterMoveTargetingMode blocked: unit exhausted unit={unit.UnitName}", GobLogSeverity.Trace, GobLogCategory.BattleState);
             AbortActivationToFreeSelect();
             return;
         }
@@ -170,7 +170,7 @@ public partial class BattleController
 
     private void EnterPrimaryActionSelectMode()
     {
-        _logger.Log("EnterPrimaryActionSelectMode", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("EnterPrimaryActionSelectMode", GobLogSeverity.Trace, GobLogCategory.Input);
         
         if (!DebugUtil.Require(UnitActivation != null,
                 $"[{nameof(BattleController)}].{nameof(EnterPrimaryActionSelectMode)} - No {nameof(UnitActivationContext)}"))
@@ -189,7 +189,7 @@ public partial class BattleController
 
     private void EnterPrimaryActionTargetMode(PrimaryActionType action)
     {
-        _logger.Log("EnterPrimaryActionTargetMode", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("EnterPrimaryActionTargetMode", GobLogSeverity.Info, GobLogCategory.BattleState);
         if (!DebugUtil.Require(UnitActivation != null,
                 "Cannot Enter PrimaryActionTarget mode, no UnitActivationContext"))
             return;
@@ -218,7 +218,7 @@ public partial class BattleController
         if (unit.State == UnitActivationState.Exhausted)
             return;
         
-        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", LogSeverity.Extra, LogCategory.UiNavigation);
+        _logger.Log($"GenerateHoverPreview cell={cell} unit={unit.UnitName} regUnit={registeredUnit?.UnitName}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.GetMovementPreview(cell, unit);
         var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
@@ -242,7 +242,7 @@ public partial class BattleController
         if (!DebugUtil.Require(_unitRegistry.TryGetCell(unit, out var cell), "[BattleController.State].GenerateMovementPreviewForSelectedUnit - Unable to generate, no selected unit"))
             return;
         
-        _logger.Log($"GeneratePreviewForSelectedUnit cell={cell} unit={unit?.UnitName}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"GeneratePreviewForSelectedUnit cell={cell} unit={unit?.UnitName}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         
         var movementPreview = _moveRangeService.GetMovementPreview(cell, unit!);
         var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit!.AttackRange);
@@ -253,7 +253,7 @@ public partial class BattleController
 
     private void GeneratePrimaryActionTargetPreviewForActiveUnit()
     {
-        _logger.Log("EnterPrimaryActionTargetMode", LogSeverity.Info, LogCategory.BattleState);
+        _logger.Log("EnterPrimaryActionTargetMode", GobLogSeverity.Info, GobLogCategory.BattleState);
         if (!DebugUtil.Require(UnitActivation != null,
                 "Unable to generate PrimaryActionTarget preview, no UnitActivationContext"))
             return;
@@ -412,7 +412,7 @@ public partial class BattleController
 
     public async Task ResolveAbility(IUnitActionPlan activation)
     {
-        _logger.Log("ResolveAbility", LogSeverity.Info, LogCategory.CombatResolution);
+        _logger.Log("ResolveAbility", GobLogSeverity.Info, GobLogCategory.CombatResolution);
         // TODO - check units are in range
         if (!DebugUtil.Require(activation != null,
                 $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))

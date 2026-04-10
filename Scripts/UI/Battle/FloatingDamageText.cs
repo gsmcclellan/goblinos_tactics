@@ -17,7 +17,7 @@ namespace Goblinos.Scripts.UI.Battle
         [Export] private float _durationSeconds = 0.6f;
         [Export] private float _fadeDelayDuration = 0.3f;
 
-        private readonly Logger _logger = LogManager.For<FloatingDamageText>();
+        private readonly GobLogger _logger = GobLogManager.For<FloatingDamageText>();
         
         /// <summary>
         /// Configures the text and starts its animation.
@@ -26,8 +26,8 @@ namespace Goblinos.Scripts.UI.Battle
         {
             _logger.Log(
                 $"ShowValue called with value={value}, isCritical={isCritical}, isHealing={isHealing}",
-                LogSeverity.Info,
-                LogCategory.UiNavigation
+                GobLogSeverity.Info,
+                GobLogCategory.UiNavigation
             );
 
             if (!DebugUtil.Require(_label != null, "FloatingDamageText label is not assigned.") ||
@@ -60,8 +60,8 @@ namespace Goblinos.Scripts.UI.Battle
 
             _logger.Log(
                 "Floating damage text animation finished. Freeing node.",
-                LogSeverity.Trace,
-                LogCategory.UiNavigation
+                GobLogSeverity.Trace,
+                GobLogCategory.UiNavigation
             );
 
             QueueFree();

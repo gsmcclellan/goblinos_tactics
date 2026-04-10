@@ -12,7 +12,7 @@ namespace Goblinos.Scripts.Battle.Controllers;
 /// </summary>
 public partial class BattleCameraController : Node
 {
-    private readonly Logger _logger = LogManager.For<BattleCameraController>();
+    private readonly GobLogger _logger = GobLogManager.For<BattleCameraController>();
 
     [Export]
     private Camera2D _camera;
@@ -37,12 +37,30 @@ public partial class BattleCameraController : Node
 
     private bool _isCameraInputEnabled = true;
     private bool _isDragPanning;
-    private Rect2 _worldBounds = new(Vector2.Zero, Vector2.Zero);
+    
+    private Rect2 _cameraWorldBounds;
+    
+    // ---------------------------------------------------------------------
+    // Lifecycle / Callback Methods
+    // ---------------------------------------------------------------------
 
     public override void _Ready()
     {
         DebugUtil.Require(_camera != null, $"[{nameof(BattleCameraController)}] Initialization failed - no {nameof(_camera)}");
         _camera.Zoom = _defaultZoom;
+    }
+
+    // Additional setup with necessary linked components from BattleController
+    public void Bind(Rect2 worldBounds)
+    {
+        _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
+
+        _cameraWorldBounds = worldBounds;
+        
+        Debug.Assert(_camera != null, $"[{nameof(BattleCameraController)}] Camera must be assigned.");
+        Debug.Assert(_cameraWorldBounds.Size.X > 0.0f, $"[{nameof(BattleCameraController)}] Camera bounds width must be positive.");
+        Debug.Assert(_cameraWorldBounds.Size.Y > 0.0f, $"[{nameof(BattleCameraController)}] Camera bounds height must be positive.");
+
     }
     
     /// <summary>
@@ -50,15 +68,19 @@ public partial class BattleCameraController : Node
     /// </summary>
     public override void _Process(double delta)
     {
-        _logger.Log("Process Camera Input", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("Process Camera Input", GobLogSeverity.Extra, GobLogCategory.Input);
         
 
         HandleKeyboardPan((float)delta);
     }
+    
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
 
     public bool HandleKeyboardPanPressed(InputDirection dir)
     {
-        _logger.Log("HandleKeyboardPanPressed", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleKeyboardPanPressed", GobLogSeverity.Trace, GobLogCategory.Input);
         if (dir == InputDirection.None)
             return false;
         
@@ -69,7 +91,7 @@ public partial class BattleCameraController : Node
 
     public bool HandleKeyboardPanReleased()
     {
-        _logger.Log("HandleKeyboardPanReleased", LogSeverity.Trace, LogCategory.Input);
+        _logger.Log("HandleKeyboardPanReleased", GobLogSeverity.Trace, GobLogCategory.Input);
         _heldKeyboardInputDirection = _readKeyboardInputDirection();
 
         return true;
@@ -79,6 +101,10 @@ public partial class BattleCameraController : Node
     {
         _heldKeyboardInputDirection = Vector2.Zero;
     }
+    
+    // ---------------------------------------------------------------------
+    // Private Helper Methods
+    // ---------------------------------------------------------------------
 
     private Vector2 _readKeyboardInputDirection()
     {
@@ -94,7 +120,7 @@ public partial class BattleCameraController : Node
     /// </summary>
     private void HandleKeyboardPan(float delta)
     {
-        _logger.Log("HandleKeyboardPan", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("HandleKeyboardPan", GobLogSeverity.Extra, GobLogCategory.Input);
 
         Vector2 inputDirection = _heldKeyboardInputDirection;
 
@@ -110,7 +136,7 @@ public partial class BattleCameraController : Node
     /// </summary>
     private void HandleDragPan(InputEventMouseMotion mouseMotionEvent)
     {
-        _logger.Log("HandleDragPan", LogSeverity.Extra, LogCategory.Input);
+        _logger.Log("HandleDragPan", GobLogSeverity.Extra, GobLogCategory.Input);
 
         Vector2 dragOffset = -mouseMotionEvent.Relative * _dragPanMultiplier * _camera.Zoom.X;
         _camera.GlobalPosition += dragOffset;
@@ -121,15 +147,15 @@ public partial class BattleCameraController : Node
     /// </summary>
     private void ApplyCameraLimits()
     {
-        _logger.Log("ApplyCameraLimits", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("ApplyCameraLimits", GobLogSeverity.Info, GobLogCategory.Initialization);
 
         if (!DebugUtil.Require(_camera != null, "[BattleCameraController] Cannot apply limits without a camera."))
             return;
 
-        _camera.LimitLeft = Mathf.RoundToInt(_worldBounds.Position.X);
-        _camera.LimitTop = Mathf.RoundToInt(_worldBounds.Position.Y);
-        _camera.LimitRight = Mathf.RoundToInt(_worldBounds.End.X);
-        _camera.LimitBottom = Mathf.RoundToInt(_worldBounds.End.Y);
+        _camera.LimitLeft = Mathf.RoundToInt(_cameraWorldBounds.Position.X);
+        _camera.LimitTop = Mathf.RoundToInt(_cameraWorldBounds.Position.Y);
+        _camera.LimitRight = Mathf.RoundToInt(_cameraWorldBounds.End.X);
+        _camera.LimitBottom = Mathf.RoundToInt(_cameraWorldBounds.End.Y);
     }
 
     /// <summary>
@@ -137,11 +163,11 @@ public partial class BattleCameraController : Node
     /// </summary>
     private void ClampCameraPositionImmediate()
     {
-        _logger.Log("ClampCameraPositionImmediate", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log("ClampCameraPositionImmediate", GobLogSeverity.Info, GobLogCategory.UiNavigation);
 
         Vector2 clampedPosition = _camera.GlobalPosition;
-        clampedPosition.X = Mathf.Clamp(clampedPosition.X, _worldBounds.Position.X, _worldBounds.End.X);
-        clampedPosition.Y = Mathf.Clamp(clampedPosition.Y, _worldBounds.Position.Y, _worldBounds.End.Y);
+        clampedPosition.X = Mathf.Clamp(clampedPosition.X, _cameraWorldBounds.Position.X, _cameraWorldBounds.End.X);
+        clampedPosition.Y = Mathf.Clamp(clampedPosition.Y, _cameraWorldBounds.Position.Y, _cameraWorldBounds.End.Y);
 
         _camera.GlobalPosition = clampedPosition;
         _camera.ResetSmoothing();

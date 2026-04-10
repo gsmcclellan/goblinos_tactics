@@ -8,7 +8,7 @@ public partial class PrimaryActionConfirm : Panel, IBattleHudPanel
 {
     [Export] private Label _label;
 
-    private readonly Logger _logger = LogManager.For<PrimaryActionConfirm>();
+    private readonly GobLogger _logger = GobLogManager.For<PrimaryActionConfirm>();
 
     private string _message;
 
@@ -25,7 +25,7 @@ public partial class PrimaryActionConfirm : Panel, IBattleHudPanel
     public override void _Ready()
     {
         Debug.Assert(_label != null, $"[{nameof(PrimaryActionConfirm)}] Initialization failed - missing _label.");
-        _logger.Log("Ready", LogSeverity.Trace, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Trace, GobLogCategory.Initialization);
     }
 
     private void UpdateMessageLabel()

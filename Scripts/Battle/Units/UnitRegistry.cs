@@ -30,7 +30,7 @@ public partial class UnitRegistry: Node
     // public delegate void UnitDiedEventHandler(BattleUnit unit, Vector2I cell);
 
     /** Fields */
-    private Logger _logger = LogManager.For<UnitRegistry>();
+    private GobLogger _logger = GobLogManager.For<UnitRegistry>();
 
     private readonly List<BattleUnit> _units = new();
     private readonly Dictionary<Vector2I, BattleUnit> _unitsByCell = new();
@@ -77,7 +77,7 @@ public partial class UnitRegistry: Node
     /// <param name="initialCell"></param>
     public void RegisterUnit(BattleUnit unit, Vector2I initialCell)
     {
-        _logger.Log($"RegisterUnit unit={unit}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"RegisterUnit unit={unit}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "Cannot register null unit."))
             return;
         
@@ -102,7 +102,7 @@ public partial class UnitRegistry: Node
     /// </summary>
     public void UnregisterUnit(BattleUnit unit, bool isDeath = false)
     {
-        _logger.Log("UnregisterUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log("UnregisterUnit " + unit, GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "Cannot unregister null unit."))
             return;
         
@@ -121,7 +121,7 @@ public partial class UnitRegistry: Node
 
     public void DestroyUnit(BattleUnit unit)
     {
-        _logger.Log("DestroyUnit " + unit, LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log("DestroyUnit " + unit, GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         UnregisterUnit(unit, true);
         unit.QueueFree();
     }
@@ -133,7 +133,7 @@ public partial class UnitRegistry: Node
     /// </summary>
     public void Clear()
     {
-        _logger.Log("Clear", LogSeverity.Info, LogCategory.Exit);
+        _logger.Log("Clear", GobLogSeverity.Info, GobLogCategory.Exit);
         _units.Clear();
         _unitsByCell.Clear();
         _cellsByUnit.Clear();
@@ -175,7 +175,7 @@ public partial class UnitRegistry: Node
     {
         var hasUnit = unit != null && _cellsByUnit.ContainsKey(unit);
 
-        _logger.Log($"Contains [unit]={unit} :: {hasUnit}", LogSeverity.Extra, LogCategory.DebugOnly);
+        _logger.Log($"Contains [unit]={unit} :: {hasUnit}", GobLogSeverity.Extra, GobLogCategory.DebugOnly);
         return hasUnit;
     }
     
@@ -215,7 +215,7 @@ public partial class UnitRegistry: Node
     public bool IsCellOccupied(Vector2I cell)
     {
         var isOccupied = _unitsByCell.ContainsKey(cell);
-        _logger.Log($"IsCellOccupied [cell]={cell} :: {isOccupied}", LogSeverity.Extra, LogCategory.DebugOnly);
+        _logger.Log($"IsCellOccupied [cell]={cell} :: {isOccupied}", GobLogSeverity.Extra, GobLogCategory.DebugOnly);
 
         return isOccupied;
     }
@@ -229,7 +229,7 @@ public partial class UnitRegistry: Node
     public bool TryGetCell(BattleUnit unit, out Vector2I cell)
     {
         var hasCell = _cellsByUnit.TryGetValue(unit, out cell);
-        _logger.Log($"TryGetCell [unit]={unit} [hasCell]={hasCell} :: [cell]={cell}", LogSeverity.Extra, LogCategory.DebugOnly);
+        _logger.Log($"TryGetCell [unit]={unit} [hasCell]={hasCell} :: [cell]={cell}", GobLogSeverity.Extra, GobLogCategory.DebugOnly);
 
         return hasCell;
     }
@@ -249,7 +249,7 @@ public partial class UnitRegistry: Node
         else
             hasUnit = _unitsByCell.TryGetValue(cell, out existingUnit);
         
-        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={existingUnit}", LogSeverity.Extra, LogCategory.DebugOnly);
+        _logger.Log($"TryGetUnitAtCell [cell]={cell} [hasUnit]={hasUnit} :: [unit]={existingUnit}", GobLogSeverity.Extra, GobLogCategory.DebugOnly);
         unit = existingUnit;
         return hasUnit;
     }
@@ -264,7 +264,7 @@ public partial class UnitRegistry: Node
     public void ApplyUnitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell, bool allowSwapping = false)
     {
         // TODO - currently allows only move to empty cell, add additional functionality for shove, swap, etc.
-        _logger.Log($"ApplyUnitMove [unit]={unit.UnitName} [from]={fromCell} [to]={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"ApplyUnitMove [unit]={unit.UnitName} [from]={fromCell} [to]={toCell}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
         if (_pendingMove.HasValue)
         {
@@ -301,7 +301,7 @@ public partial class UnitRegistry: Node
             _unitsByCell[fromCell] = existingUnit;
         }
 
-        _logger.Info($"[Signal] UnitMoveResolved unit={unit.UnitName}, fromCell={fromCell}, toCell={toCell}", LogCategory.Signal);
+        _logger.Info($"[Signal] UnitMoveResolved unit={unit.UnitName}, fromCell={fromCell}, toCell={toCell}", GobLogCategory.Signal);
         _AssertInvariants();
         EmitSignal(SignalName.UnitMoveResolved, unit, fromCell, toCell);
     }

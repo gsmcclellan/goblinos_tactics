@@ -9,7 +9,7 @@ namespace Goblinos.Scripts.Battle.Controllers;
 
 public partial class MovementController: Node
 {
-    private Logger _logger = LogManager.For<MovementController>();
+    private GobLogger _logger = GobLogManager.For<MovementController>();
     
     private BattleGrid _grid;
     private UnitRegistry _unitRegistry;
@@ -22,12 +22,12 @@ public partial class MovementController: Node
         Debug.Assert(_grid != null, "[MovementController] BattleGrid must be bound.");
         Debug.Assert(_unitRegistry != null, "[MovementController] UnitRegistry must be bound.");
 
-        _logger.Log("Bind Complete", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Bind Complete", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     public bool TryMoveToCell(BattleUnit unit, Vector2I targetCell, bool commitMovement = false)
     {
-        _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log("TryMoveToCell", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(unit != null, "[MovementController] Unable to move, no unit."))
             return false;
 
@@ -54,7 +54,7 @@ public partial class MovementController: Node
 
     public bool TrySwapUnits(BattleUnit actingUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log("TryMoveToCell", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log("TryMoveToCell", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(actingUnit != null, "[MovementController] Unable to swap, no unit."))
             return false;
 
@@ -70,7 +70,7 @@ public partial class MovementController: Node
 
     public void CommitMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
-        _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         // TODO - animations & stuff
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
         _unitRegistry.ApplyUnitMove(unit, fromCell, toCell);
@@ -78,7 +78,7 @@ public partial class MovementController: Node
 
     public void CreatePendingMove(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
-        _logger.Log($"CreatePendingMove unit={unit.UnitName} from={fromCell} to={toCell}", LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"CreatePendingMove unit={unit.UnitName} from={fromCell} to={toCell}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         // TODO - animations & stuff
 
         unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);

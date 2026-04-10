@@ -10,7 +10,7 @@ namespace Goblinos.Scripts.Battle.Preview;
 // can't be undone.
 public sealed class UnitActivationContext: IUnitActionPlan
 {
-    private readonly Logger _logger = LogManager.For<UnitActivationContext>();
+    private readonly GobLogger _logger = GobLogManager.For<UnitActivationContext>();
     public BattleUnit Unit { get; }
     public Vector2I OriginCell { get; }
 
@@ -58,39 +58,39 @@ public sealed class UnitActivationContext: IUnitActionPlan
 
     public UnitActivationContext(BattleUnit unit, Vector2I originCell)
     {
-        _logger.Log($"Created - Unit={unit}, OriginCell={originCell}", LogSeverity.Trace, LogCategory.Initialization);
+        _logger.Log($"Created - Unit={unit}, OriginCell={originCell}", GobLogSeverity.Trace, GobLogCategory.Initialization);
         Unit = unit;
         OriginCell = originCell;
     }
 
     public void SetMoveTargetCell(Vector2I targetCell)
     {
-        _logger.Log($"SetMoveTargetCell - target={targetCell}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"SetMoveTargetCell - target={targetCell}", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         MoveTargetCell = targetCell;
     }
 
     public void ClearMoveTargetCell()
     {
-        _logger.Log("ClearMoveTargetCell", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log("ClearMoveTargetCell", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         MoveTargetCell = null;
     }
 
     public void SetPrimaryAction(PrimaryActionType action)
     {
-        _logger.Log($"SetPrimaryAction - action={action}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"SetPrimaryAction - action={action}", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         PrimaryAction = action;
     }
 
     public void SetPrimaryActionTarget(Vector2I cell, BattleUnit unit)
     {
-        _logger.Log($"SetPrimaryActionTarget - cell={cell}, unit={unit}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"SetPrimaryActionTarget - cell={cell}, unit={unit}", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         PrimaryActionTargetCell = cell;
         PrimaryActionTargetUnit = unit;
     }
 
     public void ClearPrimaryAction()
     {
-        _logger.Log("ClearPrimaryAction", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log("ClearPrimaryAction", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         PrimaryAction = PrimaryActionType.None;
         PrimaryActionTargetCell = null;
         PrimaryActionTargetUnit = null;
@@ -98,7 +98,7 @@ public sealed class UnitActivationContext: IUnitActionPlan
 
     public void Reset()
     {
-        _logger.Log("Reset", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log("Reset", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         ClearMoveTargetCell();
         ClearPrimaryAction();
     }

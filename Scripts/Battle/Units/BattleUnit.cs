@@ -24,7 +24,7 @@ public partial class BattleUnit : Area2D
     public delegate void HitPointsChangedEventHandler(int newValue, int oldValue);
     
     /** Components */
-    private readonly Logger _logger = LogManager.For<BattleUnit>();
+    private readonly GobLogger _logger = GobLogManager.For<BattleUnit>();
 
     [Export] private Sprite2D _imageSprite;
     [Export] private ProgressBar _hpBar;
@@ -88,7 +88,7 @@ public partial class BattleUnit : Area2D
         
         SubscribeToEvents();
         
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     public override void _ExitTree()
@@ -111,7 +111,7 @@ public partial class BattleUnit : Area2D
     /// </summary>
     public void Bind(Unit unit)
     {
-        _logger.Log($"Bind " + unit.UnitName, LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log($"Bind " + unit.UnitName, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
         _unit = unit;
         SetHitPoints(unit.Stats.BaseStats.MaxHitPoints);
@@ -139,7 +139,7 @@ public partial class BattleUnit : Area2D
     /// </summary>
     public async Task ApplyDamage(int damage)
     {
-        _logger.Log("[BattleUnit] ApplyDamage " + damage, LogSeverity.Info, LogCategory.UnitLifecycle);
+        _logger.Log("[BattleUnit] ApplyDamage " + damage, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
             return;
         SetHitPoints(CurrentHitPoints - damage);
@@ -185,7 +185,7 @@ public partial class BattleUnit : Area2D
 
     public void SetActivationState(UnitActivationState state)
     {
-        _logger.Log($"{nameof(SetActivationState)} state={state}", LogSeverity.Trace, LogCategory.UnitLifecycle);
+        _logger.Log($"{nameof(SetActivationState)} state={state}", GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
         State = state;
         SetExhaustedVisual(state == UnitActivationState.Exhausted);
     }
@@ -203,7 +203,7 @@ public partial class BattleUnit : Area2D
     private void OnHitPointsChanged(int newValue, int oldValue)
     {
         var delta = newValue - oldValue;
-        _logger.Log("OnHitPointsChanged delta=" + delta, LogSeverity.Info, LogCategory.UnitStats);
+        _logger.Log("OnHitPointsChanged delta=" + delta, GobLogSeverity.Info, GobLogCategory.UnitStats);
 
         if (!DebugUtil.Require(_hpBar != null, "HP Bar missing."))
             return;
@@ -217,7 +217,7 @@ public partial class BattleUnit : Area2D
 
     private async Task DisplayFloatingDamage(int damage) // TODO - move to battle or UI so not reliant on unit existing / color
     {
-        _logger.Log("DisplayFloatingDamage damage=" + damage, LogSeverity.Trace, LogCategory.CombatResolution);
+        _logger.Log("DisplayFloatingDamage damage=" + damage, GobLogSeverity.Trace, GobLogCategory.CombatResolution);
         if (!DebugUtil.Require(_floatingDamageScene != null, "Floating Damage Label scene not instantiated."))
             return;
 
@@ -234,7 +234,7 @@ public partial class BattleUnit : Area2D
            )
             return;
         
-        _logger.Log("Refresh", LogSeverity.Trace, LogCategory.UnitStats);
+        _logger.Log("Refresh", GobLogSeverity.Trace, GobLogCategory.UnitStats);
 
         _hpBar.MaxValue = MaxHitPoints;
         _hpBar.Value = CurrentHitPoints;
@@ -258,7 +258,7 @@ public partial class BattleUnit : Area2D
 
         var delta = _currentHitPoints - old;
         _logger.Log("[BattleUnit] HitPoints changed: " + old + " -> " + _currentHitPoints,
-            LogSeverity.Info, LogCategory.UnitStats);
+            GobLogSeverity.Info, GobLogCategory.UnitStats);
 
         EmitSignal(SignalName.HitPointsChanged, _currentHitPoints, old);
     }

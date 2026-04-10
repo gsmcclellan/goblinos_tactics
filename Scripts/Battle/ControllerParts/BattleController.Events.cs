@@ -37,13 +37,13 @@ public partial class BattleController
     {
         // GridCursor
         DebugUtil.Require(_cursor != null, "[GridCursor] not initialized. Unable to set up actions.");
-        _logger.Log("Ready_Events", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready_Events", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     private void _ExitTree_Actions()
     {
         _UnsubscribeFromEvents();
-        _logger.Log("ExitTree_Actions", LogSeverity.Info, LogCategory.Exit);
+        _logger.Log("ExitTree_Actions", GobLogSeverity.Info, GobLogCategory.Exit);
     }
 
     private void _SubscribeToEvents()
@@ -90,7 +90,7 @@ public partial class BattleController
 
     private void OnHoveredUnitChanged(Node? hoveredNode)
     {
-        _logger.Log($"OnHoveredUnitChanged - node={hoveredNode}", LogSeverity.Trace, LogCategory.Signal);
+        _logger.Log($"OnHoveredUnitChanged - node={hoveredNode}", GobLogSeverity.Trace, GobLogCategory.Signal);
         switch (hoveredNode)
         {
             // In FreeSelect, change move preview when hovered unit changes.
@@ -114,14 +114,14 @@ public partial class BattleController
     {
         // When menu item for primary action is hovered or tabbed / navigated to with buttons
         var action = (PrimaryActionType)actionIndex;
-        _logger.Log($"OnPrimaryActionFocused - action={action}", LogSeverity.Info, LogCategory.Signal);
+        _logger.Log($"OnPrimaryActionFocused - action={action}", GobLogSeverity.Info, GobLogCategory.Signal);
         DisplayPrimaryActionPreview((PrimaryActionType)actionIndex);
     }
 
     private void OnPrimaryActionSelected(int actionIndex)
     {
         var action = (PrimaryActionType)actionIndex;
-        _logger.Log($"OnPrimaryActionSelected - action={action}", LogSeverity.Info, LogCategory.Signal);
+        _logger.Log($"OnPrimaryActionSelected - action={action}", GobLogSeverity.Info, GobLogCategory.Signal);
         if (!DebugUtil.Require(UnitActivation != null,
                 "Unable to process selected primary action, null UnitActivationContext"))
             return;
@@ -158,7 +158,7 @@ public partial class BattleController
     
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
-        _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", LogSeverity.Trace, LogCategory.Signal);
+        _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", GobLogSeverity.Trace, GobLogCategory.Signal);
         // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
     }
 

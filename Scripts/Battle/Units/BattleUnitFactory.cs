@@ -8,11 +8,11 @@ namespace Goblinos.Scripts.Battle.Units;
 /// </summary>
 public sealed class BattleUnitFactory
 {
-    private readonly Logger _logger = LogManager.For<BattleUnitFactory>();
+    private readonly GobGobLogger _logger = GobLogManager.For<BattleUnitFactory>();
 
     public BattleUnit Create(Unit unit)
     {
-        _logger.Log("[BattleUnitFactory] Create " + unit.UnitName, LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("[BattleUnitFactory] Create " + unit.UnitName, GobLogSeverity.Info, GobLogCategory.Initialization);
 
         // Starting health is pulled from persistent BaseStats.MaxHitPoints for now.
         return new BattleUnit(unit);

@@ -21,7 +21,7 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     
     
     /** Components */
-    private readonly Logger _logger = LogManager.For<PrimaryActionSelect>();
+    private readonly GobLogger _logger = GobLogManager.For<PrimaryActionSelect>();
 
     private NodePath _buttonContainerPath = "ButtonContainer";
     private Dictionary<PrimaryActionType, Button> _buttons = new();
@@ -40,7 +40,7 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     public override void _Ready()
     {
         CacheButtons();
-        _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     private void CacheButtons()
     {
@@ -57,7 +57,7 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
             _buttons[actionType] = button;
         }
         
-        _logger.Log($"CacheButtons - {_buttons.Count} buttons registered.", LogSeverity.Info, LogCategory.Initialization);
+        _logger.Log($"CacheButtons - {_buttons.Count} buttons registered.", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
     // ---------------------------------------------------------------------
@@ -70,7 +70,7 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     /// </summary>
     public void SetActionEnabled(PrimaryActionType actionType, bool isEnabled)
     {
-        _logger.Log($"{nameof(SetActionEnabled)} action={actionType} isEnabled={isEnabled}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(SetActionEnabled)} action={actionType} isEnabled={isEnabled}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
 
         if (!_buttons.TryGetValue(actionType, out var button))
             return;
@@ -100,7 +100,7 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     /// </summary>
     public bool TryFocusFirstEnabled(IEnumerable<PrimaryActionType> priorityOrder)
     {
-        _logger.Log($"{nameof(TryFocusFirstEnabled)}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"{nameof(TryFocusFirstEnabled)}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
 
         foreach (var action in priorityOrder)
         {
@@ -124,19 +124,19 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
 
     private void OnButtonFocused(PrimaryActionType action)
     {
-        _logger.Log($"OnButtonFocused - action={action}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"OnButtonFocused - action={action}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         EmitSignal(SignalName.ActionFocused, (int)action);
     }
 
     private void OnButtonPressed(PrimaryActionType action)
     {
-        _logger.Log($"OnButtonPressed - action={action}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"OnButtonPressed - action={action}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         EmitSignal(SignalName.ActionSelected, (int)action);
     }
 
     public void OnSelectedUnitChanged(BattleUnit? selectedUnit)
     {
-        _logger.Log($"OnSelectedUnitChanged - unit={selectedUnit?.UnitName}", LogSeverity.Trace, LogCategory.UiNavigation);
+        _logger.Log($"OnSelectedUnitChanged - unit={selectedUnit?.UnitName}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         var abilityButton = _buttons[PrimaryActionType.Ability];
         
         abilityButton.Text = selectedUnit?.Ability?.DisplayName ?? "None";
