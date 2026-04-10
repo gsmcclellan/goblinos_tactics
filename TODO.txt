@@ -8,6 +8,15 @@
 Add modifier calculations to derived stats.
 
 add camera with panning
+    - bound camera to not go outside map
+    - set default position in sensible place
+    - add auto panning when moving cursor
+    - zoom in / out
+    - reset to default zoom
+    - jump to char
+    
+add command to jump to next char (have camera auto pan)
+
 map with walls/stairs - more interesting features
 better ai decision making
 

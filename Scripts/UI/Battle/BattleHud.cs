@@ -226,7 +226,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void OnCombatPreviewUpdated(CombatPreview? combatPreview)
         {
-            _logger.Log($"OnCombatPreviewUpdated", LogSeverity.Info, LogCategory.UiNavigation);
+            _logger.Log($"OnCombatPreviewUpdated", LogSeverity.Extra, LogCategory.UiNavigation);
             _panels.ForEach(panel => panel.OnCombatPreviewUpdated(combatPreview));
         }
 

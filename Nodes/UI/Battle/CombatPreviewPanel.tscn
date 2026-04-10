@@ -14,6 +14,7 @@ AttackerExpectedHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/
 DefenderNameLabel = NodePath("HBoxContainer/Defender/VBoxContainer/Name")
 DefenderCurrentHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/CurrentHitPoints")
 DefenderExpectedHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/ExpectedHitPoints")
+metadata/_edit_use_anchors_ = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 0

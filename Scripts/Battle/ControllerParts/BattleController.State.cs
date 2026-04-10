@@ -321,11 +321,11 @@ public partial class BattleController
 
     private void UpdateCombatPreview()
     {
-        CombatPreview? preview = null;
+        CombatPreview? combatPreview = null;
 
         if (UnitActivation == null || UnitActivation.PrimaryAction != PrimaryActionType.Attack)
         {
-            SetCombatPreview(preview);
+            SetCombatPreview(combatPreview);
             return;
         }
             
@@ -334,11 +334,20 @@ public partial class BattleController
 
         if (defender == null || defender.IsFriendly)
         {
-            SetCombatPreview(null);
+            SetCombatPreview(combatPreview);
+            return;
+        }
+
+        var defenderCell = UnitActivation.PrimaryActionTargetCell ?? HoveredCell;
+        
+        // check if defender is valid target
+        if (_primaryActionPreviews == null || !_primaryActionPreviews.IsValidTarget(PrimaryActionType.Attack, defenderCell))
+        {
+            SetCombatPreview(combatPreview);
             return;
         }
         
-        var combatPreview = _combatResolver.GetCombatPreview(attacker, defender);
+        combatPreview = _combatResolver.GetCombatPreview(attacker, defender);
         SetCombatPreview(combatPreview);
     }
     

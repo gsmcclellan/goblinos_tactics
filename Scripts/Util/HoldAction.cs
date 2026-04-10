@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace Goblinos.Scripts.Input;
+namespace Goblinos.Scripts.Util;
 
 /// <summary>
 /// Small helper class to use for held inputs.

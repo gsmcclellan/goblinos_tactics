@@ -66,7 +66,7 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
 
     public void OnCombatPreviewUpdated(CombatPreview? combatPreview)
     {
-        _logger.Log($"OnCombatPreviewUpdated - hasPreview={combatPreview != null}", LogSeverity.Info, LogCategory.UiNavigation);
+        _logger.Log($"OnCombatPreviewUpdated - hasPreview={combatPreview != null}", LogSeverity.Extra, LogCategory.UiNavigation);
         if (combatPreview == null)
         {
             SetVisible(false);

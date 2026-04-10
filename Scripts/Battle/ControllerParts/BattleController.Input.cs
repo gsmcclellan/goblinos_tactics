@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Controllers;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
@@ -16,6 +17,8 @@ public partial class BattleController: IInputHandler
     /** Components, Node references */
     [ExportGroup("Input")] 
     private InputRouter _inputRouter;
+    [Export]
+    private BattleCameraController _battleCameraController;
     
     /** Fields */
     [Export] private double _repeatDelay = 0.32;    // initial delay before repeating
@@ -36,8 +39,11 @@ public partial class BattleController: IInputHandler
     
     private void _Ready_Input()
     {
+        DebugUtil.Require(_battleCameraController != null, "[BattleController.Input] Not Initialized. Unable to register BattleCameraController");
+        
         _inputRouter = GetNode<InputRouter>(GlobalSettings.InputRouterPath);
         DebugUtil.Require(_inputRouter != null, "[BattleController.Input] Not Initialized. Unable to register input router");
+        
         _inputRouter.Push(this);
         
         _logger.Log("Ready", LogSeverity.Info, LogCategory.Initialization);
@@ -74,6 +80,16 @@ public partial class BattleController: IInputHandler
     {
         _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", LogSeverity.Extra, LogCategory.Input);
 
+        // Camera panning
+        if (e.IsActionPressed("camera_pan_up"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Up); }
+        if (e.IsActionPressed("camera_pan_right"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Right); }
+        if (e.IsActionPressed("camera_pan_down"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Down); }
+        if (e.IsActionPressed("camera_pan_left"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Left); }
+
+        if (e.IsActionReleased("camera_pan_up") || e.IsActionReleased("camera_pan_right") ||
+            e.IsActionReleased("camera_pan_down") || e.IsActionReleased("camera_pan_left"))
+            return _battleCameraController.HandleKeyboardPanReleased();
+        
         // If user presses arrow / move buttons handle cursor action
         if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up); }
         if (e.IsActionPressed("ui_right"))    { return HandleDirection(InputDirection.Right); }
@@ -96,12 +112,14 @@ public partial class BattleController: IInputHandler
         {
             if (mbe.ButtonIndex == MouseButton.Left && mbe.Pressed)
             {
-                _cursor.TryMoveToGlobalPosition(mbe.GlobalPosition);
+                _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition());
                 return HandleAcceptAtFocusedCell(e);
             }
             if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
                 return HandleCancel(e);
         }
+        
+        
         
         // Mouse - Motion
         if (e is InputEventMouseMotion mme)
@@ -117,6 +135,13 @@ public partial class BattleController: IInputHandler
         }
         
         return false;
+    }
+
+    private bool HandleCameraPan(InputDirection dir)
+    {
+        GD.Print("pan camera - ", dir);
+
+        return true;
     }
     
     /// <summary>
@@ -330,7 +355,7 @@ public partial class BattleController: IInputHandler
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
         _logger.Log("HandleMouseMotion", LogSeverity.Extra, LogCategory.Input);
-        _cursor.TryMoveToGlobalPosition(e.GlobalPosition);
+        _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition());
         return true;
     }
     
