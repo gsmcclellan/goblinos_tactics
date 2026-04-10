@@ -8,7 +8,7 @@ namespace Goblinos.Scripts.Battle.Units;
 /// </summary>
 public sealed class BattleUnitFactory
 {
-    private readonly GobGobLogger _logger = GobLogManager.For<BattleUnitFactory>();
+    private readonly GobLogger _logger = GobLogManager.For<BattleUnitFactory>();
 
     public BattleUnit Create(Unit unit)
     {

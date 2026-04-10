@@ -19,7 +19,7 @@ namespace Goblinos.Scripts.Combat;
 /// </summary>
 public class CombatResolver
 {
-    private readonly GobGobLogger _logger = GobLogManager.For<CombatResolver>();
+    private readonly GobLogger _logger = GobLogManager.For<CombatResolver>();
     
     // private readonly HitCalculator _hitCalculator;
     private readonly DamageCalculator _damageCalculator;

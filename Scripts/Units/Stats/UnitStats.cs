@@ -9,7 +9,7 @@ namespace Goblinos.Scripts.Units.Stats;
 
 public sealed class UnitStats
 {
-    private readonly GobGobLogger _logger = GobLogManager.For<UnitStats>();
+    private readonly GobLogger _logger = GobLogManager.For<UnitStats>();
     
     public StatBlock BaseStats { get; }
     public HashSet<StatModifier> PermanentModifiers { get; } = [];

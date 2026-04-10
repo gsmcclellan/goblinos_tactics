@@ -14,7 +14,7 @@ namespace Goblinos.Scripts.Battle.Services;
 /// </summary>
 public sealed class ManhattanRangeService
 {
-    private static readonly Logger Logger = GobLogManager.For<ManhattanRangeService>();
+    private static readonly GobLogger Logger = GobLogManager.For<ManhattanRangeService>();
 
     private static readonly Dictionary<(int MinRange, int MaxRange), Vector2I[]> CachedPatterns = new();
 

@@ -11,7 +11,7 @@ namespace Goblinos.Scripts.Units
     /// </summary>
     public sealed class UnitFactory
     {
-        private readonly GobGobLogger _logger = GobLogManager.For<UnitFactory>();
+        private readonly GobLogger _logger = GobLogManager.For<UnitFactory>();
 
         /// <summary>
         /// Instantiates a Unit from a template.
