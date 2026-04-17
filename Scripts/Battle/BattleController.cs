@@ -20,8 +20,9 @@ public partial class BattleController : Node
 
     /** Components */
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    [Export]
+    private BattleCameraController _cameraController = null!;
     [Export] private NodePath _cursorPath;
-
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
     [Export] private NodePath _enemyTurnControllerPath;
@@ -122,6 +123,8 @@ public partial class BattleController : Node
 
     private void _BindBattleComponents()
     {
+        
+        _cameraController.Bind(_grid, _cursor);
         _hud.Bind(this, _cursor, _selectionController, _turnController);
         _enemyTurnController.Bind(this, _enemyActionPlanningService, _unitRegistry);
         _movementController.Bind(_grid, _unitRegistry);

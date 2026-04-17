@@ -6,7 +6,7 @@ namespace Goblinos.Scripts.Core;
 public interface IInputHandler
 {
     /// Return true if you consumed the event (router stops), else other handler can consume input
-    bool Handle(InputEvent e);
+    bool HandleRoutedInput(InputEvent e);
     bool BlocksLowerInputHandlers { get; }
 }
 
@@ -55,7 +55,7 @@ public partial class InputRouter : Node
         foreach (var handler in _stack)
         {
             // Route to the top handler; stop if consumed
-            if (handler.Handle(e))
+            if (handler.HandleRoutedInput(e))
             {
                 GetViewport().SetInputAsHandled();
                 return;

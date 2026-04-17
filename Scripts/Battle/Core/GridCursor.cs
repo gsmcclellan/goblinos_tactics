@@ -1,4 +1,5 @@
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -11,7 +12,7 @@ public partial class GridCursor : Node2D
     
     /** Signals */
     [Signal]
-    public delegate void GridCursorFocusChangedEventHandler(Vector2I newCell, Vector2I oldCell);
+    public delegate void GridCursorFocusChangedEventHandler(Vector2I newCell, Vector2I oldCell, int gridCursorFocusSource);
 
     /** Events */
     
@@ -43,7 +44,7 @@ public partial class GridCursor : Node2D
         DebugUtil.Require(Grid != null, "[GridCursor] Grid must be initialized");
         DebugUtil.Require(UnitRegistry != null, "[GridCursor] UnitRegistry must be initialized");
         
-        _UpdateFocus();
+        _UpdateFocus(GridCursorFocusSource.Programmatic);
         
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
@@ -51,38 +52,40 @@ public partial class GridCursor : Node2D
     // ---------------------------------------------------------------------
     // Public Methods
     // ---------------------------------------------------------------------
-    
+
     /// <summary>
     /// Checks if cursor movement one space in a given direction is possible
     /// according to BattleGrid, then moves cursor
     /// </summary>
     /// <param name="dir"></param>
+    /// <param name="moveSource"></param>
     /// <param name="cell">out property</param>
     /// <returns>true if able to move</returns>
-    public bool TryMoveDirection(InputDirection dir, out Vector2I cell)
+    public bool TryMoveDirection(InputDirection dir, GridCursorFocusSource moveSource, out Vector2I cell)
     {
         _logger.Log("TryMoveDirection", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
 
         cell = FocusedCell + InputUtil.InputDirectionToVector2I(dir);
-        return TryMoveToCell(cell);
+        return TryMoveToCell(cell, moveSource);
     }
     
-    public bool TryMoveDirection(InputDirection dir) => TryMoveDirection(dir, out _);
+    public bool TryMoveDirection(InputDirection dir, GridCursorFocusSource moveSource) => TryMoveDirection(dir, moveSource, out _);
 
     /// <summary>
     /// Checks if cursor movement to a cell is possible
     /// according to BattleGrid, then moves cursor
     /// </summary>
     /// <param name="cell"></param>
+    /// <param name="moveSource"></param>
     /// <returns>true if able to move</returns>
-    public bool TryMoveToCell(Vector2I cell)
+    public bool TryMoveToCell(Vector2I cell, GridCursorFocusSource moveSource)
     {
         _logger.Log($"TryMoveToCell [cell]={cell}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
 
         if (cell == FocusedCell || !Grid.CanFocusCell(cell))
             return false;
         
-        MoveToCell(cell);
+        MoveToCell(cell, moveSource);
         return true;
     }
 
@@ -91,45 +94,46 @@ public partial class GridCursor : Node2D
     /// according to BattleGrid, then moves cursor
     /// </summary>
     /// <param name="globalPos"></param>
+    /// <param name="moveSource"></param>
     /// <param name="cell">out property, Vector2I grid cell associated with global pos</param>
     /// <returns>true if able to move</returns>
-    public bool TryMoveToGlobalPosition(Vector2 globalPos, out Vector2I cell)
+    public bool TryMoveToGlobalPosition(Vector2 globalPos, GridCursorFocusSource moveSource, out Vector2I cell)
     {
         _logger.Log($"TryMoveToGlobalPosition [globalPos]={globalPos}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
 
         if (!Grid.CanFocusGlobalPosition(globalPos, out cell) || cell == FocusedCell)
             return false;
         
-        MoveToCell(cell);
+        MoveToCell(cell, moveSource);
         return true;
     }
 
-    public bool TryMoveToGlobalPosition(Vector2 globalPos) => TryMoveToGlobalPosition(globalPos, out _);
+    public bool TryMoveToGlobalPosition(Vector2 globalPos, GridCursorFocusSource moveSource) => TryMoveToGlobalPosition(globalPos, moveSource, out _);
     
-    public void TriggerUpdateFocus()
+    public void TriggerUpdateFocus(GridCursorFocusSource inputSource)
     {
-        _UpdateFocus();
+        _UpdateFocus(inputSource);
     }
     
     // ---------------------------------------------------------------------
     // Private Helper Methods
     // ---------------------------------------------------------------------
     
-    private void MoveDirection(Vector2I dir)
+    private void MoveDirection(Vector2I dir, GridCursorFocusSource inputSource)
     {
         _logger.Log("Move " + dir, 0, GobLogCategory.UiNavigation);
         GlobalPosition += dir * InputUtil.TileSize;
-        _UpdateFocus();
+        _UpdateFocus(inputSource);
     }
 
-    private void MoveToGlobalPosition(Vector2 globalPos)
+    private void MoveToGlobalPosition(Vector2 globalPos, GridCursorFocusSource moveSource)
     {
         _logger.Log("Move To " + globalPos, GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         var cell = Grid.GetCellAtGlobalPosition(globalPos);
-        MoveToCell(cell);
+        MoveToCell(cell, moveSource);
     }
 
-    private void MoveToCell(Vector2I gridCell)
+    private void MoveToCell(Vector2I gridCell, GridCursorFocusSource moveSource)
     {
         _logger.Log("Move To " + gridCell, GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         if (gridCell == _lastCellFocused)
@@ -139,10 +143,10 @@ public partial class GridCursor : Node2D
         }
         
         GlobalPosition = gridCell * GlobalSettings.TileSize + new Vector2(GlobalSettings.TileSize * 0.5f, GlobalSettings.TileSize * 0.5f);
-        _UpdateFocus();
+        _UpdateFocus(moveSource);
     }
     
-    private void _UpdateFocus()
+    private void _UpdateFocus(GridCursorFocusSource inputSource)
     {
         var worldPos = GlobalPosition;
         var cell = Grid.GetCellAtGlobalPosition(worldPos);
@@ -154,9 +158,10 @@ public partial class GridCursor : Node2D
         }
 
         FocusedCell = cell;
-        EmitSignal(SignalName.GridCursorFocusChanged, cell, _lastCellFocused);
+        EmitSignal(SignalName.GridCursorFocusChanged, cell, _lastCellFocused, (int)inputSource);
         _lastCellFocused = cell;
         
         _logger.Log($"_UpdateFocus [FocusedCell]={FocusedCell}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
     }
 }
+

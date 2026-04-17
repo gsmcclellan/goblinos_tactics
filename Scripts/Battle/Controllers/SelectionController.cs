@@ -1,8 +1,11 @@
 ﻿#nullable enable
+using System.Linq;
 using Goblinos.Logging;
-using Goblinos.Scripts.Battle.Preview;
+using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -29,24 +32,24 @@ public partial class SelectionController : Node
     /** Components */
     private GobLogger _logger = GobLogManager.For<SelectionController>();
 
-    private Core.GridCursor _cursor;
-    private Core.BattleGrid _grid;
-    private Units.UnitRegistry _unitRegistry;
+    private GridCursor _cursor = null!;
+    private BattleGrid _grid = null!;
+    private UnitRegistry _unitRegistry = null!;
 
     /** Fields */
     private Vector2I _hoveredCell;
 
     private TerrainType? _hoveredTerrain;
-    private Units.BattleUnit? _hoveredUnit;
+    private BattleUnit? _hoveredUnit;
 
     // private Vector2I _selectedCell;
     // private TerrainType _selectedTerrain;
-    private Units.BattleUnit? _selectedUnit;
+    private BattleUnit? _selectedUnit;
 
     /** Properties */
     public CellFocus Focus => new CellFocus(_hoveredCell, _hoveredTerrain, _hoveredUnit);
     public Vector2I HoveredCell => _hoveredCell;
-    public Units.BattleUnit? HoveredUnit => _hoveredUnit;
+    public BattleUnit? HoveredUnit => _hoveredUnit;
 
     public Vector2I? SelectedCell { 
         get 
@@ -59,7 +62,7 @@ public partial class SelectionController : Node
             return null;
         }
     }
-    public Units.BattleUnit? SelectedUnit => _selectedUnit;
+    public BattleUnit? SelectedUnit => _selectedUnit;
 
     public bool IsUnitHovered => _hoveredUnit != null;
     public bool IsUnitSelected => _selectedUnit != null;
@@ -74,10 +77,10 @@ public partial class SelectionController : Node
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
-    public void Bind(Core.GridCursor cursor, Core.BattleGrid grid, Units.UnitRegistry unitRegistry)
+    public void Bind(GridCursor cursor, BattleGrid grid, UnitRegistry unitRegistry)
     {
         _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
-        if (_cursor != null || _grid != null || _unitRegistry != null)
+        if (_cursor != null! || _grid != null! || _unitRegistry != null!)
             _UnsubscribeFromEvents();
         
         _cursor = cursor;
@@ -102,14 +105,14 @@ public partial class SelectionController : Node
 
     private void _SubscribeToEvents()
     {
-        if (_cursor != null)
+        if (_cursor != null!)
             _cursor.GridCursorFocusChanged += OnCursorFocusChanged;
         
         _logger.Log("Subscriptions Initialized", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
     private void _UnsubscribeFromEvents()
-    {   if (_cursor != null)
+    {   if (_cursor != null!)
             _cursor.GridCursorFocusChanged -= OnCursorFocusChanged;
         
         _logger.Log("Subscriptions Removed", GobLogSeverity.Info, GobLogCategory.Initialization);
@@ -129,7 +132,7 @@ public partial class SelectionController : Node
     {
         if (_unitRegistry.TryGetUnitAtCell(cell, out var unit))
         {
-            SelectUnit(unit);
+            SelectUnit(unit!);
             selectedNode = unit;
             return;
         }
@@ -139,7 +142,7 @@ public partial class SelectionController : Node
 
     public void SelectCell(Vector2I cell) => SelectCell(cell, out _);
     
-    public void SelectUnit(Units.BattleUnit unit)
+    public void SelectUnit(BattleUnit unit)
     {
         if (unit == _selectedUnit) return;
         
@@ -148,11 +151,16 @@ public partial class SelectionController : Node
             _logger.Log($"SelectUnit blocked: unit exhausted unit={unit.UnitName}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             return;
         }
-        
-        _selectedUnit?.Deselect();
+
+        if (_selectedUnit != null)
+        {
+            _selectedUnit?.Deselect();
+            _selectedUnit?.SetActivationState(UnitActivationState.Ready);
+        }
+       
         unit.Select();
         _selectedUnit = unit;
-        _logger.Log($"Unit Selected unit={unit?.UnitName}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
+        _logger.Log($"Unit Selected unit={unit.UnitName}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
         EmitSignalSelectedUnitChanged(_selectedUnit);
     }
     
@@ -163,7 +171,7 @@ public partial class SelectionController : Node
         UpdateHovered();
     }
     
-    public void TriggerSelection()
+    public bool TrySelectHoveredUnit()
     {
         _logger.Log("TriggerSelection", GobLogSeverity.Trace, GobLogCategory.Input);
         
@@ -171,19 +179,67 @@ public partial class SelectionController : Node
         if (_hoveredUnit == null)
         {
             _logger.Log("TriggerSelection - No Hovered Unit, return", GobLogSeverity.Trace, GobLogCategory.Input);
-            return;
+            return false;
         }
         
         if (_hoveredUnit.State == UnitActivationState.Exhausted)
         {
             _logger.Log("TriggerSelection - Unit is exhausted, return", GobLogSeverity.Trace, GobLogCategory.Input);
-            return;
+            return false;
+        }
+
+        if (_hoveredUnit == _selectedUnit)
+        {
+            DeselectUnit();
+            return false;
         }
         
-        if (_hoveredUnit != _selectedUnit)
-            SelectUnit(_hoveredUnit);
+        SelectUnit(_hoveredUnit);
+        return true;
+    }
+
+    public bool TrySelectNextUnit(bool reverse = false)
+    {
+        var units = _unitRegistry.GetSelectableFriendlyUnitsInNavigationOrder();
+        
+        // At least one selectable unit should exist, else turn/battle should have ended.
+        if (!DebugUtil.Require(units.Count > 0,
+                $"[{nameof(SelectionController)}] TrySelectNextUnit failed, no selectable units."))
+            return false;
+
+        if (_selectedUnit == null)
+        {
+            SelectUnit(reverse ? units.Last(): units.First());
+            return true;
+        }
+            
+        // Ensure selected unit still exists, else it should have been unselected already
+        if (!units.Contains(_selectedUnit))
+        {
+            _logger.Warn($"[{nameof(TrySelectNextUnit)}] - Currently Selected Unit is unselectable");
+            SelectUnit(reverse ? units.Last(): units.First());
+            return true;
+        }
+        
+        var currentSelectedIndex = units.IndexOf(_selectedUnit!);
+        var nextIndex = 0;
+        // Get next index.
+        if (reverse)
+        {
+            nextIndex = currentSelectedIndex - 1;
+            nextIndex = nextIndex < 0 ? units.Count - 1 : nextIndex;
+        }
         else
-            DeselectUnit();
+        {
+            nextIndex = currentSelectedIndex + 1;
+            nextIndex = nextIndex >= units.Count ? 0 : nextIndex;
+        }
+
+        if (units[nextIndex] == _selectedUnit) // Only one unit.
+            return false;
+        
+        SelectUnit(units[nextIndex]);
+        return true;
     }
 
     public void UpdateHovered()
@@ -195,7 +251,7 @@ public partial class SelectionController : Node
     // Event Handlers
     // ---------------------------------------------------------------------
 
-    private void OnCursorFocusChanged(Vector2I newCell, Vector2I oldCell)
+    private void OnCursorFocusChanged(Vector2I newCell, Vector2I oldCell, int gridCursorFocusSource)
     {
         _logger.Log($"Cursor focus changed newCell={newCell}, oldCell={oldCell}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         UpdateHoveredFromCell(newCell);
@@ -225,24 +281,19 @@ public partial class SelectionController : Node
         EmitSignalHoveredTerrainChanged(terrain);
     }
 
-    private void SetHoveredUnit(Units.BattleUnit? unit)
+    private void SetHoveredUnit(BattleUnit? unit)
     {
         _logger.Log($"Update hovered unit={unit?.Name}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         _hoveredUnit = unit;
         EmitSignalHoveredUnitChanged(unit);
-    }
-
-    private void TryMoveSelectedUnitTo(Vector2I cell)
-    {
-        
     }
     
     private void UpdateHoveredFromCell(Vector2I cell)
     {
         // cell -> unit, terrain
         _hoveredCell = cell;
-        var hasTerrain = _grid.TryGetTerrainAtCell(cell, out var hoveredTerrain);
-        var hasUnit = _unitRegistry.TryGetUnitAtCell(cell, out var hoveredUnit);
+        _ = _grid.TryGetTerrainAtCell(cell, out var hoveredTerrain);
+        _ = _unitRegistry.TryGetUnitAtCell(cell, out var hoveredUnit);
 
         if (hoveredTerrain != _hoveredTerrain)
             SetHoveredTerrain(hoveredTerrain);

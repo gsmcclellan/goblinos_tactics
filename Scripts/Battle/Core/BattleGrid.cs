@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -151,20 +152,17 @@ public partial class BattleGrid : Node2D
     {
         _terrainAtCellCache.Clear();
     }
-    
+
     public Vector2 GetGlobalCenterPositionForCell(Vector2I cell)
     {
         var localPos = _terrainLayer.MapToLocal(cell);
-        var tileSize = _terrainLayer.TileSet.TileSize;
-        localPos += tileSize / 2;
-
         return _terrainLayer.ToGlobal(localPos);
     }
 
-    public Vector2 GetGlobalPositionForCell(Vector2I cell)
+    public Vector2 GetGlobalTopLeftPositionForCell(Vector2I cell)
     {
         var localPos = _terrainLayer.MapToLocal(cell);
-        return _terrainLayer.ToGlobal(localPos);
+        return _terrainLayer.ToGlobal(localPos) - new Vector2I(GlobalSettings.TileSize / 2, GlobalSettings.TileSize / 2);
     }
     
     /// <summary>
@@ -176,6 +174,26 @@ public partial class BattleGrid : Node2D
     {
         var localPos = _terrainLayer.ToLocal(globalPos);
         return _terrainLayer.LocalToMap(localPos);
+    }
+
+    /// <summary>
+    /// Returns Bounding rect used by map layer.
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns></returns>
+    public Rect2 GetMapRectGlobal()
+    {
+        Vector2 halfTile = _terrainLayer.TileSet.TileSize / 2;
+        var rectInCells = _terrainLayer.GetUsedRect();
+        Vector2I pos = rectInCells.Position;
+        Vector2I size = rectInCells.Size;
+
+        Vector2 topLeft = GetGlobalCenterPositionForCell(pos) - halfTile;
+        Vector2 bottomRight = GetGlobalCenterPositionForCell(pos + size) - halfTile;
+        
+        
+        
+        return new Rect2(topLeft, bottomRight - topLeft);
     }
     
     /// <summary>
@@ -253,12 +271,12 @@ public partial class BattleGrid : Node2D
     /// <param name="cell"></param>
     /// <param name="terrain"></param>
     /// <returns></returns>
-    public bool TryGetTerrainAtCell(Vector2I cell, out TerrainType terrain)
+    public bool TryGetTerrainAtCell(Vector2I cell, out TerrainType? terrain)
     {
         var t = GetTerrainAtCell(cell);
         if (t == null)
         {
-            terrain = null!;
+            terrain = null;
             return false;
         }
 

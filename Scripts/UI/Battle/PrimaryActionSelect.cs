@@ -41,6 +41,29 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
     {
         CacheButtons();
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
+        
+        _logger.Log(
+            $"PrimaryActionSelect visible={Visible} " +
+            $"mouseFilter={MouseFilter} " +
+            $"mouseBehaviorRecursive={MouseBehaviorRecursive} " +
+            $"size={Size} globalPos={GlobalPosition}",
+            GobLogSeverity.Info,
+            GobLogCategory.UiNavigation);
+
+        foreach (var pair in _buttons)
+        {
+            var button = pair.Value;
+            _logger.Log(
+                $"{button.Name} visible={button.Visible} disabled={button.Disabled} " +
+                $"mouseFilter={button.MouseFilter} " +
+                $"mouseBehaviorRecursive={button.MouseBehaviorRecursive} " +
+                $"focusMode={button.FocusMode} " +
+                $"globalPos={button.GlobalPosition} size={button.Size}",
+                GobLogSeverity.Info,
+                GobLogCategory.UiNavigation);
+        }
+
+        return;
     }
     private void CacheButtons()
     {

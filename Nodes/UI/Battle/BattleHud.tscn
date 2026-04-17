@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://0yqqd78jcaet"]
+[gd_scene format=3 uid="uid://0yqqd78jcaet"]
 
 [ext_resource type="Script" uid="uid://b1v83afs0nq7i" path="res://Scripts/UI/Battle/BattleHud.cs" id="1_8w1vy"]
 [ext_resource type="PackedScene" uid="uid://ddrrh4301j2v6" path="res://Nodes/UI/Battle/TerrainInfoPanel.tscn" id="2_at2nw"]
@@ -7,15 +7,16 @@
 [ext_resource type="PackedScene" uid="uid://dr6d1tddeftk2" path="res://Nodes/UI/Battle/PrimaryActionConfirm.tscn" id="4_kr30i"]
 [ext_resource type="PackedScene" uid="uid://bic5nu8iwepe7" path="res://Nodes/UI/Battle/CombatPreviewPanel.tscn" id="4_u1gru"]
 
-[node name="BattleHud" type="CanvasLayer" node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton")]
+[node name="BattleHud" type="CanvasLayer" unique_id=570226317 node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton")]
 script = ExtResource("1_8w1vy")
 _panelsRootPath = NodePath("BattleHudPanels")
+_combatPreviewPath = NodePath("BattleHudPanels/CombatPreviewPanel")
 _primaryActionSelectPath = NodePath("BattleHudPanels/PrimaryActionSelect")
 _primaryActionConfirmPath = NodePath("BattleHudPanels/PrimaryActionConfirmationPanel")
-_turnNumberLabel = NodePath("TurnPanel/MarginContainer/VBoxContainer/HBoxContainer/TurnNumber")
-_endTurnButton = NodePath("TurnPanel/MarginContainer/VBoxContainer/EndTurnButton")
+_turnNumberLabel = NodePath("AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/HBoxContainer/TurnNumber")
+_endTurnButton = NodePath("AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/EndTurnButton")
 
-[node name="BattleHudPanels" type="Control" parent="."]
+[node name="BattleHudPanels" type="Control" parent="." unique_id=1318043965]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,10 +25,18 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TerrainInfo" parent="BattleHudPanels" instance=ExtResource("2_at2nw")]
+[node name="PrimaryActionSelect" parent="BattleHudPanels" unique_id=1324577228 instance=ExtResource("3_rfvvm")]
+layout_mode = 0
+anchors_preset = 0
+offset_right = 120.0
+offset_bottom = 172.0
+mouse_force_pass_scroll_events = false
+mouse_default_cursor_shape = 2
+
+[node name="TerrainInfo" parent="BattleHudPanels" unique_id=119121105 instance=ExtResource("2_at2nw")]
 layout_mode = 1
 
-[node name="UnitInfo" parent="BattleHudPanels" instance=ExtResource("3_6em5t")]
+[node name="UnitInfo" parent="BattleHudPanels" unique_id=672423326 instance=ExtResource("3_6em5t")]
 layout_mode = 0
 anchors_preset = 0
 anchor_top = 0.0
@@ -36,7 +45,7 @@ offset_top = 523.0
 offset_bottom = 648.0
 grow_vertical = 1
 
-[node name="CombatPreviewPanel" parent="BattleHudPanels" instance=ExtResource("4_u1gru")]
+[node name="CombatPreviewPanel" parent="BattleHudPanels" unique_id=1521421915 instance=ExtResource("4_u1gru")]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -50,14 +59,7 @@ offset_bottom = 80.5
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="PrimaryActionSelect" parent="BattleHudPanels" instance=ExtResource("3_rfvvm")]
-layout_mode = 0
-offset_left = 691.0
-offset_top = 267.0
-offset_right = 750.0
-offset_bottom = 439.0
-
-[node name="PrimaryActionConfirmationPanel" parent="BattleHudPanels" instance=ExtResource("4_kr30i")]
+[node name="PrimaryActionConfirmationPanel" parent="BattleHudPanels" unique_id=1717147687 instance=ExtResource("4_kr30i")]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -71,14 +73,39 @@ offset_bottom = 179.0
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="BattleControllerInputState" type="Label" parent="."]
-offset_left = 965.0
-offset_top = 497.0
-offset_right = 1049.0
-offset_bottom = 520.0
+[node name="AdditionalElements" type="Control" parent="." unique_id=1998663696]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="AdditionalElements" unique_id=2048627015]
+custom_minimum_size = Vector2(200, 24)
+layout_mode = 0
+offset_left = 952.0
+offset_top = 499.0
+offset_right = 1152.0
+offset_bottom = 523.0
+
+[node name="BattleControllerInputState" type="Label" parent="AdditionalElements/Panel" unique_id=1134733587]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -24.0
+offset_bottom = -1.0
+grow_horizontal = 0
+grow_vertical = 0
 text = "Free Select"
 
-[node name="TurnPanel" type="Panel" parent="."]
+[node name="TurnPanel" type="Panel" parent="AdditionalElements" unique_id=742930937]
+layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -86,27 +113,27 @@ offset_left = -120.0
 offset_bottom = 60.0
 grow_horizontal = 0
 
-[node name="MarginContainer" type="MarginContainer" parent="TurnPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="AdditionalElements/TurnPanel" unique_id=477499690]
 layout_mode = 0
 offset_right = 100.0
 offset_bottom = 40.0
 theme_override_constants/margin_left = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TurnPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="AdditionalElements/TurnPanel/MarginContainer" unique_id=1944556530]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="TurnPanel/MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="AdditionalElements/TurnPanel/MarginContainer/VBoxContainer" unique_id=995356319]
 layout_mode = 2
 
-[node name="TurnNumberLabel" type="Label" parent="TurnPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="TurnNumberLabel" type="Label" parent="AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1302792227]
 layout_mode = 2
 text = "Turn:"
 
-[node name="TurnNumber" type="Label" parent="TurnPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="TurnNumber" type="Label" parent="AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=538126885]
 layout_mode = 2
 text = "0"
 
-[node name="EndTurnButton" type="Button" parent="TurnPanel/MarginContainer/VBoxContainer"]
+[node name="EndTurnButton" type="Button" parent="AdditionalElements/TurnPanel/MarginContainer/VBoxContainer" unique_id=1678724539]
 layout_mode = 2
 text = "End Turn
 "

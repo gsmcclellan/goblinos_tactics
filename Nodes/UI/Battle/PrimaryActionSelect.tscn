@@ -1,35 +1,35 @@
-[gd_scene load_steps=2 format=3 uid="uid://cixx1r5qwd8im"]
+[gd_scene format=3 uid="uid://cixx1r5qwd8im"]
 
 [ext_resource type="Script" uid="uid://bxcmmdemklc7l" path="res://Scripts/UI/Battle/PrimaryActionSelect.cs" id="1_ye3in"]
 
-[node name="PrimaryActionSelect" type="Panel"]
-offset_left = 951.0
-offset_top = 295.0
-offset_right = 1010.0
-offset_bottom = 467.0
+[node name="PrimaryActionSelect" type="Panel" unique_id=726157127]
+layout_mode = 2
+clip_contents = false
+anchors_preset = -1
+custom_minimum_size = Vector2(120, 172)
 script = ExtResource("1_ye3in")
 
-[node name="ButtonContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="ButtonContainer" type="VBoxContainer" parent="." unique_id=1550278721]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
 
-[node name="AttackButton" type="Button" parent="ButtonContainer"]
+[node name="AttackButton" type="Button" parent="ButtonContainer" unique_id=496396086]
 layout_mode = 2
 text = "Attack"
 
-[node name="AbilityButton" type="Button" parent="ButtonContainer"]
+[node name="AbilityButton" type="Button" parent="ButtonContainer" unique_id=1843777185]
 layout_mode = 2
 text = "Ability"
 
-[node name="ItemButton" type="Button" parent="ButtonContainer"]
+[node name="ItemButton" type="Button" parent="ButtonContainer" unique_id=1277694854]
 layout_mode = 2
 text = "Item"
 
-[node name="TradeButton" type="Button" parent="ButtonContainer"]
+[node name="TradeButton" type="Button" parent="ButtonContainer" unique_id=1915596027]
 layout_mode = 2
 text = "Trade"
 
-[node name="WaitButton" type="Button" parent="ButtonContainer"]
+[node name="WaitButton" type="Button" parent="ButtonContainer" unique_id=1585714799]
 layout_mode = 2
 text = "Wait"

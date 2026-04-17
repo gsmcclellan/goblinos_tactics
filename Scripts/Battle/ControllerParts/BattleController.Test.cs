@@ -94,7 +94,7 @@ public partial class BattleController
         var node = _battleUnitScene.Instantiate<BattleUnit>();
         _unitsRoot.AddChild(node);
 
-        node.GlobalPosition = _grid.GetGlobalPositionForCell(cell);
+        node.GlobalPosition = _grid.GetGlobalCenterPositionForCell(cell);
         node.Bind(unit);
 
         return node;

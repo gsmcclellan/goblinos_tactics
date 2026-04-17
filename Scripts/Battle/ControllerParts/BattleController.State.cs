@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
@@ -39,7 +40,7 @@ public partial class BattleController
     public bool IsUnitSelected => _selectionController.IsUnitSelected;
     public Vector2I HoveredCell => _selectionController.HoveredCell;
     public BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
-    public Vector2I? SelectedCell => _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
+    public Vector2I? SelectedCell => SelectedUnit != null && _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
     public BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
     
     
@@ -121,7 +122,7 @@ public partial class BattleController
     private void EnterFreeSelectMode()
     {
         InputState = BattleInputState.FreeSelect;
-        _cursor.TriggerUpdateFocus();
+        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
         GenerateHoverPreview();
         ShowCursor();
     }
@@ -444,7 +445,7 @@ public partial class BattleController
 
     private void ShowCursor()
     {
-        _cursor.TriggerUpdateFocus();
+        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
         _cursor.Visible = true;
     }
 

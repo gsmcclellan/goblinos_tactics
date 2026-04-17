@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
+using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Combat;
-using Goblinos.Scripts.UI.Battle;
 using Godot;
 using Goblinos.Scripts.Util;
 using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
@@ -26,23 +27,23 @@ namespace Goblinos.Scripts.UI.Battle
         public delegate void PrimaryActionSelectedEventHandler(int action);
         
         /** Components */
-        [Export] private NodePath _panelsRootPath;
-        [Export] private NodePath _combatPreviewPath;
-        [Export] private NodePath _primaryActionSelectPath;
-        [Export] private NodePath _primaryActionConfirmPath;
+        [Export] private NodePath _panelsRootPath = null!;
+        [Export] private NodePath _combatPreviewPath = null!;
+        [Export] private NodePath _primaryActionSelectPath = null!;
+        [Export] private NodePath _primaryActionConfirmPath = null!;
         
-        [Export] private Label _turnNumberLabel;
-        [Export] private Button _endTurnButton;
+        [Export] private Label _turnNumberLabel = null!;
+        [Export] private Button _endTurnButton = null!;
 
-        private BattleController _battleController;
-        private Scripts.Battle.Core.GridCursor _cursor;
-        private Node _panelsRoot;
-        private PrimaryActionConfirm _primaryActionConfirm;
-        private PrimaryActionSelect _primaryActionSelect;
-        private SelectionController _selectionController;
-        private TurnController _turnController;
+        private BattleController _battleController = null!;
+        private GridCursor _cursor = null!;
+        private Node _panelsRoot = null!;
+        private PrimaryActionConfirm _primaryActionConfirm = null!;
+        private PrimaryActionSelect _primaryActionSelect = null!;
+        private SelectionController _selectionController = null!;
+        private TurnController _turnController = null!;
         
-        private GobLogger _logger = GobLogManager.For<BattleHud>();
+        private readonly GobLogger _logger = GobLogManager.For<BattleHud>();
         
         /** Fields */
         private readonly List<IBattleHudPanel> _panels = new();
@@ -53,7 +54,26 @@ namespace Goblinos.Scripts.UI.Battle
         // ---------------------------------------------------------------------
         // Lifecycle / Setup Methods
         // ---------------------------------------------------------------------
-        public void Bind(BattleController battleController, Scripts.Battle.Core.GridCursor cursor, SelectionController selectionController, TurnController turnController)
+        public override void _Ready()
+        {
+            _panelsRoot = GetNode(_panelsRootPath);
+            _primaryActionConfirm = GetNode<PrimaryActionConfirm>(_primaryActionConfirmPath);
+            _primaryActionSelect = GetNode<PrimaryActionSelect>(_primaryActionSelectPath);
+            
+            DebugUtil.Require(_panelsRoot != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
+            DebugUtil.Require(_primaryActionConfirm != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
+            DebugUtil.Require(_primaryActionSelect != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
+            
+            HidePrimaryActionConfirm();
+            HidePrimaryActionSelectMenu();
+            
+            CachePanels();
+            WirePanels();
+            
+            _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
+        }
+        
+        public void Bind(BattleController battleController, GridCursor cursor, SelectionController selectionController, TurnController turnController)
         {
             _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
             
@@ -75,24 +95,6 @@ namespace Goblinos.Scripts.UI.Battle
             _SubscribeToEvents();
         }
         
-        public override void _Ready()
-        {
-            _panelsRoot = GetNode(_panelsRootPath);
-            _primaryActionConfirm = GetNode<PrimaryActionConfirm>(_primaryActionConfirmPath);
-            _primaryActionSelect = GetNode<PrimaryActionSelect>(_primaryActionSelectPath);
-            
-            DebugUtil.Require(_panelsRoot != null, "[BattleHud] Not Initialized. _panelsRoot reference is required.");
-            DebugUtil.Require(_primaryActionConfirm != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
-            DebugUtil.Require(_primaryActionSelect != null, "[BattleHud] Not Initialized. PrimaryActionSelect reference is required.");
-            
-            HidePrimaryActionConfirm();
-            HidePrimaryActionSelectMenu();
-            
-            CachePanels();
-            WirePanels();
-            
-            _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
-        }
         public override void _ExitTree()
         {
             _logger.Log("_ExitTree", GobLogSeverity.Info, GobLogCategory.Exit);
@@ -146,7 +148,7 @@ namespace Goblinos.Scripts.UI.Battle
         private void CachePanels()
         {
             _panels.Clear();
-            _panelsRoot ??= GetNode(_panelsRootPath);
+            // _panelsRoot ??= GetNode(_panelsRootPath);
             
             foreach (Node child in _panelsRoot.GetChildren())
             {
@@ -218,7 +220,7 @@ namespace Goblinos.Scripts.UI.Battle
             var state = (BattleInputState) s;
             _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
             
-            var node = GetNode<Label>("BattleControllerInputState"); // TODO - make this a IBattleHudPanel (or add to terrain info)
+            var node = GetNode<Label>("AdditionalElements/Panel/BattleControllerInputState"); // TODO - make this a IBattleHudPanel (or add to terrain info)
             node.Text = state.ToString();
             
             _panels.ForEach(panel => panel.OnBattleInputStateChanged(s));
@@ -236,7 +238,7 @@ namespace Goblinos.Scripts.UI.Battle
             _battleController.RequestEndTurn();
         }
         
-        private void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell)
+        private void OnHoveredCellChanged(Vector2I newCell, Vector2I oldCell, int gridCursorFocusSource)
         {
             _logger.Log($"[{nameof(OnHoveredCellChanged)}] newCell={newCell}, oldCell={oldCell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             foreach (var panel in _panels)

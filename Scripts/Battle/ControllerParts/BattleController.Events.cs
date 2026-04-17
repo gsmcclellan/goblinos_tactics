@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
@@ -159,6 +160,7 @@ public partial class BattleController
     private void OnSelectedUnitChanged(Node? selectedNode)
     {
         _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", GobLogSeverity.Trace, GobLogCategory.Signal);
+        ResetPreviews();
         // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
     }
 
@@ -174,7 +176,7 @@ public partial class BattleController
     private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
-        _cursor.TriggerUpdateFocus();
+        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
     }
 
     private void OnUnitRegistered(BattleUnit unit, Vector2I cell)

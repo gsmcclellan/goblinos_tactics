@@ -60,9 +60,9 @@ public partial class MovementController: Node
 
         var hasTargetUnit = _unitRegistry.TryGetUnitAtCell(targetCell, out var targetUnit);
         
-        actingUnit.GlobalPosition = _grid.GetGlobalPositionForCell(targetCell);
+        actingUnit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(targetCell);
         if (hasTargetUnit)
-            targetUnit.GlobalPosition = _grid.GetGlobalPositionForCell(actingUnitCell);
+            targetUnit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(actingUnitCell);
         
         _unitRegistry.ApplyUnitMove(actingUnit, actingUnitCell, targetCell, true);
         return true;
@@ -72,7 +72,7 @@ public partial class MovementController: Node
     {
         _logger.Log($"CommitMove unit={unit.UnitName} from={fromCell} to={toCell}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         // TODO - animations & stuff
-        unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
+        unit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(toCell);
         _unitRegistry.ApplyUnitMove(unit, fromCell, toCell);
     }
 
@@ -81,7 +81,7 @@ public partial class MovementController: Node
         _logger.Log($"CreatePendingMove unit={unit.UnitName} from={fromCell} to={toCell}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         // TODO - animations & stuff
 
-        unit.GlobalPosition = _grid.GetGlobalPositionForCell(toCell);
+        unit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(toCell);
         _unitRegistry.AddPendingMove(unit, fromCell, toCell);
     }
 
@@ -90,7 +90,7 @@ public partial class MovementController: Node
         if (!_unitRegistry.TryGetCell(unit, out var originCell))
             return;
         // TODO - check that unit can undo (should be current unit activation, not exhausted)
-        unit.GlobalPosition = _grid.GetGlobalPositionForCell(originCell);
+        unit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(originCell);
         _unitRegistry.ClearPendingMove();
     }
 }

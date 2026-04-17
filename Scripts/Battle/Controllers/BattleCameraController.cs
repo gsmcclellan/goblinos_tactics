@@ -1,5 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Core.Types;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -10,35 +14,32 @@ namespace Goblinos.Scripts.Battle.Controllers;
 /// This controller is intentionally separate from BattleController so
 /// battle flow and viewport behavior remain independent.
 /// </summary>
-public partial class BattleCameraController : Node
+public partial class BattleCameraController : Node, IInputHandler
 {
+    /** Components */
     private readonly GobLogger _logger = GobLogManager.For<BattleCameraController>();
 
     [Export]
     private Camera2D _camera;
 
+    private BattleGrid _grid;
+    private GridCursor _cursor;
+    
+    /** Fields */
+    private Rect2 _cameraWorldBounds;
     private Vector2 _heldKeyboardInputDirection;
     
     
     
-    
-    
-    
-    [Export]
-    private float _keyboardPanSpeed = 1200.0f;
-    [Export]
-    private float _dragPanMultiplier = 1.0f;
-    [Export]
-    private Vector2 _defaultZoom = new(2f, 2f);
-    [Export]
-    private bool _enablePositionSmoothing = true;
-    [Export]
-    private float _positionSmoothingSpeed = 8.0f;
+    [Export] private float _keyboardPanSpeed = 200.0f;
+    [Export] private float _dragPanMultiplier = 0.25f;
+    [Export] private Vector2 _defaultZoom = new(2f, 2f);
+    [Export] private int _autoPanBufferCells = 1;
 
     private bool _isCameraInputEnabled = true;
     private bool _isDragPanning;
-    
-    private Rect2 _cameraWorldBounds;
+
+    public bool BlocksLowerInputHandlers { get; } = false;
     
     // ---------------------------------------------------------------------
     // Lifecycle / Callback Methods
@@ -47,20 +48,84 @@ public partial class BattleCameraController : Node
     public override void _Ready()
     {
         DebugUtil.Require(_camera != null, $"[{nameof(BattleCameraController)}] Initialization failed - no {nameof(_camera)}");
-        _camera.Zoom = _defaultZoom;
     }
 
     // Additional setup with necessary linked components from BattleController
-    public void Bind(Rect2 worldBounds)
+    public void Bind(BattleGrid grid, GridCursor cursor)
     {
         _logger.Log("Bind", GobLogSeverity.Info, GobLogCategory.Initialization);
 
-        _cameraWorldBounds = worldBounds;
+        _grid = grid;
+        _cursor = cursor;
         
         Debug.Assert(_camera != null, $"[{nameof(BattleCameraController)}] Camera must be assigned.");
-        Debug.Assert(_cameraWorldBounds.Size.X > 0.0f, $"[{nameof(BattleCameraController)}] Camera bounds width must be positive.");
-        Debug.Assert(_cameraWorldBounds.Size.Y > 0.0f, $"[{nameof(BattleCameraController)}] Camera bounds height must be positive.");
+        Debug.Assert(_grid != null, $"[{nameof(BattleCameraController)}] {nameof(BattleGrid)} must be bound.");
+        Debug.Assert(_cursor != null, $"[{nameof(BattleCameraController)}] {nameof(GridCursor)} must be bound.");
+        
+        Rect2 worldBounds = _grid.GetMapRectGlobal();
+        _cameraWorldBounds = worldBounds;
+        Debug.Assert(_cameraWorldBounds.Size.X > 0, $"[{nameof(BattleCameraController)}] Camera bounds width must be positive.");
+        Debug.Assert(_cameraWorldBounds.Size.Y > 0, $"[{nameof(BattleCameraController)}] Camera bounds height must be positive.");
+        
+        _SubscribeToEvents();
+        
+        ApplyZoomedInDefault();
+        ApplyCameraLimits();
+    }
+    
+    public override void _ExitTree()
+    {
+        _logger.Log("_ExitTree", GobLogSeverity.Info, GobLogCategory.Exit);
+        _UnsubscribeFromEvents();
+    }
+    
+    private void _SubscribeToEvents()
+    {
+        _logger.Log($"{nameof(_SubscribeToEvents)}", GobLogSeverity.Info, GobLogCategory.Initialization);
+        _cursor.GridCursorFocusChanged += OnGridCursorFocusChanged;
+    }
 
+    private void _UnsubscribeFromEvents()
+    {
+        _logger.Log($"{nameof(_UnsubscribeFromEvents)}", GobLogSeverity.Info, GobLogCategory.Exit);
+        _cursor.GridCursorFocusChanged -= OnGridCursorFocusChanged;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Input Handling
+    // ---------------------------------------------------------------------
+    
+    public bool HandleRoutedInput(InputEvent e)
+    {
+        // keyboard panning
+        if (e.IsActionPressed("camera_pan_up"))    { return HandleKeyboardPanPressed(InputDirection.Up); }
+        if (e.IsActionPressed("camera_pan_right"))    { return HandleKeyboardPanPressed(InputDirection.Right); }
+        if (e.IsActionPressed("camera_pan_down"))    { return HandleKeyboardPanPressed(InputDirection.Down); }
+        if (e.IsActionPressed("camera_pan_left"))    { return HandleKeyboardPanPressed(InputDirection.Left); }
+
+        if (e.IsActionReleased("camera_pan_up") || e.IsActionReleased("camera_pan_right") ||
+            e.IsActionReleased("camera_pan_down") || e.IsActionReleased("camera_pan_left"))
+            return HandleKeyboardPanReleased();
+
+        if (e.IsActionPressed("camera_drag_pan"))
+        {
+            _isDragPanning = true;
+            return true;
+        }
+        
+        if (e.IsActionReleased("camera_drag_pan"))
+        {
+            _isDragPanning = false;
+            return true;
+        }
+        
+        // Mouse - Motion
+        if (e is InputEventMouseMotion mme && _isDragPanning)
+        {
+            return HandleDragPan(mme);
+        }
+
+        return false;
     }
     
     /// <summary>
@@ -70,7 +135,6 @@ public partial class BattleCameraController : Node
     {
         _logger.Log("Process Camera Input", GobLogSeverity.Extra, GobLogCategory.Input);
         
-
         HandleKeyboardPan((float)delta);
     }
     
@@ -78,7 +142,88 @@ public partial class BattleCameraController : Node
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public bool HandleKeyboardPanPressed(InputDirection dir)
+    public void CenterOnCell(Vector2I cell)
+    {
+        _logger.Log($"{nameof(CenterOnCell)} cell={cell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
+        var globalPos = _grid.GetGlobalCenterPositionForCell(cell);
+        _camera.GlobalPosition = globalPos;
+    }
+
+    public void RepositionToIncludeCell(Vector2I cell)
+    {
+        _logger.Log($"{nameof(RepositionToIncludeCell)} cell={cell}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
+        
+        Vector2 cellTopLeft = _grid.GetGlobalTopLeftPositionForCell(cell);
+        Vector2 cellSize = new Vector2I(GlobalSettings.TileSize, GlobalSettings.TileSize);
+        Rect2 cellRect = new(cellTopLeft, cellSize);
+        
+        var visibleWorldRect = GetCameraVisibleWorldRect();
+        var newCameraPosition = visibleWorldRect.GetCenter();
+
+        var panBuffer = _autoPanBufferCells * GlobalSettings.TileSize;
+
+        var leftLimit = visibleWorldRect.Position.X + panBuffer;
+        var rightLimit = visibleWorldRect.End.X - panBuffer;
+        var upLimit = visibleWorldRect.Position.Y + panBuffer;
+        var downLimit = visibleWorldRect.End.Y - panBuffer;
+        
+        if (cellRect.Position.X < leftLimit)
+            newCameraPosition.X -= leftLimit - cellRect.Position.X;
+        else if (cellRect.End.X > rightLimit)
+            newCameraPosition.X += cellRect.End.X - rightLimit;
+
+        if (cellRect.Position.Y < upLimit)
+            newCameraPosition.Y -= upLimit - cellRect.Position.Y;
+        else if (cellRect.End.Y > visibleWorldRect.End.Y)
+            newCameraPosition.Y += cellRect.End.Y - downLimit;
+            
+        
+        _camera.GlobalPosition = newCameraPosition;
+    }
+
+    public void ScrollByCell(InputDirection dir, int numCells = 1)
+    {
+        _logger.Log($"{nameof(ScrollByCell)} dir={dir}, numCells={numCells}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
+        var globalPosChange = numCells * GlobalSettings.TileSize;
+
+        _camera.GlobalPosition += globalPosChange * InputUtil.InputDirectionToVector2I(dir);
+    }
+    
+    // ---------------------------------------------------------------------
+    // Event Handlers
+    // ---------------------------------------------------------------------
+
+    private void OnGridCursorFocusChanged(Vector2I newCell, Vector2I oldCell, int gridCursorFocusSource)
+    {
+        if ((GridCursorFocusSource)gridCursorFocusSource == GridCursorFocusSource.Mouse)
+            return;
+        
+        RepositionToIncludeCell(newCell);
+    }
+    
+    // ---------------------------------------------------------------------
+    // Private Helper Methods
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Returns the camera's currently visible world-space rectangle,
+    /// accounting for viewport size and zoom.
+    /// </summary>
+    private Rect2 GetCameraVisibleWorldRect()
+    {
+        _logger.Log(nameof(GetCameraVisibleWorldRect), GobLogSeverity.Extra, GobLogCategory.UiNavigation);
+
+        Vector2 viewportSize = _camera.GetViewportRect().Size;
+        Vector2 visibleWorldSize = viewportSize / _camera.Zoom;
+        Vector2 topLeft = _camera.GlobalPosition - (visibleWorldSize * 0.5f);
+        
+        Vector2 clampedTopLeft = new Vector2(Math.Clamp(topLeft.X, _camera.LimitLeft, _camera.LimitRight - visibleWorldSize.X),
+            Math.Clamp(topLeft.Y, _camera.LimitTop, _camera.LimitBottom - visibleWorldSize.Y));
+
+        return new Rect2(clampedTopLeft, visibleWorldSize);
+    }
+    
+    private bool HandleKeyboardPanPressed(InputDirection dir)
     {
         _logger.Log("HandleKeyboardPanPressed", GobLogSeverity.Trace, GobLogCategory.Input);
         if (dir == InputDirection.None)
@@ -89,22 +234,13 @@ public partial class BattleCameraController : Node
         return true;
     }
 
-    public bool HandleKeyboardPanReleased()
+    private bool HandleKeyboardPanReleased()
     {
         _logger.Log("HandleKeyboardPanReleased", GobLogSeverity.Trace, GobLogCategory.Input);
         _heldKeyboardInputDirection = _readKeyboardInputDirection();
 
         return true;
     }
-
-    public void ClearKeyboardPan() // Use this when opening menus / want to stop panning.
-    {
-        _heldKeyboardInputDirection = Vector2.Zero;
-    }
-    
-    // ---------------------------------------------------------------------
-    // Private Helper Methods
-    // ---------------------------------------------------------------------
 
     private Vector2 _readKeyboardInputDirection()
     {
@@ -113,6 +249,11 @@ public partial class BattleCameraController : Node
             "camera_pan_right",
             "camera_pan_up",
             "camera_pan_down");
+    }
+
+    private void ApplyZoomedInDefault()
+    {
+        _camera.Zoom = _defaultZoom;
     }
 
     /// <summary>
@@ -134,12 +275,16 @@ public partial class BattleCameraController : Node
     /// <summary>
     /// Applies camera movement opposite the mouse drag direction.
     /// </summary>
-    private void HandleDragPan(InputEventMouseMotion mouseMotionEvent)
+    private bool HandleDragPan(InputEventMouseMotion mouseMotionEvent)
     {
         _logger.Log("HandleDragPan", GobLogSeverity.Extra, GobLogCategory.Input);
+        if (!_isDragPanning)
+            return false;
 
         Vector2 dragOffset = -mouseMotionEvent.Relative * _dragPanMultiplier * _camera.Zoom.X;
         _camera.GlobalPosition += dragOffset;
+
+        return true;
     }
 
     /// <summary>
@@ -156,20 +301,5 @@ public partial class BattleCameraController : Node
         _camera.LimitTop = Mathf.RoundToInt(_cameraWorldBounds.Position.Y);
         _camera.LimitRight = Mathf.RoundToInt(_cameraWorldBounds.End.X);
         _camera.LimitBottom = Mathf.RoundToInt(_cameraWorldBounds.End.Y);
-    }
-
-    /// <summary>
-    /// Immediately clamps the camera to the map limits and clears smoothing drift.
-    /// </summary>
-    private void ClampCameraPositionImmediate()
-    {
-        _logger.Log("ClampCameraPositionImmediate", GobLogSeverity.Info, GobLogCategory.UiNavigation);
-
-        Vector2 clampedPosition = _camera.GlobalPosition;
-        clampedPosition.X = Mathf.Clamp(clampedPosition.X, _cameraWorldBounds.Position.X, _cameraWorldBounds.End.X);
-        clampedPosition.Y = Mathf.Clamp(clampedPosition.Y, _cameraWorldBounds.Position.Y, _cameraWorldBounds.End.Y);
-
-        _camera.GlobalPosition = clampedPosition;
-        _camera.ResetSmoothing();
     }
 }

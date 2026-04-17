@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Controllers;
+using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
@@ -16,9 +17,7 @@ public partial class BattleController: IInputHandler
 {
     /** Components, Node references */
     [ExportGroup("Input")] 
-    private InputRouter _inputRouter;
-    [Export]
-    private BattleCameraController _battleCameraController;
+    private InputRouter _inputRouter = null!;
     
     /** Fields */
     [Export] private double _repeatDelay = 0.32;    // initial delay before repeating
@@ -39,12 +38,13 @@ public partial class BattleController: IInputHandler
     
     private void _Ready_Input()
     {
-        DebugUtil.Require(_battleCameraController != null, "[BattleController.Input] Not Initialized. Unable to register BattleCameraController");
+        DebugUtil.Require(_cameraController != null, "[BattleController.Input] Not Initialized. Unable to register BattleCameraController");
         
         _inputRouter = GetNode<InputRouter>(GlobalSettings.InputRouterPath);
         DebugUtil.Require(_inputRouter != null, "[BattleController.Input] Not Initialized. Unable to register input router");
         
         _inputRouter.Push(this);
+        _inputRouter.Push(_cameraController);
         
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
@@ -67,7 +67,7 @@ public partial class BattleController: IInputHandler
         while (_repeatMoveTimer >= _repeatInterval)
         {
             _repeatMoveTimer -= _repeatInterval;
-            if (!_cursor.TryMoveDirection(_heldDirection))
+            if (!_cursor.TryMoveDirection(_heldDirection, GridCursorFocusSource.Unknown))
             {
                 // Can't move, stop repeat
                 _heldDirection = InputDirection.None;
@@ -76,25 +76,15 @@ public partial class BattleController: IInputHandler
             }
         } // End Held direction
     }
-    public bool Handle(InputEvent e)
+    public bool HandleRoutedInput(InputEvent e)
     {
         _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", GobLogSeverity.Extra, GobLogCategory.Input);
 
-        // Camera panning
-        if (e.IsActionPressed("camera_pan_up"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Up); }
-        if (e.IsActionPressed("camera_pan_right"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Right); }
-        if (e.IsActionPressed("camera_pan_down"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Down); }
-        if (e.IsActionPressed("camera_pan_left"))    { return _battleCameraController.HandleKeyboardPanPressed(InputDirection.Left); }
-
-        if (e.IsActionReleased("camera_pan_up") || e.IsActionReleased("camera_pan_right") ||
-            e.IsActionReleased("camera_pan_down") || e.IsActionReleased("camera_pan_left"))
-            return _battleCameraController.HandleKeyboardPanReleased();
-        
         // If user presses arrow / move buttons handle cursor action
-        if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up); }
-        if (e.IsActionPressed("ui_right"))    { return HandleDirection(InputDirection.Right); }
-        if (e.IsActionPressed("ui_down"))    { return HandleDirection(InputDirection.Down); }
-        if (e.IsActionPressed("ui_left"))    { return HandleDirection(InputDirection.Left); }
+        if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up, e); }
+        if (e.IsActionPressed("ui_right"))    { return HandleDirection(InputDirection.Right, e); }
+        if (e.IsActionPressed("ui_down"))    { return HandleDirection(InputDirection.Down, e); }
+        if (e.IsActionPressed("ui_left"))    { return HandleDirection(InputDirection.Left, e); }
         
         // Stop repeating when direction released (and no other direction is still held)
         if (e.IsActionReleased("ui_up") || e.IsActionReleased("ui_down") ||
@@ -107,12 +97,21 @@ public partial class BattleController: IInputHandler
         if (e.IsActionPressed("ui_accept")) { return HandleAcceptAtFocusedCell(e); }
         if (e.IsActionPressed("ui_cancel"))  { return HandleCancel(e); }
 
+        // Select Next / Select Previous
+        if (e.IsActionPressed("select_next", false, true)) { return HandleSelectNext(); }
+        if (e.IsActionPressed("select_previous", false, true)) { return HandleSelectPrevious(); }
+
         // Mouse - Click
-        if (e is InputEventMouseButton mbe )
+        if (e is InputEventMouseButton mbe)
         {
+            if (e.IsActionPressed("camera_drag_pan") || e.IsActionReleased("camera_drag_pan"))
+            {
+                GD.Print($"Camera pan. pressed={mbe.IsActionPressed("camera_drag_pan")}");
+            }
+            
             if (mbe.ButtonIndex == MouseButton.Left && mbe.Pressed)
             {
-                _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition());
+                _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition(), GridCursorFocusSource.Mouse);
                 return HandleAcceptAtFocusedCell(e);
             }
             if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
@@ -136,13 +135,11 @@ public partial class BattleController: IInputHandler
         
         return false;
     }
+    
+    // ---------------------------------------------------------------------
+    // Individual Action Handlers
+    // ---------------------------------------------------------------------
 
-    private bool HandleCameraPan(InputDirection dir)
-    {
-        GD.Print("pan camera - ", dir);
-
-        return true;
-    }
     
     /// <summary>
     /// Routes a confirm/click intent based on the current battle input state.
@@ -155,7 +152,7 @@ public partial class BattleController: IInputHandler
         var focus = _selectionController.GetFocus(cell);
         _selectionController.UpdateHovered();
 
-        switch (_inputState)
+        switch (InputState)
         {
             case BattleInputState.FreeSelect:
                 return HandleAccept_FreeSelect(focus);
@@ -246,12 +243,12 @@ public partial class BattleController: IInputHandler
         if (!DebugUtil.Require(IsUnitSelected, "[BattleController.Input].HandleAccept_PrimaryActionSelect - No selected attacker"))
         {
             InputState = BattleInputState.FreeSelect;
-            return true;
+            return false;
         }
 
         // TODO - select menu item
         
-        return true;
+        return false;
     }
 
     private bool HandleAccept_PrimaryActionTargeting(CellFocus cellFocus)
@@ -313,7 +310,7 @@ public partial class BattleController: IInputHandler
         }
     }
     
-    private bool HandleDirection(InputDirection? dir)
+    private bool HandleDirection(InputDirection? dir, InputEvent e)
     {
         _logger.Log("HandleDirection", GobLogSeverity.Trace, GobLogCategory.Input);
         if (!dir.HasValue)
@@ -321,8 +318,16 @@ public partial class BattleController: IInputHandler
         if (dir == InputDirection.None)
             return false;
         
+        var inputMode = e switch
+            {
+                InputEventJoypadButton => GridCursorFocusSource.Gamepad,
+                InputEventKey => GridCursorFocusSource.Keyboard,
+                InputEventMouseButton or InputEventMouseMotion => GridCursorFocusSource.Mouse,
+                _ => GridCursorFocusSource.Unknown
+            };
+        
         // Controller/keyboard cursor movement
-        if (_cursor.TryMoveDirection(dir.Value))
+        if (_cursor.TryMoveDirection(dir.Value, inputMode))
         {
             _heldDirection = dir.Value;
             _repeatMoveTimer = -_repeatDelay;
@@ -341,7 +346,7 @@ public partial class BattleController: IInputHandler
     private bool HandleMouseClick(InputEventMouseButton e)
     {
         _logger.Log("HandleMouseClick", GobLogSeverity.Trace, GobLogCategory.Input);
-        _selectionController.TriggerSelection();
+        _selectionController.TrySelectHoveredUnit();
         return true;
     }
     
@@ -355,9 +360,49 @@ public partial class BattleController: IInputHandler
     private bool HandleMouseMotion(InputEventMouseMotion e)
     {
         _logger.Log("HandleMouseMotion", GobLogSeverity.Extra, GobLogCategory.Input);
-        _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition());
+        _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition(), GridCursorFocusSource.Mouse);
         return true;
     }
+
+    private bool HandleSelectNext(bool reverse = false)
+    {
+        _logger.Log($"{nameof(HandleSelectNext)}", GobLogSeverity.Trace, GobLogCategory.Input);
+        switch (InputState)
+        {
+            case BattleInputState.FreeSelect:
+            case BattleInputState.MoveTargeting:
+                // Select next non-exhausted player unit.
+                _logger.Log($"[{nameof(HandleSelectNext)}] Select {(reverse ? "previous" : "next")} player unit.", GobLogSeverity.Info, GobLogCategory.Input);
+                if (_selectionController.TrySelectNextUnit(reverse))
+                {
+                    _cameraController.CenterOnCell(SelectedCell.Value);
+                    EnterMoveTargetingMode(SelectedUnit!);
+                }
+                    
+                break;
+            case BattleInputState.PrimaryActionSelect:
+                // Pass to menu.
+                break;
+            case BattleInputState.PrimaryActionTargeting:
+                // select next legal target.
+                break;
+            case BattleInputState.PrimaryActionConfirm:
+                // Unknown what to do here, maybe nothing.
+                break;
+
+            default:
+                _logger.Warn($"HandleAcceptAtFocusedCell - unhandled BattleInputState={_inputState}");
+                return false;
+        }
+
+        return false;
+    }
+
+    private bool HandleSelectPrevious() => HandleSelectNext(true);
+
+    // ---------------------------------------------------------------------
+    // Helper Methods
+    // ---------------------------------------------------------------------
     
     private InputDirection ReadHeldDirection()
     {

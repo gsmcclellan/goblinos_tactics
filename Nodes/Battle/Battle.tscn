@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://ckjgg67grrl4p"]
+[gd_scene format=3 uid="uid://ckjgg67grrl4p"]
 
 [ext_resource type="Script" uid="uid://cnuld20lhc8v" path="res://Scripts/Battle/Core/BattleNode.cs" id="1_sl1sn"]
 [ext_resource type="Script" uid="uid://c1h3o8qhaoubx" path="res://Scripts/Battle/BattleController.cs" id="2_2qpgi"]
@@ -13,28 +13,29 @@
 [ext_resource type="Script" uid="uid://buma5x8hhjarx" path="res://Scripts/Battle/Units/UnitRegistry.cs" id="10_hqpjs"]
 [ext_resource type="Script" uid="uid://ctqkaobtbddak" path="res://Scripts/Battle/Controllers/BattleCameraController.cs" id="12_m63d6"]
 
-[node name="Battle" type="Node2D"]
+[node name="Battle" type="Node2D" unique_id=888146808]
 script = ExtResource("1_sl1sn")
 
-[node name="BattleGrid" parent="." instance=ExtResource("5_43edm")]
+[node name="BattleGrid" parent="." unique_id=574109294 instance=ExtResource("5_43edm")]
 
-[node name="Units" type="Node2D" parent="."]
+[node name="Units" type="Node2D" parent="." unique_id=1134918793]
 z_index = 1
 
-[node name="Overlays" type="Node2D" parent="."]
+[node name="Overlays" type="Node2D" parent="." unique_id=23896746]
 z_index = 2
 
-[node name="GridCursor" parent="Overlays" instance=ExtResource("6_7spev")]
+[node name="GridCursor" parent="Overlays" unique_id=481086288 instance=ExtResource("6_7spev")]
 position = Vector2(16, 15)
 _battleGridPath = NodePath("../../BattleGrid")
 _unitRegistryPath = NodePath("../../Controllers/UnitRegistry")
 
-[node name="BattleHud" parent="Overlays" instance=ExtResource("7_7spev")]
+[node name="BattleHud" parent="Overlays" unique_id=1693261004 instance=ExtResource("7_7spev")]
 
-[node name="Controllers" type="Node" parent="."]
+[node name="Controllers" type="Node" parent="." unique_id=188673342]
 
-[node name="BattleController" type="Node" parent="Controllers" node_paths=PackedStringArray("_battleCameraController")]
+[node name="BattleController" type="Node" parent="Controllers" unique_id=1170887944 node_paths=PackedStringArray("_cameraController")]
 script = ExtResource("2_2qpgi")
+_cameraController = NodePath("../BattleCameraController")
 _cursorPath = NodePath("../../Overlays/GridCursor")
 _gridPath = NodePath("../../BattleGrid")
 _hudPath = NodePath("../../Overlays/BattleHud")
@@ -43,27 +44,26 @@ _movementControllerPath = NodePath("../MovementController")
 _selectionControllerPath = NodePath("../SelectionController")
 _turnControllerPath = NodePath("../TurnController")
 _unitRegistryPath = NodePath("../UnitRegistry")
-_battleCameraController = NodePath("../BattleCameraController")
 _battleUnitScene = ExtResource("3_o62pt")
 _unitsRootPath = NodePath("../../Units")
 
-[node name="EnemyTurnController" type="Node" parent="Controllers"]
+[node name="EnemyTurnController" type="Node" parent="Controllers" unique_id=1092721682]
 script = ExtResource("7_b0ckj")
 
-[node name="MovementController" type="Node" parent="Controllers"]
+[node name="MovementController" type="Node" parent="Controllers" unique_id=1214754044]
 script = ExtResource("7_sl1sn")
 
-[node name="SelectionController" type="Node" parent="Controllers"]
+[node name="SelectionController" type="Node" parent="Controllers" unique_id=1059210909]
 script = ExtResource("8_b0ckj")
 
-[node name="TurnController" type="Node" parent="Controllers"]
+[node name="TurnController" type="Node" parent="Controllers" unique_id=546948166]
 script = ExtResource("9_m63d6")
 
-[node name="UnitRegistry" type="Node" parent="Controllers"]
+[node name="UnitRegistry" type="Node" parent="Controllers" unique_id=2057249486]
 script = ExtResource("10_hqpjs")
 
-[node name="BattleCameraController" type="Node" parent="Controllers" node_paths=PackedStringArray("_camera")]
+[node name="BattleCameraController" type="Node" parent="Controllers" unique_id=1810294247 node_paths=PackedStringArray("_camera")]
 script = ExtResource("12_m63d6")
 _camera = NodePath("Camera2D")
 
-[node name="Camera2D" type="Camera2D" parent="Controllers/BattleCameraController"]
+[node name="Camera2D" type="Camera2D" parent="Controllers/BattleCameraController" unique_id=1786973979]

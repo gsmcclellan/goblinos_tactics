@@ -197,6 +197,15 @@ public partial class UnitRegistry: Node
         return _units.Where(predicate);
     }
 
+    public List<BattleUnit> GetSelectableFriendlyUnitsInNavigationOrder()
+    {
+        // Friendly Units, not exhausted.
+        // In future decide how navigation order should work -
+        // for now, it will default to order they were registered.
+        return GetUnitsWhere((BattleUnit unit) => unit.IsFriendly && unit.State != UnitActivationState.Exhausted)
+            .ToList();
+    }
+
     /// <summary>
     /// Enumerates units belonging to the given team/faction.
     /// </summary>
