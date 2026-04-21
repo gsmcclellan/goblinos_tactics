@@ -53,10 +53,12 @@ public class CombatResolver
         var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
         
         var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
-        var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
+
+        var defenderCanCounter = rangeValidationResult.DefenderInRange && attackerDamage < defender.CurrentHitPoints;
+        var defenderDamage = defenderCanCounter ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
 
         var defTask = defender.ApplyDamage(attackerDamage);
-        if (rangeValidationResult.DefenderInRange)
+        if (defenderCanCounter)
         {
             var attackTask = attacker.ApplyDamage(defenderDamage);
             await Task.WhenAll(defTask, attackTask);

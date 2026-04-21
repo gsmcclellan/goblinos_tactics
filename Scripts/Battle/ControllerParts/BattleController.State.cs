@@ -9,6 +9,8 @@ using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Core;
+using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -183,7 +185,7 @@ public partial class BattleController
         
         HideCursor();
         GeneratePrimaryActionTargetPreviewForActiveUnit();
-        _hud.ShowPrimaryActionSelectMenu(UnitActivation.Unit, _primaryActionPreviews);
+        _hud.ShowPrimaryActionSelectMenu(UnitActivation.Unit, _grid.GetGlobalTopLeftPositionForCell(UnitActivation.DestinationCell) + new Vector2(GlobalSettings.TileSize, 0), _primaryActionPreviews);
         
         InputState = BattleInputState.PrimaryActionSelect;
     }
@@ -440,7 +442,26 @@ public partial class BattleController
         if (results.AttackerDied)
             _unitRegistry.DestroyUnit(results.Attacker.UnitId);
         if (results.DefenderDied)
+        {
             _unitRegistry.DestroyUnit(results.Defender.UnitId);
+            // Level up attacker - TODO - change this to provide exp in all cases
+            var attacker = _unitRegistry.GetUnitById(results.Attacker.UnitId);
+            var levelUpResults = _context.UnitProgression.LevelUp(attacker.Unit);
+            HandleLevelUpResults(levelUpResults);
+        }
+            
+        
+        //
+    }
+
+    private void HandleLevelUpResults(UnitLeveledUpEvent levelUpResults)
+    {
+        // var panel = _levelUpResultsPanelScene.Instantiate<LevelUpResultsPanel>();
+        // panel.Bind(levelUpResults);
+        // _hud.AddChild(panel);
+        // panel.Visible = true;
+
+        _hud.DisplayLeveledUpDetails(levelUpResults);
     }
 
     private void ShowCursor()

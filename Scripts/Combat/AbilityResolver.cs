@@ -60,6 +60,12 @@ public class AbilityResolver
                     throw new Exception($"Unable to resolve {unitActivation.Unit.Ability.Type} ability - Invalid targeting info");
                 return ResolveSwapAbility(unitActivation.Unit, targetUnit, unitActivation.DestinationCell, targetCell);
             }
+            case AbilityType.Heal:
+            {
+                if (!TryGetSingleTargets(unitActivation, out var targetUnit, out var targetCell))
+                    throw new Exception($"Unable to resolve {unitActivation.Unit.Ability.Type} ability - Invalid targeting info");
+                return ResolveHealAbility(unitActivation.Unit, targetUnit, unitActivation.DestinationCell, targetCell);
+            }
             case AbilityType.None:
             default:
                 throw new NotImplementedException();
@@ -105,7 +111,14 @@ public class AbilityResolver
         targetUnit.ApplyStatModifier(statMod);
         return true;
     }
-
+    
+    private async Task<bool> ResolveHealAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
+    {
+        _logger.Log(nameof(ResolveHealAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
+        targetUnit.ApplyHealing(actingUnit.AbilityMagnitude);
+        return true;
+    }
+    
     private async Task<bool> ResolveSwapAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
         _logger.Log(nameof(ResolveSwapAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);

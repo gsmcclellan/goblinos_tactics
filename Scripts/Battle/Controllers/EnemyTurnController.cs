@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Core;
 using Goblinos.Scripts.Battle.Services;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
@@ -22,15 +23,18 @@ public sealed partial class EnemyTurnController : Node
     [Signal]
     public delegate void EnemyTurnFinishedEventHandler();
 
-    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private BattleController _battleController;
-    private UnitRegistry _unitRegistry;
-    private EnemyActionPlanningService _enemyActionPlanner;
-    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private BattleController _battleController = null!;
+    private BattleGrid _grid = null;
+    private UnitRegistry _unitRegistry = null!;
+    private EnemyActionPlanningService _enemyActionPlanner = null!;
+    private PrimaryActionTargetingService _primaryActionTargetingService = null!;
+    private UnitActivationPreviewService _unitActivationPreviewService = null!;
     
     private bool _isRunning;
 
     private const float DelayBetweenEnemyActionsSeconds = .5f;
+
+    private const int AwakenNeighborDistance = 5; // If unit becomes awakened, also awakens teammates in an area.
 
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -46,6 +50,7 @@ public sealed partial class EnemyTurnController : Node
     /// </summary>
     public void Bind(
         BattleController battleController,
+        BattleGrid grid,
         EnemyActionPlanningService enemyActionPlanner,
         UnitRegistry unitRegistry
     )
@@ -53,12 +58,19 @@ public sealed partial class EnemyTurnController : Node
         _logger.Log("Initialize", GobLogSeverity.Info, GobLogCategory.Initialization);
 
         _battleController = battleController;
+        _grid = grid;
         _enemyActionPlanner = enemyActionPlanner;
         _unitRegistry = unitRegistry;
         
+        
+        
         Debug.Assert(_battleController != null, $"[{nameof(EnemyTurnController)}] BattleController must be bound.");
+        Debug.Assert(_grid != null, $"[{nameof(EnemyTurnController)}] {nameof(BattleGrid)} must be bound.");
         Debug.Assert(_enemyActionPlanner != null, $"[{nameof(EnemyTurnController)}] EnemyActionPlanningService must be bound.");
         Debug.Assert(_unitRegistry != null, $"[{nameof(EnemyTurnController)}] UnitRegistry must be bound.");
+        
+        _primaryActionTargetingService = new PrimaryActionTargetingService(grid, unitRegistry);
+        _unitActivationPreviewService = new UnitActivationPreviewService(grid, unitRegistry);
     }
 
     // ---------------------------------------------------------------------
@@ -91,9 +103,11 @@ public sealed partial class EnemyTurnController : Node
 
         EmitSignal(SignalName.EnemyTurnStarted);
 
+        AwakenUnits();
+
         try
         {
-            await ExecuteAllEnemyUnitTurnsAsync(_unitRegistry, _enemyActionPlanner, _battleController);
+            await ExecuteAllEnemyUnitTurnsAsync();
         }
         finally
         {
@@ -107,37 +121,82 @@ public sealed partial class EnemyTurnController : Node
     // ---------------------------------------------------------------------
 
     /// <summary>
+    /// Iterates all enemy dormant units to check if they should wake up.
+    /// </summary>
+    private void AwakenUnits()
+    {
+        _logger.Log($"{nameof(AwakenUnits)}", GobLogSeverity.Info, GobLogCategory.AiDecision);
+        var enemyDormantUnits =
+            _unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly && unit.State == UnitActivationState.Dormant)
+                .ToList();
+        
+        // Awaken if in move range of enemy
+        enemyDormantUnits.ForEach(actingUnit =>
+        {
+            if (actingUnit.State == UnitActivationState.Ready) // May have been activated by neighbor.
+                return;
+
+            bool shouldAwaken;
+            
+            _ = _unitRegistry.TryGetCell(actingUnit, out var originCell);
+            var unitActivationPreview = _unitActivationPreviewService.BuildPreview(actingUnit, originCell);
+            var attackPreview = unitActivationPreview.GetPrimaryActionPreview(PrimaryActionType.Attack);
+
+            
+            var hasTarget = _unitRegistry.AnyUnits(unit =>
+                unit.IsFriendly && _unitRegistry.TryGetCell(unit, out var unitCell) &&
+                attackPreview.CanTargetCell(unitCell));
+
+            shouldAwaken = hasTarget;
+            
+            if (!shouldAwaken) return;
+            
+            actingUnit.SetActivationState(UnitActivationState.Ready);
+        
+            // TODO - awake neighbors also.
+            var dormantNeighbors = enemyDormantUnits.Where(unit =>
+                _unitRegistry.TryGetCell(unit, out var unitCell) &&
+                ManhattanRangeService.GetDistance(unitActivationPreview.OriginCell, unitCell) <= AwakenNeighborDistance);
+            // 
+            foreach (var dormantNeighbor in dormantNeighbors)
+                dormantNeighbor.SetActivationState(UnitActivationState.Ready);
+            // Not cascading - can change if that's desired..
+        });
+        
+        
+        
+        GD.Print("Units: ", enemyDormantUnits);
+        return;
+    }
+
+    /// <summary>
     /// Iterates all enemy units that can act, planning and committing actions sequentially.
     /// </summary>
-    private async Task ExecuteAllEnemyUnitTurnsAsync(
-        UnitRegistry unitRegistry,
-        EnemyActionPlanningService enemyActionPlanner,
-        BattleController battleController
-    )
+    private async Task ExecuteAllEnemyUnitTurnsAsync()
     {
         _logger.Log("ExecuteAllEnemyUnitsAsync", GobLogSeverity.Info, GobLogCategory.AiDecision);
         
-        var enemyUnits = unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly)
+        var enemyUnits = _unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly)
             .ToList();
         
         foreach (BattleUnit enemyUnit in enemyUnits)
         {
             _logger.Log($"Enemy unit acting: {enemyUnit.UnitName}", GobLogSeverity.Info, GobLogCategory.AiDecision);
             
-            await ToSignal(
-                GetTree().CreateTimer(DelayBetweenEnemyActionsSeconds),
-                SceneTreeTimer.SignalName.Timeout
-            );
-
             if (!enemyUnit.CanAct)
             {
                 _logger.Log($"Enemy unit cannot act: {enemyUnit.UnitName}", GobLogSeverity.Trace, GobLogCategory.AiDecision);
                 continue;
             }
+            
+            await ToSignal(
+                GetTree().CreateTimer(DelayBetweenEnemyActionsSeconds),
+                SceneTreeTimer.SignalName.Timeout
+            );
+            
+            var plan = _enemyActionPlanner.BuildSimplePlan(enemyUnit);
 
-            var plan = enemyActionPlanner.BuildSimplePlan(enemyUnit);
-
-            await ExecutePlanAsync(battleController, enemyUnit, plan);
+            await ExecutePlanAsync(_battleController, enemyUnit, plan);
         }
     }
 

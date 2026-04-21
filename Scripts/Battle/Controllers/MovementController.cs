@@ -9,11 +9,15 @@ namespace Goblinos.Scripts.Battle.Controllers;
 
 public partial class MovementController: Node
 {
+    /** Components */
     private GobLogger _logger = GobLogManager.For<MovementController>();
     
     private BattleGrid _grid;
     private UnitRegistry _unitRegistry;
     
+    // ---------------------------------------------------------------------
+    // Lifecycle / Setup Methods
+    // ---------------------------------------------------------------------
     public void Bind(BattleGrid grid, Units.UnitRegistry unitRegistry)
     {
         _grid = grid;
@@ -24,6 +28,10 @@ public partial class MovementController: Node
 
         _logger.Log("Bind Complete", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
+    
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
 
     public bool TryMoveToCell(BattleUnit unit, Vector2I targetCell, bool commitMovement = false)
     {
@@ -93,4 +101,8 @@ public partial class MovementController: Node
         unit.GlobalPosition = _grid.GetGlobalCenterPositionForCell(originCell);
         _unitRegistry.ClearPendingMove();
     }
+    
+    // ---------------------------------------------------------------------
+    // Private Helper Methods
+    // ---------------------------------------------------------------------
 }

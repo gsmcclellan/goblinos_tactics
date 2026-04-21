@@ -10,6 +10,7 @@ using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Combat;
+using Goblinos.Scripts.Units;
 using Godot;
 using Goblinos.Scripts.Util;
 using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
@@ -34,6 +35,7 @@ namespace Goblinos.Scripts.UI.Battle
         
         [Export] private Label _turnNumberLabel = null!;
         [Export] private Button _endTurnButton = null!;
+        [Export] private Control _leveledUpPanel = null!;
 
         private BattleController _battleController = null!;
         private GridCursor _cursor = null!;
@@ -122,6 +124,10 @@ namespace Goblinos.Scripts.UI.Battle
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
 
             _turnController.TurnStarted += OnTurnStarted;
+            
+            var closeButton = _leveledUpPanel.GetNode<Button>("VBoxContainer/HBoxContainer/CloseButton");
+            if (closeButton != null)
+                closeButton.Pressed += HideLeveledUpDetails;
         }
 
         private void _UnsubscribeFromEvents()
@@ -187,9 +193,12 @@ namespace Goblinos.Scripts.UI.Battle
         /// <summary>
         /// Shows the primary action menu, disables actions with no valid targets, and focuses the first enabled action.
         /// </summary>
-        public void ShowPrimaryActionSelectMenu(BattleUnit actingUnit, PrimaryActionValidTargetsPreview? previews)
+        public void ShowPrimaryActionSelectMenu(BattleUnit actingUnit, Vector2 globalPosition, PrimaryActionValidTargetsPreview? previews)
         {
             _primaryActionSelect.Visible = true;
+            // Position based on cursor
+            Vector2 screenPosition = GetViewport().GetCanvasTransform() * globalPosition;
+            _primaryActionSelect.GlobalPosition = screenPosition;
             
             // Disable actions that cannot currently target anything.
             foreach (var actionType in PrimaryActionInfo.PrimaryActionOrder)
@@ -209,6 +218,17 @@ namespace Goblinos.Scripts.UI.Battle
             // Pick a deterministic "top" action (don’t rely on enum order)
             if (!_primaryActionSelect.TryFocusFirstEnabled(PrimaryActionInfo.PrimaryActionOrder))
                 _primaryActionSelect.ReleaseFocus();
+        }
+
+        public void DisplayLeveledUpDetails(UnitLeveledUpEvent details)
+        {
+            _leveledUpPanel.GetNode<Label>("VBoxContainer/MarginContainer/Label").Text = details.ToString();
+            _leveledUpPanel.Show();
+        }
+
+        public void HideLeveledUpDetails()
+        {
+            _leveledUpPanel.Hide();
         }
         
         // ---------------------------------------------------------------------
@@ -268,6 +288,7 @@ namespace Goblinos.Scripts.UI.Battle
             if (selectedUnit != null && selectedUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
 
+            HideLeveledUpDetails();
             foreach (var panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
         }

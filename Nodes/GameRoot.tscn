@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://3bn28myc1121"]
+
+[ext_resource type="Script" uid="uid://c8v8jyhop66s3" path="res://Scripts/Core/GameRoot.cs" id="1_edgwi"]
+[ext_resource type="PackedScene" uid="uid://dovascosjfyoe" path="res://Nodes/UI/MainMenu.tscn" id="1_t2ty0"]
+
+[node name="GameRoot" type="Node" unique_id=986620689 node_paths=PackedStringArray("_mainMenu")]
+script = ExtResource("1_edgwi")
+_mainMenu = NodePath("CanvasLayer/MainMenu")
+
+[node name="Systems" type="Node" parent="." unique_id=1588516965]
+
+[node name="UnitProgressionSystem" type="Node" parent="Systems" unique_id=1952958403]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1300146859]
+
+[node name="MainMenu" parent="CanvasLayer" unique_id=92687621 instance=ExtResource("1_t2ty0")]
+visible = false

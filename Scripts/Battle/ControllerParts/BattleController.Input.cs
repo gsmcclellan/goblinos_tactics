@@ -104,11 +104,6 @@ public partial class BattleController: IInputHandler
         // Mouse - Click
         if (e is InputEventMouseButton mbe)
         {
-            if (e.IsActionPressed("camera_drag_pan") || e.IsActionReleased("camera_drag_pan"))
-            {
-                GD.Print($"Camera pan. pressed={mbe.IsActionPressed("camera_drag_pan")}");
-            }
-            
             if (mbe.ButtonIndex == MouseButton.Left && mbe.Pressed)
             {
                 _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition(), GridCursorFocusSource.Mouse);
@@ -312,7 +307,7 @@ public partial class BattleController: IInputHandler
     
     private bool HandleDirection(InputDirection? dir, InputEvent e)
     {
-        _logger.Log("HandleDirection", GobLogSeverity.Trace, GobLogCategory.Input);
+        _logger.Log($"HandleDirection dir={dir.ToString()}", GobLogSeverity.Trace, GobLogCategory.Input);
         if (!dir.HasValue)
             dir = ReadHeldDirection();
         if (dir == InputDirection.None)

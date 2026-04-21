@@ -28,7 +28,7 @@ public partial class BattleUnit : Area2D
 
     [Export] private Sprite2D _imageSprite;
     [Export] private ProgressBar _hpBar;
-    [Export] private PackedScene _floatingDamageScene;
+    [Export] private PackedScene _floatingTextScene;
     
     private Sprite2D _isSelectedNode;
     
@@ -47,16 +47,19 @@ public partial class BattleUnit : Area2D
     
     /** Facade Properties */
     public AbilityDefinition Ability => Unit.Ability;
+
+    public int AbilityMagnitude => Unit.AbilityMagnitude;
     public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
-    public bool CanAct => State != UnitActivationState.Exhausted;
-    public String Id => _unit.Id;
+    public bool CanAct => State is UnitActivationState.Ready or UnitActivationState.Activated;
+    public String Id => Unit.Id;
     public bool IsDefeated => CurrentHitPoints <= 0;
-    public bool IsFriendly => _unit.IsFriendly;
-    public int MaxHitPoints => _unit.Stats.BaseStats.MaxHitPoints;
+    public bool IsFriendly => Unit.IsFriendly;
+    public int Level => Unit.Level;
+    public int MaxHitPoints => Unit.Stats.BaseStats.MaxHitPoints;
     public int Movement => (IsMovementDisabled) ? 0 : GetStat(StatName.Movement);
-    public UnitStats Stats => _unit.Stats;
+    public UnitStats Stats => Unit.Stats;
     public Unit Unit => _unit;
-    public string UnitName => _unit.UnitName;
+    public string UnitName => Unit.UnitName;
     
     // Conditions
     public bool IsMovementDisabled => Conditions.Any(cond => cond.Type == CombatConditionType.DisableMovement);
@@ -116,13 +119,16 @@ public partial class BattleUnit : Area2D
         _unit = unit;
         SetHitPoints(unit.Stats.BaseStats.MaxHitPoints);
         
+        if (!IsFriendly)
+            State = UnitActivationState.Dormant;
+        
         // Set sprite image.
-        if (!DebugUtil.Require(_unit.ImageFilePath != null, "Sprite missing"))
+        if (!DebugUtil.Require(Unit.ImageFilePath != null, "Sprite missing"))
             return;
 
-        var texture = GD.Load<Texture2D>(_unit.ImageFilePath);
+        var texture = GD.Load<Texture2D>(Unit.ImageFilePath);
         
-        if (!DebugUtil.Require(texture != null, $"Failed to load texture: {_unit.ImageFilePath}"))
+        if (!DebugUtil.Require(texture != null, $"Failed to load texture: {Unit.ImageFilePath}"))
             return;
 
         _imageSprite.Texture = texture;
@@ -143,7 +149,21 @@ public partial class BattleUnit : Area2D
         if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
             return;
         SetHitPoints(CurrentHitPoints - damage);
-        await DisplayFloatingDamage(damage);
+        await DisplayFloatingHitPointChange(damage);
+    }
+    
+    /// <summary>
+    /// Applies healing to CurrentHitpoints.
+    /// </summary>
+    public async Task ApplyHealing(int healAmount)
+    {
+        _logger.Log($"{nameof(ApplyDamage)} amount={healAmount}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
+        DebugUtil.Require(healAmount >= 0, "Battle Calculation error - negative healing");
+
+        healAmount = Math.Clamp(healAmount, 0, MaxHitPoints - CurrentHitPoints);
+        
+        SetHitPoints(CurrentHitPoints + healAmount);
+        await DisplayFloatingHitPointChange(healAmount);
     }
 
     public void ApplyCondition(CombatCondition condition)
@@ -215,21 +235,23 @@ public partial class BattleUnit : Area2D
     // Private Methods
     // ---------------------------------------------------------------------
 
-    private async Task DisplayFloatingDamage(int damage) // TODO - move to battle or UI so not reliant on unit existing / color
+    private async Task DisplayFloatingHitPointChange(int amount) 
+        // TODO - move to battle or UI so not reliant on unit existing / color
+        // TODO - add color change for healing.
     {
-        _logger.Log("DisplayFloatingDamage damage=" + damage, GobLogSeverity.Trace, GobLogCategory.CombatResolution);
-        if (!DebugUtil.Require(_floatingDamageScene != null, "Floating Damage Label scene not instantiated."))
+        _logger.Log($"{nameof(DisplayFloatingHitPointChange)} amount={amount}", GobLogSeverity.Trace, GobLogCategory.CombatResolution);
+        if (!DebugUtil.Require(_floatingTextScene != null, "Floating HitPoints Label scene not instantiated."))
             return;
 
-        var floatingDamageText = _floatingDamageScene.Instantiate<FloatingDamageText>();
+        var floatingDamageText = _floatingTextScene.Instantiate<FloatingText>();
         AddChild(floatingDamageText);
         floatingDamageText.GlobalPosition = GlobalPosition;
-        await floatingDamageText.ShowValue(damage);
+        await floatingDamageText.ShowValue(amount);
     }
 
     private void Refresh()
     {
-        if (!DebugUtil.Require(_unit != null, "Refresh failed. Null unit.") ||
+        if (!DebugUtil.Require(Unit != null, "Refresh failed. Null unit.") ||
             !DebugUtil.Require(_hpBar != null, "Refresh failed. Null HP Bar.")
            )
             return;

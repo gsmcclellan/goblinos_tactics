@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
@@ -53,6 +54,7 @@ public sealed class EnemyActionPlanningService
 
         if (!_unitRegistry.TryGetCell(actingUnit, out var originCell))
             throw new Exception($"Unable to generate action plan - unit={actingUnit.UnitName} origin cell unavailable");
+        
         var unitActivationPreview = _unitActivationPreviewService.BuildPreview(actingUnit, originCell);
         var attackPreview = unitActivationPreview.GetPrimaryActionPreview(PrimaryActionType.Attack);
         // var attackPreview =
@@ -69,7 +71,7 @@ public sealed class EnemyActionPlanningService
             targetCell = potentialTargetCell;
             return _unitRegistry.TryGetUnitAtCell(potentialTargetCell, out targetUnit) && targetUnit.IsFriendly != actingUnit.IsFriendly;
         });
-
+        
         if (!hasTarget)
             return BuildMoveCloserPlan(actingUnit, originCell);
 

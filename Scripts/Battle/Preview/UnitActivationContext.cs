@@ -42,6 +42,7 @@ public sealed class UnitActivationContext: IUnitActionPlan
     public bool CanUndoMove => HasMoved && !BlockUndoMove;
     /// <summary>Primary action queued, undo is not blocked</summary>
     public bool CanUndoPrimaryAction => HasSelectedPrimaryAction && !BlockUndoPrimaryAction;
+    public Vector2I DestinationCell => MoveTargetCell ?? OriginCell;
     public bool HasMoved => MoveTargetCell.HasValue;
     public bool HasSelectedPrimaryAction => PrimaryAction != PrimaryActionType.None;
     public bool HasCombatPreview => PrimaryAction == PrimaryActionType.Attack && PrimaryActionTargetUnit != null;

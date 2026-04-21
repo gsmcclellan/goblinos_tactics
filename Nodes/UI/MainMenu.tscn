@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://dovascosjfyoe"]
+
+[ext_resource type="Script" uid="uid://bebl1dapy7c6l" path="res://Scripts/UI/MainMenu.cs" id="1_xrma2"]
+
+[node name="MainMenu" type="Control" unique_id=92687621 node_paths=PackedStringArray("_startBattleButton")]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_xrma2")
+_startBattleButton = NodePath("Intro/StartBattleButton")
+
+[node name="Intro" type="Panel" parent="." unique_id=1555242527]
+layout_mode = 0
+offset_left = 187.0
+offset_top = 77.0
+offset_right = 987.0
+offset_bottom = 577.0
+
+[node name="StartBattleButton" type="Button" parent="Intro" unique_id=946737835]
+layout_mode = 0
+offset_left = 341.0
+offset_top = 275.0
+offset_right = 437.0
+offset_bottom = 306.0
+text = "Start Battle"
+
+[node name="Label" type="Label" parent="Intro" unique_id=265228231]
+layout_mode = 0
+offset_left = 265.0
+offset_top = 55.0
+offset_right = 520.0
+offset_bottom = 138.0
+theme_override_font_sizes/font_size = 60
+text = "Goblinos"

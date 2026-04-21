@@ -3,6 +3,8 @@
     x swap
     x disable (movement)
     x haste
+    - heal
+    - fire (need status / env effects)
     disarm (need weapons first)
     
 Add modifier calculations to derived stats.
@@ -61,3 +63,6 @@ weapon triangle -
     STR:
     1. disable archer
     2. hover preview the archer
+- haste can go on exhausted units - should only be units which can act. Also prevent double hasting.
+- Primary action menu cut off if too close to bot edge of screen. Need to clamp in camera bounds.
+- Primary Action confirm panel and battle preview both show when select target for attack.

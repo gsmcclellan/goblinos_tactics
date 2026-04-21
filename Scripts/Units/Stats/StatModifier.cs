@@ -12,7 +12,7 @@ public sealed class StatModifier
 
     public StatTier StatTier { get; }
     public StatModifierStage ModifierStage { get; }
-
+    
     public StatModifier(string sourceId, 
         StatName statName, 
         int value,
@@ -33,6 +33,12 @@ public sealed class StatModifier
             StatTier.Derived => StatModifierStage.PostCompute,
             _ => throw new ArgumentOutOfRangeException(nameof(statName), statName, "Unhandled StatName.")
         };
+    }
+
+    public StatModifier Copy()
+    {
+        var statModifier = new StatModifier(SourceId, StatName, Value, ExpiresAt);
+        return statModifier;
     }
 
     public void Add(StatModifier statMod)

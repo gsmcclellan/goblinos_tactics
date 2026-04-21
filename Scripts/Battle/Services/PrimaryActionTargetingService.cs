@@ -170,6 +170,8 @@ public class PrimaryActionTargetingService
         bool requiresUnit;
         bool mustBeEnemies;
         bool mustBeFriends;
+        bool hasTargetFunc = false;
+        Func<BattleUnit, BattleUnit, bool> targetFunc = null;
         switch (actionType)
         {
             case PrimaryActionType.Attack:
@@ -182,6 +184,11 @@ public class PrimaryActionTargetingService
                 mustBeEnemies = actingUnit.Ability.CanTargetEnemies && !actingUnit.Ability.CanTargetSelf &&
                                 !actingUnit.Ability.CanTargetFriends;
                 mustBeFriends = !actingUnit.Ability.CanTargetEnemies;
+                if (actingUnit.Ability.CanTarget != null)
+                {
+                    hasTargetFunc = true;
+                    targetFunc = actingUnit.Ability.CanTarget;
+                }
                 break;
             default:
                 _logger.Warn($"[{nameof(PrimaryActionTargetingService)}].{nameof(AddIfValidTarget)} - No case for PrimaryActionType={actionType}.");
@@ -195,7 +202,12 @@ public class PrimaryActionTargetingService
         if (!hasUnit)
             return !requiresUnit;
 
-        return (!mustBeEnemies || actingUnit.IsFriendly != targetUnit.IsFriendly) && (!mustBeFriends || actingUnit.IsFriendly == targetUnit.IsFriendly);
+        var canTarget = (!mustBeEnemies || actingUnit.IsFriendly != targetUnit.IsFriendly) && (!mustBeFriends || actingUnit.IsFriendly == targetUnit.IsFriendly);
+        return canTarget && (
+            !hasTargetFunc ||
+            targetFunc(actingUnit, targetUnit)
+        );
+
     }
 
     /// <summary>Determines if target cell is valid given acting unit & action type. Does not check for range.</summary>

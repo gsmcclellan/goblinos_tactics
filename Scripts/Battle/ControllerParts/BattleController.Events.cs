@@ -176,7 +176,7 @@ public partial class BattleController
     private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
-        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
+        _selectionController.UpdateHovered();
     }
 
     private void OnUnitRegistered(BattleUnit unit, Vector2I cell)

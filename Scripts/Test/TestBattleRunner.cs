@@ -18,11 +18,12 @@ namespace Goblinos.Scripts.Test
     public partial class TestBattleRunner : Node
     {
         private readonly GobLogger _logger = GobLogManager.For<TestBattleRunner>();
-
+        private readonly RandomNumberGenerator _rng = new();
+        
         public override void _Ready()
         {
             _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
-
+            _rng.Randomize();
             var unitFactory = new UnitFactory();
             var battleUnitFactory = new BattleUnitFactory();
 
@@ -97,7 +98,7 @@ namespace Goblinos.Scripts.Test
                 Id = id,
                 DisplayName = name,
                 BaseStats = baseStats,
-                StatGrowthProfile = new StatGrowthProfile(40, 40, 40, 20, 20, 20)
+                StatGrowthProfile = new StatGrowthProfile(40, 40, 40, 20, 20, 20, 0, 150, 0, 0)
             };
         }
 
@@ -108,18 +109,17 @@ namespace Goblinos.Scripts.Test
         {
             _logger.Log("RunSimpleDuel", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
-            var random = new Random(12345);
             var round = 1;
 
             while (!attacker.IsDefeated && !defender.IsDefeated && round <= 25)
             {
                 _logger.Log("Round " + round, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
-                ResolveAttack(attacker, defender, random);
+                ResolveAttack(attacker, defender, _rng);
                 if (defender.IsDefeated)
                     break;
 
-                ResolveAttack(defender, attacker, random);
+                ResolveAttack(defender, attacker, _rng);
                 round++;
             }
 
@@ -130,7 +130,7 @@ namespace Goblinos.Scripts.Test
         /// <summary>
         /// Placeholder attack resolution to validate wiring.
         /// </summary>
-        private void ResolveAttack(BattleUnit attacker, BattleUnit defender, Random random)
+        private void ResolveAttack(BattleUnit attacker, BattleUnit defender, RandomNumberGenerator random)
         {
             _logger.Log("ResolveAttack " + attacker.UnitName + " -> " + defender.UnitName,
                 GobLogSeverity.Info,
@@ -141,7 +141,7 @@ namespace Goblinos.Scripts.Test
             var defenderEvasion = defender.Unit.Stats.BaseStats.Agility * 2;
             var hitChance = Math.Clamp(attackerAccuracy - defenderEvasion, 5, 95);
 
-            var roll = random.Next(1, 101);
+            var roll = random.RandiRange(1, 100);
             if (roll > hitChance)
             {
                 _logger.Log("Miss (roll " + roll + " vs " + hitChance + ")",
@@ -154,7 +154,7 @@ namespace Goblinos.Scripts.Test
             var defense = defender.Unit.Stats.BaseStats.Defense;
             var damage = Math.Max(0, attackPower - defense);
 
-            defender.ApplyDamage(damage);
+            _ = defender.ApplyDamage(damage);
 
             _logger.Log("Hit for " + damage + " (HP now " + defender.CurrentHitPoints + ")",
                 GobLogSeverity.Info,

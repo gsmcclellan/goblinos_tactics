@@ -63,7 +63,7 @@ public partial class GridCursor : Node2D
     /// <returns>true if able to move</returns>
     public bool TryMoveDirection(InputDirection dir, GridCursorFocusSource moveSource, out Vector2I cell)
     {
-        _logger.Log("TryMoveDirection", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
+        _logger.Log("TryMoveDirection", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
 
         cell = FocusedCell + InputUtil.InputDirectionToVector2I(dir);
         return TryMoveToCell(cell, moveSource);
@@ -121,7 +121,7 @@ public partial class GridCursor : Node2D
     
     private void MoveDirection(Vector2I dir, GridCursorFocusSource inputSource)
     {
-        _logger.Log("Move " + dir, 0, GobLogCategory.UiNavigation);
+        _logger.Log("Move " + dir, GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         GlobalPosition += dir * InputUtil.TileSize;
         _UpdateFocus(inputSource);
     }

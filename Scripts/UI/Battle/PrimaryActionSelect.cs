@@ -62,8 +62,6 @@ public partial class PrimaryActionSelect : Panel, IBattleHudPanel
                 GobLogSeverity.Info,
                 GobLogCategory.UiNavigation);
         }
-
-        return;
     }
     private void CacheButtons()
     {

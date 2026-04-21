@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://dyl0qhu08cj6"]
+
+[ext_resource type="Script" uid="uid://cask3gefa757p" path="res://Scripts/UI/Battle/LevelUpResultsPanel.cs" id="1_c3wm3"]
+
+[sub_resource type="Theme" id="Theme_oq75t"]
+default_font_size = 12
+
+[node name="LevelUpResults" type="Panel" unique_id=1182139438]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 1019.0
+offset_top = -464.0
+offset_right = 1139.0
+offset_bottom = -216.0
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_oq75t")
+script = ExtResource("1_c3wm3")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1858155792]
+layout_mode = 0
+offset_right = 120.0
+offset_bottom = 248.0
+
+[node name="Column1" type="VBoxContainer" parent="MarginContainer" unique_id=1505970769]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+
+[node name="UnitName" type="Label" parent="MarginContainer/Column1" unique_id=1092018006]
+layout_mode = 2
+text = "Goblino"
+
+[node name="Level" type="Label" parent="MarginContainer/Column1" unique_id=943616031]
+layout_mode = 2
+text = "Lv. 1"
+
+[node name="HitPoints" type="Label" parent="MarginContainer/Column1" unique_id=2120365350]
+layout_mode = 2
+text = "20 / 20 hp"
+
+[node name="Might" type="Label" parent="MarginContainer/Column1" unique_id=19876780]
+layout_mode = 2
+text = "Mgt: 10"
+
+[node name="Agility" type="Label" parent="MarginContainer/Column1" unique_id=283765985]
+layout_mode = 2
+text = "Agi: 10"
+
+[node name="Vitality" type="Label" parent="MarginContainer/Column1" unique_id=1283295819]
+layout_mode = 2
+text = "Vit: 10"
+
+[node name="Mind" type="Label" parent="MarginContainer/Column1" unique_id=523780575]
+layout_mode = 2
+text = "Mnd: 10"
+
+[node name="Presence" type="Label" parent="MarginContainer/Column1" unique_id=1634782829]
+layout_mode = 2
+text = "Prs: 10"
+
+[node name="Luck" type="Label" parent="MarginContainer/Column1" unique_id=1213785450]
+layout_mode = 2
+text = "Lck: 10"
+
+[node name="Defense" type="Label" parent="MarginContainer/Column1" unique_id=1368477522]
+layout_mode = 2
+text = "Def: 4"
+
+[node name="Resistance" type="Label" parent="MarginContainer/Column1" unique_id=2046841788]
+layout_mode = 2
+text = "Res: 2"
+
+[node name="Movement" type="Label" parent="MarginContainer/Column1" unique_id=1202484272]
+layout_mode = 2
+text = "Mov: 4"

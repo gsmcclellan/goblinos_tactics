@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dr6d1tddeftk2" path="res://Nodes/UI/Battle/PrimaryActionConfirm.tscn" id="4_kr30i"]
 [ext_resource type="PackedScene" uid="uid://bic5nu8iwepe7" path="res://Nodes/UI/Battle/CombatPreviewPanel.tscn" id="4_u1gru"]
 
-[node name="BattleHud" type="CanvasLayer" unique_id=570226317 node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton")]
+[node name="BattleHud" type="CanvasLayer" unique_id=570226317 node_paths=PackedStringArray("_turnNumberLabel", "_endTurnButton", "_leveledUpPanel")]
 script = ExtResource("1_8w1vy")
 _panelsRootPath = NodePath("BattleHudPanels")
 _combatPreviewPath = NodePath("BattleHudPanels/CombatPreviewPanel")
@@ -15,6 +15,7 @@ _primaryActionSelectPath = NodePath("BattleHudPanels/PrimaryActionSelect")
 _primaryActionConfirmPath = NodePath("BattleHudPanels/PrimaryActionConfirmationPanel")
 _turnNumberLabel = NodePath("AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/HBoxContainer/TurnNumber")
 _endTurnButton = NodePath("AdditionalElements/TurnPanel/MarginContainer/VBoxContainer/EndTurnButton")
+_leveledUpPanel = NodePath("AdditionalElements/UnitLeveledUpPanel")
 
 [node name="BattleHudPanels" type="Control" parent="." unique_id=1318043965]
 layout_mode = 3
@@ -67,9 +68,9 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 80.0
+offset_top = -24.0
 offset_right = 0.0
-offset_bottom = 179.0
+offset_bottom = 75.0
 grow_horizontal = 0
 grow_vertical = 2
 
@@ -137,3 +138,52 @@ text = "0"
 layout_mode = 2
 text = "End Turn
 "
+
+[node name="UnitLeveledUpPanel" type="PanelContainer" parent="AdditionalElements" unique_id=1178543047]
+visible = false
+layout_mode = 0
+offset_left = 359.0
+offset_top = 184.0
+offset_right = 642.0
+offset_bottom = 493.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AdditionalElements/UnitLeveledUpPanel" unique_id=157544785]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AdditionalElements/UnitLeveledUpPanel/VBoxContainer" unique_id=1315848624]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="AdditionalElements/UnitLeveledUpPanel/VBoxContainer/HBoxContainer" unique_id=2048829355]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Level Up:"
+
+[node name="CloseButton" type="Button" parent="AdditionalElements/UnitLeveledUpPanel/VBoxContainer/HBoxContainer" unique_id=1944491727]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+text = "✕"
+
+[node name="MarginContainer" type="MarginContainer" parent="AdditionalElements/UnitLeveledUpPanel/VBoxContainer" unique_id=96915495]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Label" type="Label" parent="AdditionalElements/UnitLeveledUpPanel/VBoxContainer/MarginContainer" unique_id=1247442922]
+layout_mode = 2
+text = "UnitLeveledUp: Goblin Stabber 2 -> 3
+  Stats:
+    Might: 11 -> 12
+    Agility: 7 -> 7
+    Vitality: 6 -> 6
+    Mind: 2 -> 3
+    Presence: 2 -> 2
+    Luck: 4 -> 4
+    Movement: 5 -> 5
+    MaxHitPoints: 23 -> 24
+    Defense: 4 -> 4
+    Resistance: 2 -> 2"

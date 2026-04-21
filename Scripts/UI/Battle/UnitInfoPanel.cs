@@ -1,7 +1,6 @@
 #nullable enable
 using System.Diagnostics;
 using Goblinos.Logging;
-using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Units.Stats.Types;
 using Godot;
 using BattleUnit = Goblinos.Scripts.Battle.Units.BattleUnit;
@@ -12,18 +11,19 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
 {
     private readonly GobLogger _logger = GobLogManager.For<UnitInfoPanel>();
     [ExportGroup("Label Nodes")]
-    [Export] public Label? UnitNameLabel;
-    [Export] public Label? IsFriendlyLabel;
-    [Export] public Label? HitPointsLabel;
-    [Export] public Label? MightLabel;
-    [Export] public Label? AgilityLabel;
-    [Export] public Label? VitalityLabel;
-    [Export] public Label? MindLabel;
-    [Export] public Label? PresenceLabel;
-    [Export] public Label? LuckLabel;
-    [Export] public Label? DefenseLabel;
-    [Export] public Label? ResistanceLabel;
-    [Export] public Label? MovementLabel;
+    [Export] public Label UnitNameLabel = null!;
+    [Export] public Label IsFriendlyLabel = null!;
+    [Export] public Label HitPointsLabel = null!;
+    [Export] public Label MightLabel = null!;
+    [Export] public Label AgilityLabel = null!;
+    [Export] public Label VitalityLabel = null!;
+    [Export] public Label MindLabel = null!;
+    [Export] public Label PresenceLabel = null!;
+    [Export] public Label LevelLabel = null!;
+    [Export] public Label LuckLabel = null!;
+    [Export] public Label DefenseLabel = null!;
+    [Export] public Label ResistanceLabel = null!;
+    [Export] public Label MovementLabel = null!;
 
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;
@@ -44,6 +44,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(VitalityLabel != null, "[UnitInfoPanel].  Not Initialized. VitalityLabel is required.");
         Debug.Assert(MindLabel != null, "[UnitInfoPanel].  Not Initialized. MindLabel is required.");
         Debug.Assert(PresenceLabel != null, "[UnitInfoPanel].  Not Initialized. PresenceLabel is required.");
+        Debug.Assert(LevelLabel != null, "[UnitInfoPanel].  Not Initialized. LevelLabel is required.");
         Debug.Assert(LuckLabel != null, "[UnitInfoPanel].  Not Initialized. LuckLabel is required.");
         Debug.Assert(DefenseLabel != null, "[UnitInfoPanel].  Not Initialized. DefenseLabel is required.");
         Debug.Assert(ResistanceLabel != null, "[UnitInfoPanel].  Not Initialized. ResistanceLabel is required.");
@@ -98,9 +99,19 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         UpdateNameLabel(Unit);
         UpdateIsFriendlyLabel(Unit);
         UpdateHitPointsLabel(Unit);
+        UpdateLevelLabel(Unit);
         
         foreach(var statName in StatNameInfo.Stats)
             UpdateStatLabel(Unit, statName);
+    }
+
+
+    private void UpdateLevelLabel(BattleUnit? unit)
+    {
+        var text = "";
+        if (unit != null)
+            text = $"Lv. {unit.Level}";
+        LevelLabel.Text = text;
     }
 
     private void UpdateNameLabel(BattleUnit? unit)
@@ -108,8 +119,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         var text = "";
         if (unit != null)
             text = unit.UnitName;
-        if (UnitNameLabel != null)
-            UnitNameLabel.Text = text;
+        UnitNameLabel.Text = text;
     }
 
     private void UpdateIsFriendlyLabel(BattleUnit? unit)
@@ -117,15 +127,13 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         var text = "";
         if (unit != null)
             text = unit.IsFriendly ? "(Friend)" : "(Foe)";
-        if (IsFriendlyLabel != null)
-            IsFriendlyLabel.Text = text;
+        IsFriendlyLabel.Text = text;
     }
 
     private void UpdateHitPointsLabel(BattleUnit? unit)
     {
         var text = $"{unit?.CurrentHitPoints.ToString() ?? ""} / {unit?.MaxHitPoints.ToString() ?? ""} hp";
-        if (HitPointsLabel != null)
-            HitPointsLabel.Text = text;
+        HitPointsLabel.Text = text;
     }
 
     private void UpdateStatLabel(BattleUnit? unit, StatName statName)

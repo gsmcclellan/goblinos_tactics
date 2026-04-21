@@ -1,11 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://btuxwrm08l1n2"]
+[gd_scene format=3 uid="uid://btuxwrm08l1n2"]
 
 [ext_resource type="Script" uid="uid://cbavhww3u7de0" path="res://Scripts/UI/Battle/UnitInfoPanel.cs" id="1_5tlod"]
 
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel", "MovementLabel")]
+[node name="UnitInfo" type="Panel" unique_id=1182139438 node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LevelLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel", "MovementLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -23,82 +23,84 @@ AgilityLabel = NodePath("MarginContainer/HBoxContainer/Column2/Agility")
 VitalityLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Vitality")
 MindLabel = NodePath("MarginContainer/HBoxContainer/Column1/Mind")
 PresenceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Presence")
+LevelLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Level")
 LuckLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Luck")
 DefenseLabel = NodePath("MarginContainer/HBoxContainer/Column1/Defense")
 ResistanceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Resistance")
 MovementLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Movement")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1858155792]
 layout_mode = 0
 offset_right = 200.0
 offset_bottom = 125.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1913709109]
 layout_mode = 2
 
-[node name="Column1" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+[node name="Column1" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1505970769]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 
-[node name="UnitName" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="UnitName" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=1092018006]
 layout_mode = 2
 text = "Goblino"
 
-[node name="HitPoints" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="HitPoints" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=2120365350]
 layout_mode = 2
 text = "20 / 20 hp"
 
-[node name="Might" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="Might" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=19876780]
 layout_mode = 2
 text = "Mgt: 10"
 
-[node name="Mind" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="Mind" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=523780575]
 layout_mode = 2
 text = "Mnd: 10"
 
-[node name="Defense" type="Label" parent="MarginContainer/HBoxContainer/Column1"]
+[node name="Defense" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=1368477522]
 layout_mode = 2
 text = "Def: 4"
 
-[node name="Column2" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+[node name="Column2" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=800569042]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 
-[node name="Empty" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+[node name="Empty" type="Label" parent="MarginContainer/HBoxContainer/Column2" unique_id=166731490]
 layout_mode = 2
 
-[node name="Empty1" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+[node name="Empty1" type="Label" parent="MarginContainer/HBoxContainer/Column2" unique_id=734062768]
 layout_mode = 2
 
-[node name="Agility" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+[node name="Agility" type="Label" parent="MarginContainer/HBoxContainer/Column2" unique_id=283765985]
 layout_mode = 2
 text = "Agi: 10"
 
-[node name="Presence" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+[node name="Presence" type="Label" parent="MarginContainer/HBoxContainer/Column2" unique_id=1634782829]
 layout_mode = 2
 text = "Prs: 10"
 
-[node name="Resistance" type="Label" parent="MarginContainer/HBoxContainer/Column2"]
+[node name="Resistance" type="Label" parent="MarginContainer/HBoxContainer/Column2" unique_id=2046841788]
 layout_mode = 2
 text = "Res: 2"
 
-[node name="Col 3" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+[node name="Col 3" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1671152026]
 layout_mode = 2
 
-[node name="IsFriendly" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+[node name="IsFriendly" type="Label" parent="MarginContainer/HBoxContainer/Col 3" unique_id=1601041604]
 layout_mode = 2
 text = "(Friend)"
 
-[node name="Empty" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+[node name="Level" type="Label" parent="MarginContainer/HBoxContainer/Col 3" unique_id=943616031]
 layout_mode = 2
+text = "Lv. 1"
 
-[node name="Vitality" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+[node name="Vitality" type="Label" parent="MarginContainer/HBoxContainer/Col 3" unique_id=1283295819]
 layout_mode = 2
 text = "Vit: 10"
 
-[node name="Luck" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+[node name="Luck" type="Label" parent="MarginContainer/HBoxContainer/Col 3" unique_id=1213785450]
 layout_mode = 2
 text = "Lck: 10"
 
-[node name="Movement" type="Label" parent="MarginContainer/HBoxContainer/Col 3"]
+[node name="Movement" type="Label" parent="MarginContainer/HBoxContainer/Col 3" unique_id=1202484272]
 layout_mode = 2

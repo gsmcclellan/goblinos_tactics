@@ -19,6 +19,8 @@ public partial class BattleController : Node
     /** Actions */
 
     /** Components */
+    private readonly GobLogger _logger = GobLogManager.For<BattleController>();
+    
     #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     [Export]
     private BattleCameraController _cameraController = null!;
@@ -31,6 +33,7 @@ public partial class BattleController : Node
     [Export] private NodePath _turnControllerPath;
     [Export] private NodePath _unitRegistryPath;
 
+    private BattleContext _context;
     private BattleNode _battle;
     private GridCursor _cursor;
     private BattleGrid _grid;
@@ -41,15 +44,15 @@ public partial class BattleController : Node
     private SelectionController _selectionController;
     private TurnController _turnController;
     private UnitRegistry _unitRegistry;
-
-    private readonly GobLogger _logger = GobLogManager.For<BattleController>();
-
+    
     private AbilityResolver _abilityResolver;
     private CombatResolver _combatResolver;
     private EnemyActionPlanningService _enemyActionPlanningService;
     private MoveRangeService _moveRangeService;
     private PrimaryActionTargetingService _primaryActionTargetingService;
     private TargetRangeService _targetRangeService;
+
+    private PackedScene _levelUpResultsPanelScene = GD.Load<PackedScene>(GlobalSettings.LevelUpResultsPanelScenePath);
     
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -61,7 +64,14 @@ public partial class BattleController : Node
 
     public override void _Ready()
     {
-        CallDeferred(nameof(_DeferredInit));
+    }
+
+    public void Bind(BattleNode battle, BattleContext context)
+    {
+        _battle = battle;
+        _context = context;
+        
+        _DeferredInit();
     }
 
     private void _DeferredInit()
@@ -90,7 +100,8 @@ public partial class BattleController : Node
 
     private void _InitializeBattleComponents()
     {
-        _battle = GetNode<BattleNode>(GlobalSettings.BattlePath);
+        Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
+        
         _cursor = _battle.Cursor;
         _grid = GetNode<BattleGrid>(_gridPath);
         _hud = GetNode<BattleHud>(_hudPath);
@@ -100,7 +111,7 @@ public partial class BattleController : Node
         _turnController = GetNode<TurnController>(_turnControllerPath);
         _unitRegistry = GetNode<UnitRegistry>(_unitRegistryPath);
 
-        Debug.Assert(_battle != null, "[BattleController] Battle must be initialized.");
+        
         Debug.Assert(_cursor != null, "[BattleController] GridCursor must be initialized.");
         Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
         Debug.Assert(_hud != null, "[BattleController] BattleHud must be initialized.");
@@ -126,7 +137,7 @@ public partial class BattleController : Node
         
         _cameraController.Bind(_grid, _cursor);
         _hud.Bind(this, _cursor, _selectionController, _turnController);
-        _enemyTurnController.Bind(this, _enemyActionPlanningService, _unitRegistry);
+        _enemyTurnController.Bind(this, _grid, _enemyActionPlanningService, _unitRegistry);
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
         _turnController.Bind(_unitRegistry, _enemyTurnController);

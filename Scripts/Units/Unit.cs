@@ -27,6 +27,8 @@ public class Unit
     public string ImageFilePath => GlobalSettings.UnitImageDirPath + Template.ImageFileName + ".png";
     public UnitTemplate Template => TestUnitTemplates.Dict[TemplateId];
 
+    public int AbilityMagnitude => Ability.MagnitudeStat != null ? GetStat(Ability.MagnitudeStat.Value) : Ability.Magnitude;
+
     // Future stuff:
     // class/job
     // inventory, equipment slots

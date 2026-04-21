@@ -43,20 +43,10 @@ public static class StatNameInfo
         .Cast<StatName>()
         .ToList();
 
-    public static IReadOnlyList<StatName> CoreStats { get; } = Enum.GetValues(typeof(StatName))
-            .Cast<StatName>()
-            .Where(sn => GetTier(sn) == StatTier.Core)
-            .ToList();
-
-    public static IReadOnlyList<StatName> BaseStats { get; } = Enum.GetValues(typeof(StatName))
-            .Cast<StatName>()
-            .Where(sn => GetTier(sn) == StatTier.Base)
-            .ToList();
-
-    public static IReadOnlyList<StatName> DerivedStats { get; } = Enum.GetValues(typeof(StatName))
-            .Cast<StatName>()
-            .Where(sn => GetTier(sn) == StatTier.Derived)
-            .ToList();
+    public static IReadOnlyList<StatName> CoreStats { get; } = Stats.Where(sn => GetTier(sn) == StatTier.Core).ToList();
+    public static IReadOnlyList<StatName> BaseStats { get; } = Stats.Where(sn => GetTier(sn) == StatTier.Base).ToList();
+    public static IReadOnlyList<StatName> DerivedStats { get; } = Stats.Where(sn => GetTier(sn) == StatTier.Derived).ToList();
+    public static IReadOnlyList<StatName> CoreAndBaseStats { get; } = CoreStats.Concat(BaseStats).ToList();
     
     /// <summary>
     /// Makes flavor based display, possibly contextual based on type.

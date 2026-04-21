@@ -14,4 +14,5 @@ public class UnitTemplate
     public int MinRange = 1;
     public int MaxRange = 1;
     public AbilityId Ability = AbilityId.None;
+    
 }

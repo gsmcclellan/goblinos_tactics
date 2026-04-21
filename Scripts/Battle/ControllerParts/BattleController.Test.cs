@@ -22,6 +22,12 @@ public partial class BattleController
     private UnitFactory _unitFactory = new UnitFactory();
     private RandomNumberGenerator _random = new RandomNumberGenerator();
 
+    // private List<(Vector2I Cell, string TemplateId)> enemiesToSpawn = [
+    //     (new Vector2I(10, 10), "hum_spear"),
+    //     (new Vector2I(11, 11), "hum_spear"),
+    //     (new Vector2I(12, 12), "hum_spear"),
+    //     (new Vector2I(13, 13), "hum_spear"),
+    // ];
     
     
     public void _Ready_Test()
@@ -31,37 +37,61 @@ public partial class BattleController
         Debug.Assert(_unitsRootPath != null, $"[{nameof(BattleController)}.Test] Init failed - no Units Root Node.");
         
         SpawnTestUnits();
+        LevelUpUnits();
         _logger.Log("Ready_Test", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
     private void SpawnTestUnits()
     {
-        List<(string, int)> friendlyUnitTypes = new()
-        {
-            ("gob_stab", 1),
-            ("gob_shield", 1),
-            ("gob_sneak", 1),
-            ("gob_snipe", 1)
-        };
-        List<(string, int)> enemyUnitTypes = new()
-        {
-            ("hum_spear", 1),
-            ("hum_captain", 1),
-            ("hum_crossbow", 1),
-            ("hum_guard", 1)
-        };
+        List<(Vector2I Cell, string TemplateId)> playerUnitsToSpawn = [
+            (new Vector2I(3, 3), "gob_stab"),
+            (new Vector2I(3, 5), "gob_stab"),
+            (new Vector2I(3, 1), "gob_shield"),
+            (new Vector2I(3, 7), "gob_shield"),
+            (new Vector2I(1, 1), "gob_hag"),
+            (new Vector2I(1, 7), "gob_sneak"),
+            (new Vector2I(1, 3), "gob_snipe"),
+            (new Vector2I(1, 5), "gob_snipe"),
+        ];
+        
+        List<(Vector2I Cell, string TemplateId)> enemiesToSpawn = [
+            (new Vector2I(10, 10), "hum_spear"),
+            (new Vector2I(12, 12), "hum_spear"),
+            (new Vector2I(10, 14), "hum_crossbow"),
+            (new Vector2I(2, 12), "hum_spear"),
+            (new Vector2I(5, 12), "hum_spear"),
+            (new Vector2I(2, 16), "hum_crossbow"),
+            (new Vector2I(5, 16), "hum_crossbow"),
+            (new Vector2I(18, 4), "hum_crossbow"),
+            (new Vector2I(16, 4), "hum_guard"),
+            (new Vector2I(18, 2), "hum_spear"),
+            (new Vector2I(18, 6), "hum_spear"),
+            (new Vector2I(22, 15), "hum_guard"),
+            (new Vector2I(22, 18), "hum_spear"),
+            (new Vector2I(18, 15), "hum_guard"),
+            (new Vector2I(18, 18), "hum_spear"),
+            (new Vector2I(20, 17), "hum_crossbow"),
+            (new Vector2I(30, 3), "hum_spear"),
+            (new Vector2I(30, 5), "hum_guard"),
+            (new Vector2I(28, 3), "hum_spear"),
+            (new Vector2I(28, 5), "hum_guard"),
+            (new Vector2I(29, 4), "hum_captain"),
+            (new Vector2I(34, 6), "hum_crossbow"),
+            (new Vector2I(24, 6), "hum_crossbow"),
+        ];
 
-        var friends = friendlyUnitTypes.SelectMany(fut => CreateTestUnits(fut.Item1, fut.Item2)).ToList();
-        var enemies = enemyUnitTypes.SelectMany(fut => CreateTestUnits(fut.Item1, fut.Item2)).ToList();
 
-        for (var i = 0; i < friends.Count; i++)
+        foreach (var unitSpawnInfo in playerUnitsToSpawn)
         {
-            friends[i].IsFriendly = true;
-            Spawn(friends[i], new Vector2I(i, _random.RandiRange(0, 15)));
+            var playerUnit = CreateTestUnit(unitSpawnInfo.TemplateId);
+            playerUnit.IsFriendly = true;
+            Spawn(playerUnit, unitSpawnInfo.Cell);
         }
-        for (var i = 0; i < enemies.Count; i++)
+
+        foreach (var enemySpawnInfo in enemiesToSpawn)
         {
-            Spawn(enemies[i], new Vector2I(8+i, _random.RandiRange(0, 15)));
+            var enemyUnit = CreateTestUnit(enemySpawnInfo.TemplateId);
+            Spawn(enemyUnit, enemySpawnInfo.Cell);
         }
         
         _registerExistingBattleUnitNodes();
@@ -114,5 +144,15 @@ public partial class BattleController
         }
         
         _logger.Log($"_registerExistingBattleUnitNodes count={_unitRegistry.Units.Count}", GobLogSeverity.Info, GobLogCategory.Initialization);
+    }
+
+    private void LevelUpUnits()
+    {
+        var units = _unitRegistry.GetFriendlyUnits();
+
+        foreach (var battleUnit in units)
+        {
+            _context.UnitProgression.LevelUp(battleUnit.Unit);
+        }
     }
 }

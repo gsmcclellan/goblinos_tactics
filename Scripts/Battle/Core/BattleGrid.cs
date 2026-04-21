@@ -15,11 +15,9 @@ public partial class BattleGrid : Node2D
 {
     /** Components */
     [ExportGroup("Tiles")]
-    #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    [Export] private TileMapLayer _terrainLayer;
-    [Export] private TileMapLayer _actionPreviewLayer;
-    [Export(PropertyHint.Dir)] public string TerrainDbFolder = "res://Terrain";
-    #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    [Export] private TileMapLayer _terrainLayer = null!;
+    [Export] private TileMapLayer _actionPreviewLayer = null!;
+    [Export] private Godot.Collections.Array<TerrainType> _terrainResources = new();    
 
     private readonly GobLogger _logger = GobLogManager.For<BattleGrid>();
     
@@ -52,12 +50,13 @@ public partial class BattleGrid : Node2D
         Debug.Assert(_actionPreviewLayer != null, "[BattleGrid] Action Preview Layer not initialized");
 
         ClearOverlays();
-        _loadTerrainDb(TerrainDbFolder);
+        _loadTerrainDb();
         
         // Pick a default: either explicit ID (recommended) or first loaded
         _defaultTerrain = _terrainById.TryGetValue("default", out var t) ? t
             : (_terrainById.Count > 0 ? FirstTerrain() : null);
         
+        GD.Print($"[BattleGrid] Terrain DB loaded count={_terrainById.Count}");
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
@@ -65,52 +64,34 @@ public partial class BattleGrid : Node2D
     /// Loads all TerrainType resources in terrain folder
     /// </summary>
     /// <param name="folder"></param>
-    private void _loadTerrainDb(string folder)
+    private void _loadTerrainDb()
     {
         _terrainById.Clear();
 
-        var dir = DirAccess.Open(folder);
-        if (dir == null)
+        foreach (var res in _terrainResources)
         {
-            _logger.Error($"[BattleGrid] Terrain folder not found: {folder}");
-            return;
-        }
-
-        dir.ListDirBegin();
-        string file;
-        do
-        {
-            file = dir.GetNext();
-            // Skip directories and non .res or .tres files
-            if (dir.CurrentIsDir()) continue;
-            if (!file.EndsWith(".tres", StringComparison.OrdinalIgnoreCase) &&
-                !file.EndsWith(".res", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            var path = $"{folder}/{file}";
-            var res = ResourceLoader.Load<TerrainType>(path);
             if (res == null)
             {
-                GD.PushWarning($"[BattleGrid] Failed to load TerrainType: {path}");
+                _logger.Warn("Null entry in _terrainResources");
                 continue;
             }
+
             if (string.IsNullOrWhiteSpace(res.Id))
             {
-                GD.PushWarning($"[BattleGrid] TerrainType missing Id: {path}");
+                _logger.Warn("TerrainType missing Id");
                 continue;
             }
+
             if (_terrainById.ContainsKey(res.Id))
             {
-                GD.PushWarning($"[BattleGrid] Duplicate TerrainType Id '{res.Id}' at {path}");
+                _logger.Warn($"Duplicate TerrainType Id '{res.Id}'");
                 continue;
             }
-            
-            // Add to cached terrain types
-            _terrainById.Add(res.Id, res);
-        } while (file != "");
-        dir.ListDirEnd();
 
-        _logger.Log("Loaded TerrainTypes: {_terrainById.Count}", 0, GobLogCategory.Initialization);
+            _terrainById.Add(res.Id, res);
+        }
+
+        _logger.Log($"Loaded TerrainTypes: {_terrainById.Count}", 0, GobLogCategory.Initialization);
     }
     
     // ---------------------------------------------------------------------
@@ -120,10 +101,10 @@ public partial class BattleGrid : Node2D
     /// <summary>Gets TerrainType for a cell (uses per-cell cache).</summary>
     public bool CanFocusCell(Vector2I cell)
     {
-        var terrain = GetTerrainAtCell(cell);
-        var canFocus = terrain is { BlocksCursor: false };
+        var hasTerrain = TryGetTerrainAtCell(cell, out var terrain);
+        var canFocus = hasTerrain && terrain is { BlocksCursor: false };
         
-        _logger.Log("CanFocusCell cell={cell} :: {canFocus}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
+        _logger.Log($"CanFocusCell cell={cell}, hasTerrain={hasTerrain}, terrain={terrain} :: {canFocus}", GobLogSeverity.Extra, GobLogCategory.UiNavigation);
         return canFocus;
     }
 

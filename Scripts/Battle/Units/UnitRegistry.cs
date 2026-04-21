@@ -192,10 +192,9 @@ public partial class UnitRegistry: Node
         return _units.Find(unit => unit.Id == unitId);
     }
 
-    public IEnumerable<BattleUnit> GetUnitsWhere(Func<BattleUnit, bool> predicate)
-    {
-        return _units.Where(predicate);
-    }
+    public IEnumerable<BattleUnit> GetUnitsWhere(Func<BattleUnit, bool> predicate) => _units.Where(predicate);
+
+    public bool AnyUnits(Func<BattleUnit, bool> predicate) => _units.Any(predicate);
 
     public List<BattleUnit> GetSelectableFriendlyUnitsInNavigationOrder()
     {

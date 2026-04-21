@@ -1,4 +1,5 @@
 ﻿using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Units;
 
 namespace Goblinos.Scripts.Battle.Units;

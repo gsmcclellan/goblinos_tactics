@@ -1,6 +1,9 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Reflection;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
+using Goblinos.Scripts.Units.Stats.Types;
 using Godot;
 
 namespace Goblinos.Scripts.Combat;
@@ -12,12 +15,15 @@ public partial class AbilityDefinition: Resource
     public string DisplayName = "None";
     public AbilityTargetMode TargetMode = AbilityTargetMode.None;
     public int Magnitude = 1;
+    public StatName? MagnitudeStat;
     
     public bool CanTargetSelf;
     public bool CanTargetFriends;
     public bool CanTargetEnemies;
 
     public RangeBand Range;
+
+    public Func<BattleUnit, BattleUnit, bool>? CanTarget;
 
     public bool RequiresTarget => TargetMode is AbilityTargetMode.SingleTarget or AbilityTargetMode.MultiTarget or AbilityTargetMode.Area;
 }
@@ -41,6 +47,7 @@ public static class AbilityDefinitionTemplates
         AbilityId.DisableMovement => DisableMovement,
         AbilityId.Push => Push,
         AbilityId.Swap => Swap,
+        AbilityId.Heal => Heal,
         AbilityId.None => new AbilityDefinition(),
         _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
     };
@@ -83,6 +90,17 @@ public static class AbilityDefinitionTemplates
         CanTargetFriends = true,
         Magnitude = 2
     };
+    
+    public static AbilityDefinition Heal => new AbilityDefinition()
+    {
+        Type = AbilityType.Heal,
+        DisplayName = "Heal",
+        TargetMode = AbilityTargetMode.SingleTarget,
+        Range = RangeBand.One,
+        CanTargetFriends = true,
+        MagnitudeStat = StatName.Presence,
+        CanTarget = (self, target) => target.CurrentHitPoints < target.MaxHitPoints
+    };
 }
 
 public enum AbilityType
@@ -91,7 +109,8 @@ public enum AbilityType
     DisableMovement,
     Push,
     StatModifier,
-    Swap
+    Swap, 
+    Heal
 }
 
 public enum AbilityId
@@ -101,5 +120,6 @@ public enum AbilityId
     Shield,
     DisableMovement,
     Push,
-    Swap
+    Swap,
+    Heal
 }

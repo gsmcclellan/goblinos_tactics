@@ -35,7 +35,11 @@ public static class TestUnitTemplates
                 vitality: 35,
                 mind: 15,
                 presence: 20,
-                luck: 25)
+                luck: 25,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
 
         new()
@@ -61,7 +65,11 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 20)
+                luck: 20,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         
         new()
@@ -88,7 +96,11 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 20)
+                luck: 20,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         
         new()
@@ -116,7 +128,43 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 30)
+                luck: 30,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
+        },
+        
+        new()
+        {
+            Id = "gob_hag",
+            DisplayName = "Goblin Hag",
+            ImageFileName = "GoblinHag",
+            MinRange = 1,
+            MaxRange = 1,
+            Ability = AbilityId.Heal,
+            BaseStats = new StatBlock(
+                might: 4,
+                agility: 6,
+                vitality: 6,
+                mind: 8,
+                presence: 8,
+                luck: 2,
+                movement: 4,
+                maxHitPoints: 14,
+                defense: 3,
+                resistance: 6),
+            StatGrowthProfile = new StatGrowthProfile(
+                might: 15,
+                agility: 35,
+                vitality: 45,
+                mind: 80,
+                presence: 75,
+                luck: 30,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         
         new()
@@ -141,7 +189,11 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 20)
+                luck: 20,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         new()
         {
@@ -165,7 +217,11 @@ public static class TestUnitTemplates
                 vitality: 70,
                 mind: 40,
                 presence: 65,
-                luck: 40)
+                luck: 40,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         new()
         {
@@ -191,7 +247,11 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 20)
+                luck: 20,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
         new()
         {
@@ -215,7 +275,11 @@ public static class TestUnitTemplates
                 vitality: 30,
                 mind: 20,
                 presence: 25,
-                luck: 20)
+                luck: 20,
+                movement: 0,
+                maxHitPoints: 150,
+                defense: 0,
+                resistance: 0)
         },
     };
 

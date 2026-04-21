@@ -13,8 +13,10 @@
 [ext_resource type="Script" uid="uid://buma5x8hhjarx" path="res://Scripts/Battle/Units/UnitRegistry.cs" id="10_hqpjs"]
 [ext_resource type="Script" uid="uid://ctqkaobtbddak" path="res://Scripts/Battle/Controllers/BattleCameraController.cs" id="12_m63d6"]
 
-[node name="Battle" type="Node2D" unique_id=888146808]
+[node name="Battle" type="Node2D" unique_id=888146808 node_paths=PackedStringArray("_controller", "Cursor")]
 script = ExtResource("1_sl1sn")
+_controller = NodePath("Controllers/BattleController")
+Cursor = NodePath("Overlays/GridCursor")
 
 [node name="BattleGrid" parent="." unique_id=574109294 instance=ExtResource("5_43edm")]
 
@@ -24,12 +26,12 @@ z_index = 1
 [node name="Overlays" type="Node2D" parent="." unique_id=23896746]
 z_index = 2
 
+[node name="BattleHud" parent="Overlays" unique_id=1693261004 instance=ExtResource("7_7spev")]
+
 [node name="GridCursor" parent="Overlays" unique_id=481086288 instance=ExtResource("6_7spev")]
 position = Vector2(16, 15)
 _battleGridPath = NodePath("../../BattleGrid")
 _unitRegistryPath = NodePath("../../Controllers/UnitRegistry")
-
-[node name="BattleHud" parent="Overlays" unique_id=1693261004 instance=ExtResource("7_7spev")]
 
 [node name="Controllers" type="Node" parent="." unique_id=188673342]
 
