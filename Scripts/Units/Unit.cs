@@ -11,6 +11,7 @@ namespace Goblinos.Scripts.Units;
 public class Unit
 {
     
+    
     public string Id;
     public string TemplateId;
     public string UnitName;

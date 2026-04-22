@@ -34,10 +34,22 @@ public partial class BattleUnit : Area2D
     
     /** Fields */
     private int _currentHitPoints;
+    private Unit _unit;
     
     // UnitData class - TODO
     /** Properties */
-    private Unit _unit;
+    public Unit Unit
+    {
+        get => _unit;
+        set
+        {
+            if (_unit != null)
+                _unit.Stats.StatsChanged -= OnStatsChanged;
+            _unit = value;
+            if (_unit != null)
+                _unit.Stats.StatsChanged += OnStatsChanged;
+        }
+    }
 
     public int CurrentHitPoints => _currentHitPoints;
     public List<StatModifier> BattleModifiers { get; } = [];
@@ -58,7 +70,6 @@ public partial class BattleUnit : Area2D
     public int MaxHitPoints => Unit.Stats.BaseStats.MaxHitPoints;
     public int Movement => (IsMovementDisabled) ? 0 : GetStat(StatName.Movement);
     public UnitStats Stats => Unit.Stats;
-    public Unit Unit => _unit;
     public string UnitName => Unit.UnitName;
     
     // Conditions
@@ -101,12 +112,15 @@ public partial class BattleUnit : Area2D
 
     private void SubscribeToEvents()
     {
-        HitPointsChanged += OnHitPointsChanged;
+        HitPointsChanged += OnCurrentHitPointsChanged;
     }
     
     private void UnsubscribeFromEvents()
     {
-        HitPointsChanged -= OnHitPointsChanged;
+        HitPointsChanged -= OnCurrentHitPointsChanged;
+        
+        if (Unit != null)
+            Unit.Stats.StatsChanged -= OnStatsChanged;
     }
     
     /// <summary>
@@ -116,7 +130,7 @@ public partial class BattleUnit : Area2D
     {
         _logger.Log($"Bind " + unit.UnitName, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
-        _unit = unit;
+        Unit = unit;
         SetHitPoints(unit.Stats.BaseStats.MaxHitPoints);
         
         if (!IsFriendly)
@@ -220,20 +234,32 @@ public partial class BattleUnit : Area2D
     // Signal / Event Handlers
     // ---------------------------------------------------------------------
     
-    private void OnHitPointsChanged(int newValue, int oldValue)
+    private void OnCurrentHitPointsChanged(int newValue, int oldValue)
     {
         var delta = newValue - oldValue;
         _logger.Log("OnHitPointsChanged delta=" + delta, GobLogSeverity.Info, GobLogCategory.UnitStats);
 
-        if (!DebugUtil.Require(_hpBar != null, "HP Bar missing."))
-            return;
+        _updateHitPointsBar();
+    }
 
-        _hpBar.Value = newValue;
+    private void OnStatsChanged(IReadOnlyList<StatName> updatedStats)
+    {
+        if (updatedStats.Contains(StatName.MaxHitPoints))
+            _updateHitPointsBar();
     }
     
     // ---------------------------------------------------------------------
     // Private Methods
     // ---------------------------------------------------------------------
+
+    private void _updateHitPointsBar()
+    {
+        if (!DebugUtil.Require(_hpBar != null, "HP Bar missing."))
+            return;
+
+        _hpBar.Value = CurrentHitPoints;
+        _hpBar.MaxValue = MaxHitPoints;
+    }
 
     private async Task DisplayFloatingHitPointChange(int amount) 
         // TODO - move to battle or UI so not reliant on unit existing / color

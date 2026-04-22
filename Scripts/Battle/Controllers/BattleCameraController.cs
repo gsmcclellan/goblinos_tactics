@@ -202,7 +202,7 @@ public partial class BattleCameraController : Node, IInputHandler
     }
     
     // ---------------------------------------------------------------------
-    // Private Helper Methods
+    // Private Methods
     // ---------------------------------------------------------------------
 
     /// <summary>
@@ -277,7 +277,7 @@ public partial class BattleCameraController : Node, IInputHandler
     /// </summary>
     private bool HandleDragPan(InputEventMouseMotion mouseMotionEvent)
     {
-        _logger.Log("HandleDragPan", GobLogSeverity.Extra, GobLogCategory.Input);
+        _logger.Log("HandleDragPan", GobLogSeverity.Info, GobLogCategory.Input);
         if (!_isDragPanning)
             return false;
 
@@ -301,5 +301,15 @@ public partial class BattleCameraController : Node, IInputHandler
         _camera.LimitTop = Mathf.RoundToInt(_cameraWorldBounds.Position.Y);
         _camera.LimitRight = Mathf.RoundToInt(_cameraWorldBounds.End.X);
         _camera.LimitBottom = Mathf.RoundToInt(_cameraWorldBounds.End.Y);
+        
+        // *** FIX: Snap logical position into valid bounds so there's no dead travel ***
+        Vector2 viewportSize    = _camera.GetViewportRect().Size;
+        Vector2 visibleWorldSize = viewportSize / _camera.Zoom;
+        _camera.GlobalPosition = new Vector2(
+            Math.Clamp(_camera.GlobalPosition.X, _camera.LimitLeft   + visibleWorldSize.X * 0.5f,
+                _camera.LimitRight  - visibleWorldSize.X * 0.5f),
+            Math.Clamp(_camera.GlobalPosition.Y, _camera.LimitTop    + visibleWorldSize.Y * 0.5f,
+                _camera.LimitBottom - visibleWorldSize.Y * 0.5f)
+        );
     }
 }

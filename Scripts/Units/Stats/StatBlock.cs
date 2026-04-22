@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Goblinos.Scripts.Units.Stats.Types;
 
@@ -6,6 +7,8 @@ namespace Goblinos.Scripts.Units.Stats;
 
 public class StatBlock
 {
+    public event Action<IReadOnlyList<StatName>> StatsChanged;
+    
     /** Core Attributes */
     // Physical power, damage
     public int Might { get; private set; }
@@ -27,6 +30,11 @@ public class StatBlock
     public int Resistance { get; private set; }
     
     // Weapon proficiency
+    
+    
+    
+    private readonly HashSet<StatName> _dirtyStats = [];
+    private bool _isBatching;
 
     public StatBlock() {}
 
@@ -55,6 +63,10 @@ public class StatBlock
         Resistance = resistance;
     }
     
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
+    
     public int Get(StatName statName)
     {
         return StatNameInfo.GetTier(statName) switch
@@ -82,8 +94,10 @@ public class StatBlock
         };
     }
     
-    public new void Set(StatName statName, int value)
+    public void Set(StatName statName, int value)
     {
+        if (Get(statName) == value) return;
+        
         switch (StatNameInfo.GetTier(statName))
         {
             case StatTier.Core:
@@ -114,25 +128,35 @@ public class StatBlock
             default:
                 throw new ArgumentOutOfRangeException(nameof(statName), statName, null);
         }
+        
+        _dirtyStats.Add(statName);
+        if (!_isBatching) Flush();
     }
     
-    public new void Add(StatName statName, int amount)
+    public void Add(StatName statName, int amount)
     {
         Set(statName, Get(statName) + amount);
     }
     
-    public new void Add(StatBlock stats)
+    public void Add(StatBlock stats)
     {
-        foreach (StatName statName in StatNameInfo.CoreAndBaseStats)
-            Add(statName, stats.Get(statName));
+        _isBatching = true;
+        try
+        {
+            foreach (StatName statName in StatNameInfo.CoreAndBaseStats)
+                Add(statName, stats.Get(statName));
+        }
+        finally
+        {
+            _isBatching = false;
+            Flush();
+        }
     }
     
-    public new StatBlock Copy()
+    public StatBlock Copy()
     {
-        var statBlock = new StatBlock();
-        foreach (var statName in StatNameInfo.CoreAndBaseStats)
-            statBlock.Set(statName, Get(statName));
-        return statBlock;
+        return new StatBlock(Might, Agility, Vitality, Mind, Presence, Luck,
+            Movement, MaxHitPoints, Defense, Resistance);
     }
     
     public override string ToString()
@@ -143,4 +167,16 @@ public class StatBlock
             sb.AppendLine($"  {statName}: {Get(statName)}");
         return sb.ToString();
     }
+    
+    // ---------------------------------------------------------------------
+    // Private Helpers
+    // ---------------------------------------------------------------------
+    
+    private void Flush()
+         {
+             if (_dirtyStats.Count == 0) return;
+             var changed = _dirtyStats.ToList();
+             _dirtyStats.Clear();
+             StatsChanged?.Invoke(changed);
+         }
 }

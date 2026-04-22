@@ -11,13 +11,30 @@ namespace Goblinos.Scripts.Units.Stats;
 
 public sealed class UnitStats
 {
-    private readonly GobLogger _logger = GobLogManager.For<UnitStats>();
+    /** Events */
+    public event Action<IReadOnlyList<StatName>> StatsChanged;
     
-    public StatBlock BaseStats { get; }
+    /** Components */
+    private readonly GobLogger _logger = GobLogManager.For<UnitStats>();
+
+    /** Fields */
+    private StatBlock _baseStats;
+    
+    /** Properties */
+    public StatBlock BaseStats
+    {
+        get => _baseStats;
+        set
+        {
+            if (_baseStats != null)
+                _baseStats.StatsChanged -= RaiseStatsChanged;
+            _baseStats = value;
+            if (_baseStats != null)
+                _baseStats.StatsChanged += RaiseStatsChanged;
+        }
+    }
     public HashSet<StatModifier> PermanentModifiers { get; } = [];
     
-    public event Action? StatsChanged;
-
     public UnitStats()
     {
         BaseStats = new StatBlock();
@@ -27,6 +44,10 @@ public sealed class UnitStats
     {
         BaseStats = baseStats;
     }
+    
+    // ---------------------------------------------------------------------
+    // Public Methods
+    // ---------------------------------------------------------------------
 
     public UnitStats Copy()
     {
@@ -47,7 +68,6 @@ public sealed class UnitStats
         _logger.Log($"[{nameof(UnitStats)}] {nameof(AddPermanentModifier)} " + modifier.SourceId, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
         PermanentModifiers.Add(modifier);
-        StatsChanged?.Invoke();
     }
 
     public int Get(StatName statName)
@@ -68,7 +88,7 @@ public sealed class UnitStats
                 StatName.Defense or
                 StatName.Resistance => BaseStats.Get(statName),
 
-            // Derived
+            // Derived TODO - implement this
             StatName.AttackSpeed => throw new NotImplementedException("AttackSpeed is derived and not stored directly."),
             StatName.Accuracy => throw new NotImplementedException("Accuracy is derived and not stored directly."),
             StatName.Evasion => throw new NotImplementedException("Evasion is derived and not stored directly."),
@@ -102,4 +122,8 @@ public sealed class UnitStats
             sb.AppendLine($"  {statModifier.StatName}: {statModifier.Value}"); 
         return statBlockString + '\n' + sb;
     }
+
+
+    private void RaiseStatsChanged(IReadOnlyList<StatName> changed) 
+        => StatsChanged?.Invoke(changed);
 }
