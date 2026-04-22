@@ -12,6 +12,7 @@ using Goblinos.Scripts.UI.Battle;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Units.Stats.Types;
+using Goblinos.Scripts.Units.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -190,6 +191,8 @@ public partial class BattleUnit : Area2D
             existingCondition.AddStacks(condition.Stacks);
     }
 
+    public bool HasCondition(CombatConditionId id) => Conditions.Any(cond => cond.Id == id);
+
     public void ApplyStatModifier(StatModifier statMod)
     {
         var existingMod = BattleModifiers.Find(mod => mod.Equals(statMod));
@@ -198,6 +201,8 @@ public partial class BattleUnit : Area2D
         else
             BattleModifiers.Add(statMod);
     }
+
+    public bool HasStatModifier(string modifierId) => BattleModifiers.Any(sm => sm.Id == modifierId);
 
     public int GetStat(StatName statName)
     {
@@ -233,6 +238,16 @@ public partial class BattleUnit : Area2D
     // ---------------------------------------------------------------------
     // Signal / Event Handlers
     // ---------------------------------------------------------------------
+    public void OnRoundEnded()
+    {
+        BattleModifiers.RemoveAll(bm => bm.ExpiresAt == ExpirationTime.EndOfRound);
+
+        // Expire conditions
+        foreach (var condition in Conditions.Where(c => c.ExpiresAt == ExpirationTime.EndOfRound))
+        {
+            // TODO
+        }
+    }
     
     private void OnCurrentHitPointsChanged(int newValue, int oldValue)
     {
@@ -315,5 +330,7 @@ public partial class BattleUnit : Area2D
     {
         _isSelectedNode.Visible = _isSelected;
     }
+    
+    
 }
 

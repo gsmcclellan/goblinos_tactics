@@ -196,11 +196,8 @@ namespace Goblinos.Scripts.UI.Battle
         public void ShowPrimaryActionSelectMenu(BattleUnit actingUnit, Vector2 globalPosition, PrimaryActionValidTargetsPreview? previews)
         {
             _primaryActionSelect.Visible = true;
-            // Position based on cursor
-            Vector2 screenPosition = GetViewport().GetCanvasTransform() * globalPosition;
-            _primaryActionSelect.GlobalPosition = screenPosition;
+            ClampPositionToVisibleScreen(_primaryActionSelect, globalPosition);
             
-            // Disable actions that cannot currently target anything.
             foreach (var actionType in PrimaryActionInfo.PrimaryActionOrder)
             {
                 if (actionType == PrimaryActionType.None)
@@ -218,6 +215,31 @@ namespace Goblinos.Scripts.UI.Battle
             // Pick a deterministic "top" action (don’t rely on enum order)
             if (!_primaryActionSelect.TryFocusFirstEnabled(PrimaryActionInfo.PrimaryActionOrder))
                 _primaryActionSelect.ReleaseFocus();
+        }
+
+        private void ClampPositionToVisibleScreen(Control node, Vector2 globalPosition)
+        {
+            Vector2 screenPosition = GetViewport().GetCanvasTransform() * globalPosition;
+            
+            // Get viewport bounds
+            Rect2 viewportRect = GetViewport().GetVisibleRect();
+            _primaryActionSelect.ResetSize();
+            Vector2 menuSize = _primaryActionSelect.Size;
+            
+            // Clamp position so the menu stays fully inside the screen
+            float clampedX = Mathf.Clamp(
+                screenPosition.X,
+                viewportRect.Position.X,
+                viewportRect.End.X - menuSize.X
+            );
+
+            float clampedY = Mathf.Clamp(
+                screenPosition.Y,
+                viewportRect.Position.Y,
+                viewportRect.End.Y - menuSize.Y
+            );
+            
+            node.GlobalPosition = new Vector2(clampedX, clampedY);
         }
 
         public void DisplayLeveledUpDetails(UnitLeveledUpEvent details)

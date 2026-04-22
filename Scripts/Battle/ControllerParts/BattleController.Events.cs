@@ -60,6 +60,9 @@ public partial class BattleController
         _selectionController.HoveredUnitChanged += OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
         
+        // TurnController
+        _turnController.TurnEnded += OnTurnEnded;
+        
         // UnitRegistry
         _unitRegistry.UnitMoveResolved += OnUnitMoveResolved;
         _unitRegistry.UnitRegistered += OnUnitRegistered;
@@ -78,6 +81,9 @@ public partial class BattleController
         // SelectionController
         _selectionController.HoveredUnitChanged -= OnHoveredUnitChanged;
         _selectionController.SelectedUnitChanged -= OnSelectedUnitChanged;
+        
+        // TurnController
+        _turnController.TurnEnded -= OnTurnEnded;
         
         // UnitRegistry
         _unitRegistry.UnitMoveResolved -= OnUnitMoveResolved;
@@ -162,6 +168,16 @@ public partial class BattleController
         _logger.Log($"OnSelectedUnitChanged - node={selectedNode}", GobLogSeverity.Trace, GobLogCategory.Signal);
         ResetPreviews();
         // removed enter/exit move/action select mode. This now happens in HandleAccept & HandleCancel methods.
+    }
+
+    private void OnTurnEnded(BattleSide activeSide, int turnNumber)
+    {
+        // TODO - move to child controller. Unit state controller.
+        if (activeSide == BattleSide.Enemy)
+        {
+            foreach (var friendlyUnit in _unitRegistry.GetFriendlyUnits())
+                friendlyUnit.OnRoundEnded();
+        }
     }
 
     private void OnUnitActionsResolved(BattleUnit unit)

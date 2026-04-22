@@ -8,6 +8,8 @@
     - fire (need status / env effects)
     disarm (need weapons first)
     
+- add ability description - display in PrimaryActionConfirm
+    
 Add modifier calculations to derived stats.
 
 weapons with stats and types
@@ -58,11 +60,13 @@ controls overhaul -
  - cursor - change behavior when selecting target (go between targets when using buttons)
  
  BUGS:
+
+x haste can go on exhausted units - should only be units which can act. Also prevent double hasting.
+x haste doesn't expire after turn
+x Primary action menu cut off if too close to bot edge of screen. Need to clamp in camera bounds.
 - enemy preview shows able to attack move only target
     STR:
     1. disable archer
     2. hover preview the archer
-- haste can go on exhausted units - should only be units which can act. Also prevent double hasting.
-- Primary action menu cut off if too close to bot edge of screen. Need to clamp in camera bounds.
 - Primary Action confirm panel and battle preview both show when select target for attack.
 x Healthbar not updated when max health changes.

@@ -16,6 +16,7 @@ public partial class AbilityDefinition: Resource
     public AbilityTargetMode TargetMode = AbilityTargetMode.None;
     public int Magnitude = 1;
     public StatName? MagnitudeStat;
+    public CombatConditionId? CombatConditionId;
     
     public bool CanTargetSelf;
     public bool CanTargetFriends;
@@ -54,6 +55,7 @@ public static class AbilityDefinitionTemplates
     
     public static AbilityDefinition DisableMovement => new()
     {
+        Id = AbilityId.DisableMovement,
         Type = AbilityType.DisableMovement,
         DisplayName = "Disable",
         TargetMode = AbilityTargetMode.SingleTarget,
@@ -63,6 +65,7 @@ public static class AbilityDefinitionTemplates
     
     public static AbilityDefinition Push => new()
     {
+        Id = AbilityId.Push,
         Type = AbilityType.Push,
         DisplayName = "Push",
         TargetMode = AbilityTargetMode.SingleTarget,
@@ -73,6 +76,7 @@ public static class AbilityDefinitionTemplates
 
     public static AbilityDefinition Swap => new()
     {
+        Id = AbilityId.Swap,
         Type = AbilityType.Swap,
         DisplayName = "Swap",
         TargetMode = AbilityTargetMode.SingleTarget,
@@ -83,16 +87,23 @@ public static class AbilityDefinitionTemplates
 
     public static AbilityDefinition Haste => new AbilityDefinition()
     {
+        Id = AbilityId.Haste,
         Type = AbilityType.StatModifier,
         DisplayName = "Haste",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
         CanTargetFriends = true,
-        Magnitude = 2
+        Magnitude = 2,
+        CanTarget = (self, target) =>
+        {
+            var can = target.CanAct && !target.HasStatModifier("Haste");
+            return target.CanAct && !target.HasStatModifier("Haste");
+        }
     };
     
     public static AbilityDefinition Heal => new AbilityDefinition()
     {
+        Id = AbilityId.Heal,
         Type = AbilityType.Heal,
         DisplayName = "Heal",
         TargetMode = AbilityTargetMode.SingleTarget,
@@ -109,6 +120,7 @@ public enum AbilityType
     DisableMovement,
     Push,
     StatModifier,
+    Condition,
     Swap, 
     Heal
 }

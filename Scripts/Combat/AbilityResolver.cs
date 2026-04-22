@@ -10,6 +10,7 @@ using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Units.Stats.Types;
+using Goblinos.Scripts.Units.Types;
 using Goblinos.Scripts.Util;
 using Godot;
 
@@ -42,11 +43,11 @@ public class AbilityResolver
                     throw new Exception($"Unable to resolve {unitActivation.Unit.Ability.Type} ability - Invalid targeting info");
                 return ResolvePushAbility(unitActivation.Unit, targetUnit, unitActivation.DestinationCell, targetCell);
             }
-            case AbilityType.DisableMovement:
+            case AbilityType.Condition:
             {
                 if (!TryGetSingleTargets(unitActivation, out var targetUnit, out var targetCell))
                     throw new Exception($"Unable to resolve {unitActivation.Unit.Ability.Type} ability - Invalid targeting info");
-                return ResolveDisableMovementAbility(unitActivation.Unit, targetUnit, unitActivation.DestinationCell, targetCell);
+                return ResolveApplyConditionAbility(unitActivation.Unit, targetUnit, unitActivation.DestinationCell, targetCell);
             }
             case AbilityType.StatModifier:
             {
@@ -76,13 +77,13 @@ public class AbilityResolver
     // ---------------------------------------------------------------------
     // Individual ability resolvers.
     // ---------------------------------------------------------------------
-    
-    private async Task<bool> ResolveDisableMovementAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
+    private async Task<bool> ResolveApplyConditionAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
-        _logger.Log(nameof(ResolveDisableMovementAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
+        _logger.Log(nameof(ResolveApplyConditionAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
+        if (!DebugUtil.Require(actingUnit.Ability.CombatConditionId.HasValue, "Apply condition failed - Ability does not have CombatConditionId value."))
         
         // apply disabled condition
-        targetUnit.ApplyCondition(CombatConditionTemplates.Get(CombatConditionType.DisableMovement));
+        targetUnit.ApplyCondition(CombatConditionTemplates.Get(actingUnit.Ability.CombatConditionId.Value));
 
         return true;
     }
@@ -106,8 +107,8 @@ public class AbilityResolver
     private async Task<bool> ResolveStatModifierAbility(BattleUnit actingUnit, BattleUnit targetUnit, Vector2I actingUnitCell, Vector2I targetCell)
     {
         _logger.Log(nameof(ResolveStatModifierAbility), GobLogSeverity.Info, GobLogCategory.CombatResolution);
-        var statMod = new StatModifier(actingUnit.Id, StatName.Movement, actingUnit.Ability.Magnitude,
-            StatModifierExpiration.EndOfRound);
+        var statMod = new StatModifier(actingUnit.Ability.Id.ToString(),actingUnit.Id, StatName.Movement, actingUnit.Ability.Magnitude,
+            ExpirationTime.EndOfRound);
         targetUnit.ApplyStatModifier(statMod);
         return true;
     }
@@ -137,7 +138,7 @@ public class AbilityResolver
             unitActionPlan.PrimaryActionTargetCell is { } cell)
         {
             var rangeValidated = ValidateRange(unitActionPlan.Unit.Ability.Range, unitActionPlan.DestinationCell, cell);
-            if (!DebugUtil.Require(rangeValidated, "DisableMovement failed - target unit not in range."))
+            if (!DebugUtil.Require(rangeValidated, "TryGetSingleTargets failed - target unit not in range."))
             {
                 targetUnit = null!;
                 targetCell = default;

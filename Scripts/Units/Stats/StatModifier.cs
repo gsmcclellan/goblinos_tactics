@@ -1,26 +1,30 @@
 ﻿using System;
 using Goblinos.Scripts.Units.Stats.Types;
+using Goblinos.Scripts.Units.Types;
 
 namespace Goblinos.Scripts.Units.Stats;
 
 public sealed class StatModifier
 {
+    public string Id { get; }
     public string SourceId { get;  }
     public StatName StatName { get; }
     public int Value { get; private set; }
-    public StatModifierExpiration ExpiresAt { get; }
+    public ExpirationTime ExpiresAt { get; }
 
     public StatTier StatTier { get; }
     public StatModifierStage ModifierStage { get; }
     
-    public StatModifier(string sourceId, 
+    public StatModifier(string id,
+        string sourceId, 
         StatName statName, 
         int value,
-        StatModifierExpiration expiresAt)
+        ExpirationTime expiresAt)
     {
         if (string.IsNullOrWhiteSpace(sourceId))
             throw new ArgumentException("SourceId is required.", nameof(sourceId));
-        
+
+        Id = id;
         SourceId = sourceId;
         StatName = statName;
         Value = value;
@@ -37,7 +41,7 @@ public sealed class StatModifier
 
     public StatModifier Copy()
     {
-        var statModifier = new StatModifier(SourceId, StatName, Value, ExpiresAt);
+        var statModifier = new StatModifier(Id, SourceId, StatName, Value, ExpiresAt);
         return statModifier;
     }
 
