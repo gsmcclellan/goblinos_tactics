@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TerrainType" format=3 uid="uid://4w672f17cx8h"]
+
+[ext_resource type="Script" uid="uid://241qvaojkv52" path="res://Scripts/Battle/Terrain/TerrainType.cs" id="1_53keb"]
+
+[resource]
+script = ExtResource("1_53keb")
+Id = "wall"
+DisplayName = "Wall"
+Description = "Does Wall Things"
+MoveCost = 0
+BlocksLos = true
+metadata/_custom_type_script = "uid://241qvaojkv52"

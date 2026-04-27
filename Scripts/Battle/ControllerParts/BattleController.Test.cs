@@ -37,7 +37,7 @@ public partial class BattleController
         Debug.Assert(_unitsRootPath != null, $"[{nameof(BattleController)}.Test] Init failed - no Units Root Node.");
         
         SpawnTestUnits();
-        LevelUpUnits();
+        // LevelUpUnits();
         _logger.Log("Ready_Test", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
     
@@ -71,13 +71,13 @@ public partial class BattleController
             (new Vector2I(18, 15), "hum_guard"),
             (new Vector2I(18, 18), "hum_spear"),
             (new Vector2I(20, 17), "hum_crossbow"),
-            (new Vector2I(30, 3), "hum_spear"),
-            (new Vector2I(30, 5), "hum_guard"),
-            (new Vector2I(28, 3), "hum_spear"),
-            (new Vector2I(28, 5), "hum_guard"),
-            (new Vector2I(29, 4), "hum_captain"),
-            (new Vector2I(34, 6), "hum_crossbow"),
-            (new Vector2I(24, 6), "hum_crossbow"),
+            (new Vector2I(26, 7), "hum_spear"),
+            (new Vector2I(24, 5), "hum_guard"),
+            (new Vector2I(26, 5), "hum_spear"),
+            (new Vector2I(24, 7), "hum_guard"),
+            (new Vector2I(25, 6), "hum_captain"),
+            (new Vector2I(21, 6), "hum_crossbow"),
+            (new Vector2I(21, 10), "hum_crossbow"),
         ];
 
 

@@ -110,6 +110,7 @@ public partial class BattleController
                 break;
             case null when InputState == BattleInputState.FreeSelect:
                 ClearPreviews();
+                UpdateEnemyThreatPreview();
                 break;
             case null when InputState == BattleInputState.PrimaryActionTargeting:
                 SetCombatPreview(null);
@@ -172,6 +173,9 @@ public partial class BattleController
 
     private void OnTurnEnded(BattleSide activeSide, int turnNumber)
     {
+        _hud.HideLeveledUpDetails();
+        ClearPreviews();
+        
         // TODO - move to child controller. Unit state controller.
         if (activeSide == BattleSide.Enemy)
         {
@@ -203,6 +207,8 @@ public partial class BattleController
     private void OnUnitUnregistered(BattleUnit unit, Vector2I cell, bool isUnitDeath)
     {
         _moveRangeService.InvalidateCache();
+        _enemyThreatPreviewUnits.Remove(unit);
+        ResetPreviews();
     }
     
     // ---------------------------------------------------------------------

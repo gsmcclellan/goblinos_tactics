@@ -26,7 +26,8 @@ public static class StatNameInfo
 
             // Derived
             StatName.AttackSpeed or
-                StatName.Accuracy or
+                StatName.PhysicalAccuracy or
+                StatName.MagicAccuracy or
                 StatName.Evasion or
                 StatName.CritChance or
                 StatName.CritDefense or
@@ -89,7 +90,8 @@ public static class StatNameInfo
 
             // Derived
             { StatName.AttackSpeed, "AtkSpd" },
-            { StatName.Accuracy, "Acc" },
+            { StatName.PhysicalAccuracy, "PAcc" },
+            { StatName.MagicAccuracy, "MAcc" },
             { StatName.Evasion, "Eva" },
             { StatName.CritChance, "Crit" },
             { StatName.CritDefense, "CritDef" },

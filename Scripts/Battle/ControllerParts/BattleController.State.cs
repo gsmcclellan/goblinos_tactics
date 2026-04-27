@@ -8,6 +8,7 @@ using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
+using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Units;
@@ -44,8 +45,9 @@ public partial class BattleController
     public BattleUnit? HoveredUnit => _selectionController.HoveredUnit;
     public Vector2I? SelectedCell => SelectedUnit != null && _unitRegistry.TryGetCell(SelectedUnit, out var cell) ? cell : null;
     public BattleUnit? SelectedUnit => _selectionController.SelectedUnit;
-    
-    
+
+    private readonly HashSet<BattleUnit> _enemyThreatPreviewUnits = [];
+    private bool _allEnemiesAddedToThreatPreview;
     
     private void _Ready_State()
     {
@@ -54,8 +56,11 @@ public partial class BattleController
         
         _logger.Log("_Ready_State", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
-
-
+    
+    // ---------------------------------------------------------------------
+    // Turn / Phase Changes
+    // ---------------------------------------------------------------------
+    
     public void RequestEndTurn()
     {
         if (!_turnController.RequestEndPlayerTurn())
@@ -77,50 +82,7 @@ public partial class BattleController
         ClearActivationAndUi();
         EnterFreeSelectMode();
     }
-
-    private void ClearPreviews()
-    {
-        SetCombatPreview(null);
-        _grid.ClearOverlays();
-    }
-
-    private void ClearActivationAndUi()
-    {
-        _selectionController.TriggerClearSelection();
-        ClearUnitActivation();
-        ClearPreviews();
-        _hud.HidePrimaryActionSelectMenu();
-        _hud.HidePrimaryActionConfirm();
-        ShowCursor();
-    }
     
-    private void ClearUnitActivation()
-    {
-        UnitActivation = null;
-    }
-
-    private void DisplayPrimaryActionPreview(PrimaryActionType actionType)
-    {
-        _logger.Log($"[{nameof(DisplayPrimaryActionPreview)}] actionType={actionType}", GobLogSeverity.Trace, GobLogCategory.Input);
-        if (!DebugUtil.Check(_primaryActionPreviews != null,
-                $"[{nameof(BattleController)}].{nameof(DisplayPrimaryActionPreview)} - Previews not initialized."))
-        {
-            _primaryActionPreviews = _primaryActionTargetingService.BuildPrimaryActionValidTargetPreviews(UnitActivation, new[]
-                {
-                    PrimaryActionType.Attack
-                });
-        }
-        
-        if (_primaryActionPreviews == null || !_primaryActionPreviews.HasTargets(actionType))
-        {
-            ClearPreviews();
-            return;
-        }
-        
-        var preview = _primaryActionPreviews.GetTargets(actionType);
-        _grid.SetActionPreview(preview, actionType);
-    }
-
     private void EnterFreeSelectMode()
     {
         InputState = BattleInputState.FreeSelect;
@@ -167,7 +129,7 @@ public partial class BattleController
         }
         
         // TODO - display confirmation / battle preview
-        _hud.ShowPrimaryActionConfirm();
+        _hud.ShowPrimaryActionConfirm(UnitActivation);
         InputState = BattleInputState.PrimaryActionConfirm;
     }
 
@@ -202,6 +164,68 @@ public partial class BattleController
         InputState = BattleInputState.PrimaryActionTargeting;
     }
     
+    private void ClearActivationAndUi()
+    {
+        _selectionController.TriggerClearSelection();
+        ClearUnitActivation();
+        ClearPreviews();
+        _hud.HidePrimaryActionSelectMenu();
+        _hud.HidePrimaryActionConfirm();
+        ShowCursor();
+    }
+    
+    private void ClearUnitActivation()
+    {
+        UnitActivation = null;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Previews
+    // ---------------------------------------------------------------------
+
+    private void ResetPreviews()
+    {
+        ClearPreviews();
+        
+        if (IsUnitSelected)
+        {
+            GenerateMovePreviewForSelectedUnit();
+            return;
+        }
+
+        UpdateEnemyThreatPreview();
+        GenerateHoverPreview();
+    }
+    
+    private void ClearPreviews()
+    {
+        SetCombatPreview(null);
+        _grid.ClearTurnPreviews();
+        _selectionController.UpdateHovered();
+    }
+
+    private void DisplayPrimaryActionPreview(PrimaryActionType actionType)
+    {
+        _logger.Log($"[{nameof(DisplayPrimaryActionPreview)}] actionType={actionType}", GobLogSeverity.Trace, GobLogCategory.Input);
+        if (!DebugUtil.Check(_primaryActionPreviews != null,
+                $"[{nameof(BattleController)}].{nameof(DisplayPrimaryActionPreview)} - Previews not initialized."))
+        {
+            _primaryActionPreviews = _primaryActionTargetingService.BuildPrimaryActionValidTargetPreviews(UnitActivation, new[]
+                {
+                    PrimaryActionType.Attack
+                });
+        }
+        
+        if (_primaryActionPreviews == null || !_primaryActionPreviews.HasTargets(actionType))
+        {
+            ClearPreviews();
+            return;
+        }
+        
+        var preview = _primaryActionPreviews.GetTargets(actionType);
+        _grid.SetActionPreview(preview, actionType);
+    }
+    
     /// <summary>
     /// Generates move & attack preview for hovered cell.
     /// </summary>
@@ -228,13 +252,6 @@ public partial class BattleController
         
         if (unit.IsFriendly)
             _grid.SetUnitStartOfTurnPreviews(movementPreview.Cells, attackPreview);
-        else
-        {
-            var cells = new HashSet<Vector2I>();
-            cells.UnionWith(movementPreview.Cells);
-            cells.UnionWith(attackPreview);
-            _grid.SetHoveredThreatPreview(cells);
-        }
     }
     
     private void GenerateMovePreviewForSelectedUnit()
@@ -269,53 +286,7 @@ public partial class BattleController
             });
         // TODO - other types of actions.
     }
-
-    private void HideCursor()
-    {
-        _cursor.Visible = false;
-    }
-
-    private void InitializeActivationContext()
-    {
-        var unit = SelectedUnit;
-        var cell = SelectedCell;
-        if (!DebugUtil.Require(unit != null, "[BattleController] InitializeActivationContext - No Unit") ||
-            !DebugUtil.Require(cell != null, "[BattleController] InitializeActivationContext - No Cell"))
-            return;
-
-        if (UnitActivation != null && UnitActivation.Unit == unit)
-        {
-            _logger.Warn("InitializeActivationContext - already initialized.");
-            return;
-        }
-        
-        UnitActivation = new UnitActivationContext(unit, cell.Value);
-        unit.SetActivationState(UnitActivationState.Activated);
-    }
     
-    private void ResetPreviews()
-    {
-        ClearPreviews();
-        
-        if (IsUnitSelected)
-        {
-            GenerateMovePreviewForSelectedUnit();
-            return;
-        }
-
-        GenerateHoverPreview();
-    }
-    
-    private void ResetUnitActivation()
-    {
-        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
-
-        if (!DebugUtil.Require(UnitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
-            return;
-        
-        UnitActivation.Reset();
-    }
-
     private void SetCombatPreview(CombatPreview? preview)
     {
         _combatPreview = preview;
@@ -352,6 +323,95 @@ public partial class BattleController
         
         combatPreview = _combatResolver.GetCombatPreview(attacker, defender);
         SetCombatPreview(combatPreview);
+    }
+    
+    private void UpdateEnemyThreatPreview()
+    {
+        var includedUnits = new HashSet<BattleUnit>();
+        includedUnits.UnionWith(_enemyThreatPreviewUnits);
+        if (HoveredUnit is { IsFriendly: false })
+            includedUnits.Add(HoveredUnit);
+        
+        var cells = new HashSet<Vector2I>();
+        // cells.UnionWith(movementPreview.Cells);
+        foreach (var unit in includedUnits)
+        {
+            var attackableCells = GetAttackPreview(unit);
+            cells.UnionWith(attackableCells);
+        }
+        
+        _grid.SetHoveredThreatPreview(cells);
+    }
+
+    private void ToggleEnemyThreatPreview()
+    {
+        if (_allEnemiesAddedToThreatPreview)
+            ClearEnemyThreatUnits();
+        else
+            foreach (var unit in _unitRegistry.GetEnemyUnits())
+            {
+                _enemyThreatPreviewUnits.Add(unit);
+            }
+
+        UpdateEnemyThreatPreview();
+        _allEnemiesAddedToThreatPreview = !_allEnemiesAddedToThreatPreview;
+    }
+
+    private void ToggleEnemyThreatPreview(BattleUnit unit)
+    {
+        if (!_enemyThreatPreviewUnits.Add(unit))
+            _enemyThreatPreviewUnits.Remove(unit);
+
+        UpdateEnemyThreatPreview();
+    }
+
+    private void ClearEnemyThreatUnits()
+    {
+        _enemyThreatPreviewUnits.Clear();
+        UpdateEnemyThreatPreview();
+    }
+    
+    private IReadOnlySet<Vector2I> GetAttackPreview(BattleUnit unit)
+    {
+        if (!_unitRegistry.TryGetCell(unit, out var cell))
+            return new HashSet<Vector2I>();
+
+        var movementPreview = _moveRangeService.GetMovementPreview(cell, unit);
+        var attackPreview = _targetRangeService.BuildThreatUnionFromCells(movementPreview.Cells, unit.AttackRange);
+
+        return attackPreview;
+    }
+    
+    // ---------------------------------------------------------------------
+    // Unit State / Activation
+    // ---------------------------------------------------------------------
+
+    private void InitializeActivationContext()
+    {
+        var unit = SelectedUnit;
+        var cell = SelectedCell;
+        if (!DebugUtil.Require(unit != null, "[BattleController] InitializeActivationContext - No Unit") ||
+            !DebugUtil.Require(cell != null, "[BattleController] InitializeActivationContext - No Cell"))
+            return;
+
+        if (UnitActivation != null && UnitActivation.Unit == unit)
+        {
+            _logger.Warn("InitializeActivationContext - already initialized.");
+            return;
+        }
+        
+        UnitActivation = new UnitActivationContext(unit, cell.Value);
+        unit.SetActivationState(UnitActivationState.Activated);
+    }
+    
+    private void ResetUnitActivation()
+    {
+        // Currently does not account for actions that could prevent undo. Change this if adding traps, reactions etc.
+
+        if (!DebugUtil.Require(UnitActivation != null, "[BattleController.State] ResetUnitActivation failed. No UnitActivationContext."))
+            return;
+        
+        UnitActivation.Reset();
     }
     
     /// <summary>
@@ -437,8 +497,19 @@ public partial class BattleController
         HandleCombatResults(results);
     }
 
-    public void HandleCombatResults(SimpleCombatResult results)
+    public void HandleCombatResults(CombatResult results)
     {
+        var attackerGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Attacker.Cell);
+        var defenderGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Defender.Cell);
+        
+        foreach (var strike in results.Strikes)
+        {
+            GD.Print("strike: ", strike);
+            var damageTarget = results.Participant(strike.DefenderId);
+            var text = strike.HitResult == HitResult.Miss ? "MISS" : strike.Damage.ToString();
+            _animationController.DisplayFloatingText(_grid.GetGlobalCenterPositionForCell(damageTarget.Cell), text);
+        }
+        
         if (results.AttackerDied)
             _unitRegistry.DestroyUnit(results.Attacker.UnitId);
         if (results.DefenderDied)
@@ -449,9 +520,6 @@ public partial class BattleController
             var levelUpResults = _context.UnitProgression.LevelUp(attacker.Unit);
             HandleLevelUpResults(levelUpResults);
         }
-            
-        
-        //
     }
 
     private void HandleLevelUpResults(UnitLeveledUpEvent levelUpResults)
@@ -464,11 +532,7 @@ public partial class BattleController
         _hud.DisplayLeveledUpDetails(levelUpResults);
     }
 
-    private void ShowCursor()
-    {
-        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
-        _cursor.Visible = true;
-    }
+    
 
     private bool TryUndoMove()
     {
@@ -497,5 +561,18 @@ public partial class BattleController
 
         ClearUnitActivation();
         return true;
+    }
+
+    
+    
+    private void ShowCursor()
+    {
+        _cursor.TriggerUpdateFocus(GridCursorFocusSource.Programmatic);
+        _cursor.Visible = true;
+    }
+    
+    private void HideCursor()
+    {
+        _cursor.Visible = false;
     }
 }

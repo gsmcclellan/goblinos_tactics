@@ -34,6 +34,8 @@ public partial class BattleCameraController : Node, IInputHandler
     [Export] private float _keyboardPanSpeed = 200.0f;
     [Export] private float _dragPanMultiplier = 0.25f;
     [Export] private Vector2 _defaultZoom = new(2f, 2f);
+    [Export] private Vector2 _maxZoom = new(4f, 4f);
+    [Export] private float _zoomStep = 0.5f;
     [Export] private int _autoPanBufferCells = 1;
 
     private bool _isCameraInputEnabled = true;
@@ -119,6 +121,19 @@ public partial class BattleCameraController : Node, IInputHandler
             return true;
         }
         
+        // Camera zoom
+        if (e.IsActionPressed("camera_zoom_in"))
+        {
+            ZoomIn();
+            return true;
+        }
+
+        if (e.IsActionPressed("camera_zoom_out"))
+        {
+            ZoomOut();
+            return true;
+        }
+        
         // Mouse - Motion
         if (e is InputEventMouseMotion mme && _isDragPanning)
         {
@@ -151,7 +166,7 @@ public partial class BattleCameraController : Node, IInputHandler
 
     public void RepositionToIncludeCell(Vector2I cell)
     {
-        _logger.Log($"{nameof(RepositionToIncludeCell)} cell={cell}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
+        _logger.Log($"{nameof(RepositionToIncludeCell)} cell={cell}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         
         Vector2 cellTopLeft = _grid.GetGlobalTopLeftPositionForCell(cell);
         Vector2 cellSize = new Vector2I(GlobalSettings.TileSize, GlobalSettings.TileSize);
@@ -188,6 +203,9 @@ public partial class BattleCameraController : Node, IInputHandler
 
         _camera.GlobalPosition += globalPosChange * InputUtil.InputDirectionToVector2I(dir);
     }
+
+    public void ZoomIn() => ZoomTo(_camera.Zoom + new Vector2(_zoomStep, _zoomStep));
+    public void ZoomOut() => ZoomTo(_camera.Zoom - new Vector2(_zoomStep, _zoomStep));
     
     // ---------------------------------------------------------------------
     // Event Handlers
@@ -242,7 +260,7 @@ public partial class BattleCameraController : Node, IInputHandler
         return true;
     }
 
-    private Vector2 _readKeyboardInputDirection()
+    private static Vector2 _readKeyboardInputDirection()
     {
         return Input.GetVector(
             "camera_pan_left",
@@ -253,7 +271,7 @@ public partial class BattleCameraController : Node, IInputHandler
 
     private void ApplyZoomedInDefault()
     {
-        _camera.Zoom = _defaultZoom;
+        ZoomTo(_defaultZoom);
     }
 
     /// <summary>
@@ -277,7 +295,7 @@ public partial class BattleCameraController : Node, IInputHandler
     /// </summary>
     private bool HandleDragPan(InputEventMouseMotion mouseMotionEvent)
     {
-        _logger.Log("HandleDragPan", GobLogSeverity.Info, GobLogCategory.Input);
+        _logger.Log("HandleDragPan", GobLogSeverity.Extra, GobLogCategory.Input);
         if (!_isDragPanning)
             return false;
 
@@ -301,15 +319,36 @@ public partial class BattleCameraController : Node, IInputHandler
         _camera.LimitTop = Mathf.RoundToInt(_cameraWorldBounds.Position.Y);
         _camera.LimitRight = Mathf.RoundToInt(_cameraWorldBounds.End.X);
         _camera.LimitBottom = Mathf.RoundToInt(_cameraWorldBounds.End.Y);
+
+        ZoomTo(_camera.Zoom);
         
         // *** FIX: Snap logical position into valid bounds so there's no dead travel ***
         Vector2 viewportSize    = _camera.GetViewportRect().Size;
         Vector2 visibleWorldSize = viewportSize / _camera.Zoom;
+        
         _camera.GlobalPosition = new Vector2(
             Math.Clamp(_camera.GlobalPosition.X, _camera.LimitLeft   + visibleWorldSize.X * 0.5f,
                 _camera.LimitRight  - visibleWorldSize.X * 0.5f),
             Math.Clamp(_camera.GlobalPosition.Y, _camera.LimitTop    + visibleWorldSize.Y * 0.5f,
                 _camera.LimitBottom - visibleWorldSize.Y * 0.5f)
+        );
+    }
+
+    /// <summary>
+    /// Applies minimum zoom level so that camera is not larger than visible world size.
+    /// </summary>
+    private void ZoomTo(Vector2 targetZoom)
+    {
+        Vector2 viewportSize = _camera.GetViewportRect().Size;
+
+        float minZoomX = viewportSize.X / _cameraWorldBounds.Size.X;
+        float minZoomY = viewportSize.Y / _cameraWorldBounds.Size.Y;
+
+        float safeZoom = Math.Max(minZoomX, minZoomY);
+
+        _camera.Zoom = new Vector2(
+            Math.Clamp(targetZoom.X, minZoomX, _maxZoom.X),
+            Math.Clamp(targetZoom.Y, minZoomY, _maxZoom.Y)
         );
     }
 }

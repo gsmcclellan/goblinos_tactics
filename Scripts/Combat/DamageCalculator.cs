@@ -12,6 +12,9 @@ public class DamageCalculator
         // TODO - damage type - magic vs physical damage.
         return Math.Max(GlobalSettings.MinimumCombatDamage, attackerStats.PhysicalDamage - defenderStats.PhysicalProtection);
     }
+
+    public int ComputeCritDamage(DerivedStats attackerStats, DerivedStats defenderStats) =>
+        ComputeDamage(attackerStats, defenderStats); // TODO
     
     public int ComputePreviewDamage(DerivedStats attackerStats, DerivedStats defenderStats)
     {

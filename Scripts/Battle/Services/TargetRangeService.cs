@@ -98,7 +98,7 @@ public sealed class TargetRangeService
     {
         // TODO - filter out cells that can never be occupied.
         // Treat "exists on grid" as "has terrain".
-        if (!_grid.TryGetTerrainAtCell(cell, out _ /*var terrain*/) /*|| terrain.BlocksOccupancy*/) 
+        if (!_grid.TryGetTerrainAtCell(cell, out var terrain) || terrain.BlocksOccupancy) 
             return;
 
         output.Add(cell);

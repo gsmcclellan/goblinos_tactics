@@ -44,7 +44,7 @@ public class UnitProgression(RandomNumberGenerator rng)
     {
         _logger.Log($"[{nameof(LevelUpStats)}] stats={stats} growth={growthProfile}", GobLogSeverity.Info, GobLogCategory.UnitStats);
         var addedStats = new StatBlock();
-        foreach (StatName statName in StatNameInfo.CoreAndBaseStats)
+        foreach (StatName statName in StatNameInfo.CoreStats)
         {
             var levelUpAmount = 0;
             var growthPercent = growthProfile.Get(statName);
@@ -63,8 +63,6 @@ public class UnitProgression(RandomNumberGenerator rng)
         
         _logger.Log($"{nameof(LevelUpStats)} - Added Stats: \n{addedStats}", GobLogSeverity.Info, GobLogCategory.UnitStats);
         stats.Add(addedStats);
-        
-        
     }
 }
 
@@ -81,7 +79,7 @@ public class UnitLeveledUpEvent
         var sb = new System.Text.StringBuilder();
         sb.Append($"{Unit.UnitName} {OldLevel} -> {NewLevel}\n");
         sb.Append("  Stats:\n");
-        foreach (var statName in StatNameInfo.CoreAndBaseStats)
+        foreach (var statName in StatNameInfo.CoreStats)
         {
             var statBefore = StatsBefore.Get(statName);
             var statAfter = StatsAfter.Get(statName);

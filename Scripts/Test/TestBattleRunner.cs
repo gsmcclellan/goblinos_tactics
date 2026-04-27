@@ -89,7 +89,7 @@ namespace Goblinos.Scripts.Test
                 presence: presence,
                 luck: luck,
                 movement: movement,
-                maxHitPoints: maxHitPoints,
+                baseHitPoints: maxHitPoints,
                 defense: defense,
                 resistance: resistance);
 

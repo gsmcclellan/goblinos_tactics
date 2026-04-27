@@ -39,6 +39,7 @@ public partial class BattleController : Node
     private BattleGrid _grid;
     private BattleHud _hud;
 
+    private AnimationController _animationController;
     private EnemyTurnController _enemyTurnController;
     private MovementController _movementController;
     private SelectionController _selectionController;
@@ -105,6 +106,8 @@ public partial class BattleController : Node
         _cursor = _battle.Cursor;
         _grid = GetNode<BattleGrid>(_gridPath);
         _hud = GetNode<BattleHud>(_hudPath);
+
+        _animationController = new AnimationController(_battle);
         _enemyTurnController = GetNode<EnemyTurnController>(_enemyTurnControllerPath);
         _movementController = GetNode<MovementController>(_movementControllerPath);
         _selectionController = GetNode<SelectionController>(_selectionControllerPath);
@@ -123,7 +126,7 @@ public partial class BattleController : Node
 
         // Non-Node Components
         _abilityResolver = new AbilityResolver(_movementController, _unitRegistry);
-        _combatResolver = new CombatResolver(new DamageCalculator());
+        _combatResolver = new CombatResolver(new DamageCalculator(), new HitCalculator(_context.CombatRng));
         _enemyActionPlanningService = new EnemyActionPlanningService(_grid, _unitRegistry);
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);

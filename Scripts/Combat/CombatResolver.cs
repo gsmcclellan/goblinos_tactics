@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
@@ -21,85 +22,118 @@ public class CombatResolver
 {
     private readonly GobLogger _logger = GobLogManager.For<CombatResolver>();
     
-    // private readonly HitCalculator _hitCalculator;
+    private readonly HitCalculator _hitCalculator;
     private readonly DamageCalculator _damageCalculator;
     // private readonly StatusEffectResolver _statusEffectResolver;
 
-    public CombatResolver(DamageCalculator damageCalculator)
+    public CombatResolver(DamageCalculator damageCalculator, HitCalculator hitCalculator)
     {
         _damageCalculator = damageCalculator;
+        _hitCalculator = hitCalculator;
+        
+        Debug.Assert(_damageCalculator != null, $"[{nameof(AbilityResolver)}] {nameof(DamageCalculator)} must be initialized.");
+        Debug.Assert(_hitCalculator != null, $"[{nameof(AbilityResolver)}] {nameof(HitCalculator)} must be initialized.");
         _logger.Log("Constructed.", GobLogSeverity.Trace, GobLogCategory.Initialization);
     }
 
-    public async Task<SimpleCombatResult> Resolve(IUnitActionPlan activationContext)
+    public async Task<CombatResult> Resolve(IUnitActionPlan activationContext)
     {
+        
         // Simplified combat resolution - change later. 
         // Both units deal damage to each other, no hit, crit, order, multi attack.
         var attacker = activationContext.Unit;
         var defender = activationContext.PrimaryActionTargetUnit;
+        
+        var crb = new CombatResultBuilder(attacker, defender, activationContext.DestinationCell, activationContext.PrimaryActionTargetCell.Value);
+
 
         if (!DebugUtil.Require(attacker != null, $"[{nameof(CombatResolver)}].Resolve failed, Attacker not found.") ||
-            !DebugUtil.Require(defender != null, $"[{nameof(CombatResolver)}].Resolve failed, Defender not found.")
+            !DebugUtil.Require(defender != null, $"[{nameof(CombatResolver)}].Resolve failed, Defender not found.") ||
+            !DebugUtil.Require(activationContext.PrimaryActionTargetCell != null,
+                $"[{nameof(CombatResolver)}].Resolve failed, Target cell not found.")
            )
-            return new SimpleCombatResult();
+            return crb.Results();
 
+        
         var rangeValidationResult = ValidateAttackRange(attacker, defender);
 
         if (!DebugUtil.Require(rangeValidationResult.AttackerInRange,
                 "Error during combat resolution, Attacker not in range."))
-            return new SimpleCombatResult();
-        
-        var attackerStats = DerivedStatsCalculator.Build(attacker.Stats);
-        var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
-        
-        var attackerDamage = _damageCalculator.ComputeDamage(attackerStats, defenderStats);
+            return crb.Results();
 
-        var defenderCanCounter = rangeValidationResult.DefenderInRange && attackerDamage < defender.CurrentHitPoints;
-        var defenderDamage = defenderCanCounter ? _damageCalculator.ComputeDamage(defenderStats, attackerStats): 0;
-
-        var defTask = defender.ApplyDamage(attackerDamage);
-        if (defenderCanCounter)
-        {
-            var attackTask = attacker.ApplyDamage(defenderDamage);
-            await Task.WhenAll(defTask, attackTask);
-        }
-        else
-            await defTask;
+        var attContext = new CombatContext();
+        var attackerHitResult = _hitCalculator.Roll(attacker.Stats, defender.Stats, attContext);
         
-        return new SimpleCombatResult(
-            attacker: new UnitSnapshot(attacker.Id, attacker.UnitName),
-            defender: new UnitSnapshot(defender.Id, defender.UnitName),
-            attackerDamage: attackerDamage,
-            defenderDamage: defenderDamage,
-            attackerHealthRemaining: attacker.CurrentHitPoints,
-            defenderHealthRemaining: defender.CurrentHitPoints
+        var attackerDamage = attackerHitResult switch {
+            HitResult.Miss => 0,
+            HitResult.Hit  => _damageCalculator.ComputeDamage(attacker.Stats, defender.Stats),
+            HitResult.Crit => _damageCalculator.ComputeCritDamage(attacker.Stats, defender.Stats),
+            _ => 0
+        };
+        
+        await defender.ApplyDamage(attackerDamage);
+        
+        crb.AddStrike(
+            attackerId: attacker.Id,
+            defenderId: defender.Id,
+            hitResult: attackerHitResult,
+            damage: attackerDamage,
+            defenderHitPointsRemaining: defender.CurrentHitPoints
         );
         
-        // determine # & order of hits.
-        // for each -
-            // rolls Hit
-            // rolls Crit
-            // computes Damage
-            // computes if one unit is dead
-        // returns a result object you can log / show in UI
-        
-        // (optionally) applies damage to the defender via a small interface so you aren’t locked to a specific BattleUnit API.
+        var defenderCanCounter = !defender.IsDefeated && rangeValidationResult.DefenderInRange;
+
+        var defenderDamage = 0;
+        if (!defender.IsDefeated && defenderCanCounter)
+        {
+            var defContext = new CombatContext();
+            var defenderHitResult = _hitCalculator.Roll(defender.Stats, attacker.Stats, defContext);
+
+            defenderDamage = defenderHitResult switch
+            {
+                HitResult.Miss => 0,
+                HitResult.Hit => _damageCalculator.ComputeDamage(defender.Stats, attacker.Stats),
+                HitResult.Crit => _damageCalculator.ComputeCritDamage(defender.Stats, attacker.Stats),
+                _ => 0
+            };
+            // defenderDamage = _damageCalculator.ComputeDamage(defender.Stats, attacker.Stats);
+
+            await attacker.ApplyDamage(defenderDamage);
+            
+            crb.AddStrike(
+                attackerId: defender.Id,
+                defenderId: attacker.Id,
+                hitResult: defenderHitResult,
+                damage: defenderDamage,
+                defenderHitPointsRemaining: attacker.CurrentHitPoints
+            );
+            
+            
+        }
+
+        return crb.Results();
     }
     
     public CombatPreview GetCombatPreview(BattleUnit attacker, BattleUnit defender)
     {
-        var attackerStats = DerivedStatsCalculator.Build(attacker.Stats); // TODO - these can be cached.
-        var defenderStats = DerivedStatsCalculator.Build(defender.Stats);
 
         var rangeValidationResult = ValidateAttackRange(attacker, defender);
+
+        var context = new CombatContext();
         
-        var attackerDamage = _damageCalculator.ComputePreviewDamage(attackerStats, defenderStats);
-        var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputePreviewDamage(defenderStats, attackerStats): 0;
+        
+        var attackerDamage = _damageCalculator.ComputePreviewDamage(attacker.Stats, defender.Stats);
+        var defenderDamage = (rangeValidationResult.DefenderInRange) ? _damageCalculator.ComputePreviewDamage(defender.Stats, attacker.Stats): 0;
+        
+        var attackerHitChance = _hitCalculator.HitChance(attacker.Stats, defender.Stats, context);
+        var defenderHitChance = (rangeValidationResult.DefenderInRange) ? _hitCalculator.HitChance(defender.Stats, attacker.Stats, context): 0;
 
         return new CombatPreview()
         {
             Attacker = attacker,
             Defender = defender,
+            AttackerHitChance = attackerHitChance,
+            DefenderHitChance = defenderHitChance,
             AttackerDamage = attackerDamage,
             DefenderDamage = defenderDamage
         };

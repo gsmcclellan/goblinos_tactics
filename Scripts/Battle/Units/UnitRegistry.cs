@@ -186,6 +186,14 @@ public partial class UnitRegistry: Node
     {
         return GetUnitsWhere(unit => unit.IsFriendly);
     }
+    
+    /// <summary>
+    /// Enumerates all units that are enemies.
+    /// </summary>
+    public IEnumerable<BattleUnit> GetEnemyUnits()
+    {
+        return GetUnitsWhere(unit => !unit.IsFriendly);
+    }
 
     public BattleUnit GetUnitById(string unitId)
     {

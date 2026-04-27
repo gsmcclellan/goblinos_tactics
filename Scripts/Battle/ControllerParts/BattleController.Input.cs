@@ -100,6 +100,10 @@ public partial class BattleController: IInputHandler
         // Select Next / Select Previous
         if (e.IsActionPressed("select_next", false, true)) { return HandleSelectNext(); }
         if (e.IsActionPressed("select_previous", false, true)) { return HandleSelectPrevious(); }
+        
+        // Specific Buttons
+        if (e.IsActionPressed("toggle_enemy_threat_preview"))
+            ToggleEnemyThreatPreview();
 
         // Mouse - Click
         if (e is InputEventMouseButton mbe)
@@ -112,8 +116,6 @@ public partial class BattleController: IInputHandler
             if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
                 return HandleCancel(e);
         }
-        
-        
         
         // Mouse - Motion
         if (e is InputEventMouseMotion mme)
@@ -179,7 +181,7 @@ public partial class BattleController: IInputHandler
             }
             else
             {
-                // TODO - toggle enemy inspection.
+                ToggleEnemyThreatPreview(cellFocus.Unit);
             }
         }
         return true;

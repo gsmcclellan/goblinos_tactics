@@ -184,10 +184,11 @@ namespace Goblinos.Scripts.UI.Battle
             _primaryActionSelect.ReleaseFocus();
         }
 
-        public void ShowPrimaryActionConfirm()
+        public void ShowPrimaryActionConfirm(UnitActivationContext unitActivation)
         {
+            _primaryActionConfirm.SetContext(unitActivation);
             _primaryActionConfirm.Visible = true;
-            _primaryActionConfirm.Message = _battleController.UnitActivation?.PrimaryAction.ToString();
+
         }
         
         /// <summary>
@@ -309,8 +310,8 @@ namespace Goblinos.Scripts.UI.Battle
             _logger.Log("OnSelectedUnitChanged", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             if (selectedUnit != null && selectedUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
-
-            HideLeveledUpDetails();
+            if (selectedUnit != null)
+                HideLeveledUpDetails();
             foreach (var panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
         }

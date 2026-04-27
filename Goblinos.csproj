@@ -7,10 +7,16 @@
     <Folder Include="Scripts\Data\" />
     <Folder Include="Scripts\Overworld\" />
     <Folder Include="Scripts\UI\Menus\" />
+    <Folder Include="planning" />
+    <Folder Include="Nodes" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="BATTLE_INPUT_FLOW.md" />
+    <Content Include="BUGS.md" />
+    <Content Include="NOTES.md" />
     <Content Include="STYLE_GUIDE.md" />
-    <Content Include="TODO.txt" />
+    <Content Include="TASKS.md" />
+    <Content Include="planning\*" />
+    <Content Include="Nodes\**\*.tscn" />
   </ItemGroup>
 </Project>

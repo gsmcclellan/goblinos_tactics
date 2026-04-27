@@ -13,7 +13,7 @@ public sealed class UnitActivationRecord
 {
     public UnitSnapshot ActingUnitSnapshot { get; init; }
     public Vector2I OriginCell { get; init; }
-    public Vector2I? MoveTargetCell { get; init; }
+    public Vector2I EndingCell { get; init; }
     public PrimaryActionType PrimaryActionType { get; init; }
     public Vector2I? PrimaryActionTargetCell { get; init; }
     public UnitSnapshot? TargetUnitSnapshot { get; init; }
@@ -22,17 +22,19 @@ public sealed class UnitActivationRecord
     {
         ActingUnitSnapshot = new UnitSnapshot(
             c.Unit.Id,
-            c.Unit.UnitName
+            c.Unit.UnitName,
+            c.DestinationCell
         );
         OriginCell = c.OriginCell;
-        MoveTargetCell = c.MoveTargetCell;
+        EndingCell = c.DestinationCell;
         PrimaryActionType = c.PrimaryAction;
         PrimaryActionTargetCell = c.PrimaryActionTargetCell;
 
         TargetUnitSnapshot = c.PrimaryActionTargetUnit != null
             ? new UnitSnapshot(
                 c.PrimaryActionTargetUnit.Id,
-                c.PrimaryActionTargetUnit.UnitName
+                c.PrimaryActionTargetUnit.UnitName,
+                c.PrimaryActionTargetCell.Value
             )
             : null;
     }

@@ -1,6 +1,9 @@
-﻿namespace Goblinos.Scripts.Units.Types;
+﻿using Godot;
+
+namespace Goblinos.Scripts.Units.Types;
 
 public readonly record struct UnitSnapshot(
     string UnitId,
-    string UnitName
+    string UnitName,
+    Vector2I Cell
 );

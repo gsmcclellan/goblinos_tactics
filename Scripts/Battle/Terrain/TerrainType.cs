@@ -26,6 +26,7 @@ public partial class TerrainType : Resource
     [Export] public Godot.Collections.Array<string> Tags { get; set; } = new();
     
     public bool BlocksMovement => MoveCost == 0;
+    public bool BlocksOccupancy => BlocksMovement;
 
     public bool HasTag(string tag)
     {

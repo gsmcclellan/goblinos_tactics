@@ -80,7 +80,7 @@ public sealed class MoveRangeService
     public void InvalidateCache()
     {
         _gridRevision++;
-        _logger.Log($"InvalidateCache rev={_gridRevision}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
+        _logger.Log($"InvalidateCache rev={_gridRevision}", GobLogSeverity.Extra, GobLogCategory.UnitLifecycle);
     }
     
     public static List<Vector2I> ReconstructPath(IReadOnlyDictionary<Vector2I, Vector2I> parentCells, Vector2I startCell,

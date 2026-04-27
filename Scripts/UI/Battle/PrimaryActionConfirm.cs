@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Goblinos.Logging;
+using Goblinos.Scripts.Battle.Preview;
+using Goblinos.Scripts.Battle.Types;
 using Godot;
 
 namespace Goblinos.Scripts.UI.Battle;
@@ -26,6 +28,24 @@ public partial class PrimaryActionConfirm : Panel, IBattleHudPanel
     {
         Debug.Assert(_label != null, $"[{nameof(PrimaryActionConfirm)}] Initialization failed - missing _label.");
         _logger.Log("Ready", GobLogSeverity.Trace, GobLogCategory.Initialization);
+    }
+
+    public void SetContext(UnitActivationContext context)
+    {
+        var primaryActionType = context.PrimaryAction;
+
+        switch (primaryActionType)
+        {
+            case PrimaryActionType.Ability:
+                Message = $"{context.Unit.Ability.DisplayName}:\n{context.Unit.Ability.Description}";
+                break;
+            case PrimaryActionType.Attack:
+            case PrimaryActionType.Item:
+            case PrimaryActionType.Trade:
+            case PrimaryActionType.Wait:
+                Message = primaryActionType.ToString();
+                break;
+        }
     }
 
     private void UpdateMessageLabel()

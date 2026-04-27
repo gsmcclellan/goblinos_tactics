@@ -19,14 +19,14 @@ public static class TestUnitTemplates
             ImageFileName = "GoblinStabber",
             Ability = AbilityId.Push,
             BaseStats = new StatBlock(
-                might: 10,
+                might: 12,
                 agility: 6,
                 vitality: 5,
                 mind: 2,
                 presence: 2,
                 luck: 3,
                 movement: 5,
-                maxHitPoints: 20,
+                baseHitPoints: 20,
                 defense: 4,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -56,7 +56,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 18,
+                baseHitPoints: 18,
                 defense: 6,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -87,7 +87,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 18,
+                baseHitPoints: 14,
                 defense: 3,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -119,7 +119,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 5,
-                maxHitPoints: 12,
+                baseHitPoints: 12,
                 defense: 2,
                 resistance: 1),
             StatGrowthProfile = new StatGrowthProfile(
@@ -151,7 +151,7 @@ public static class TestUnitTemplates
                 presence: 8,
                 luck: 2,
                 movement: 4,
-                maxHitPoints: 14,
+                baseHitPoints: 14,
                 defense: 3,
                 resistance: 6),
             StatGrowthProfile = new StatGrowthProfile(
@@ -180,7 +180,7 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 20,
+                baseHitPoints: 16,
                 defense: 4,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -208,8 +208,8 @@ public static class TestUnitTemplates
                 presence: 6,
                 luck: 4,
                 movement: 4,
-                maxHitPoints: 36,
-                defense: 6,
+                baseHitPoints: 24,
+                defense: 5,
                 resistance: 4),
             StatGrowthProfile = new StatGrowthProfile(
                 might: 80,
@@ -231,14 +231,14 @@ public static class TestUnitTemplates
             MinRange = 2,
             MaxRange = 2,
             BaseStats = new StatBlock(
-                might: 10,
+                might: 9,
                 agility: 10,
                 vitality: 4,
                 mind: 2,
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 18,
+                baseHitPoints: 12,
                 defense: 3,
                 resistance: 2),
             StatGrowthProfile = new StatGrowthProfile(
@@ -266,8 +266,8 @@ public static class TestUnitTemplates
                 presence: 3,
                 luck: 2,
                 movement: 6,
-                maxHitPoints: 24,
-                defense: 7,
+                baseHitPoints: 20,
+                defense: 5,
                 resistance: 4),
             StatGrowthProfile = new StatGrowthProfile(
                 might: 40,

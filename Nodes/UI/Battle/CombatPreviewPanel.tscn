@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bic5nu8iwepe7"]
+[gd_scene format=3 uid="uid://bic5nu8iwepe7"]
 
 [ext_resource type="Script" uid="uid://delpprpor41k0" path="res://Scripts/UI/Battle/CombatPreviewPanel.cs" id="1_p6dn5"]
 
-[node name="CombatPreviewPanel" type="Panel" node_paths=PackedStringArray("AttackerNameLabel", "AttackerCurrentHitPointsLabel", "AttackerExpectedHitPointsLabel", "DefenderNameLabel", "DefenderCurrentHitPointsLabel", "DefenderExpectedHitPointsLabel")]
+[node name="CombatPreviewPanel" type="Panel" unique_id=1450637600 node_paths=PackedStringArray("AttackerNameLabel", "AttackerCurrentHitPointsLabel", "AttackerExpectedHitPointsLabel", "AttackerHitChanceLabel", "DefenderNameLabel", "DefenderCurrentHitPointsLabel", "DefenderExpectedHitPointsLabel", "DefenderHitChanceLabel")]
 offset_left = 876.0
 offset_top = 210.0
 offset_right = 1154.0
@@ -11,56 +11,66 @@ script = ExtResource("1_p6dn5")
 AttackerNameLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/Name")
 AttackerCurrentHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/CurrentHitPoints")
 AttackerExpectedHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/ExpectedHitPoints")
+AttackerHitChanceLabel = NodePath("HBoxContainer/Defender/VBoxContainer/HitChance")
 DefenderNameLabel = NodePath("HBoxContainer/Defender/VBoxContainer/Name")
 DefenderCurrentHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/CurrentHitPoints")
 DefenderExpectedHitPointsLabel = NodePath("HBoxContainer/Defender/VBoxContainer/ExpectedHitPoints")
+DefenderHitChanceLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/HitChance")
 metadata/_edit_use_anchors_ = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1642422744]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Attacker" type="MarginContainer" parent="HBoxContainer"]
+[node name="Attacker" type="MarginContainer" parent="HBoxContainer" unique_id=282283859]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Attacker"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Attacker" unique_id=1573797560]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+[node name="Name" type="Label" parent="HBoxContainer/Attacker/VBoxContainer" unique_id=1038590389]
 layout_mode = 2
 text = "Goblino"
 
-[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer" unique_id=315929039]
 layout_mode = 2
 text = "20 / 20 HP"
 
-[node name="Divider" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+[node name="Divider" type="Label" parent="HBoxContainer/Attacker/VBoxContainer" unique_id=1799377470]
 layout_mode = 2
 text = "..."
 
-[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer"]
+[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Attacker/VBoxContainer" unique_id=644898268]
 layout_mode = 2
 text = "10 / 20 HP"
 
-[node name="Defender" type="MarginContainer" parent="HBoxContainer"]
+[node name="HitChance" type="Label" parent="HBoxContainer/Attacker/VBoxContainer" unique_id=1840471685]
+layout_mode = 2
+text = "50%"
+
+[node name="Defender" type="MarginContainer" parent="HBoxContainer" unique_id=938043270]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Defender"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Defender" unique_id=2100045243]
 layout_mode = 2
 
-[node name="Name" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+[node name="Name" type="Label" parent="HBoxContainer/Defender/VBoxContainer" unique_id=340900108]
 layout_mode = 2
 text = "Human"
 
-[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+[node name="CurrentHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer" unique_id=969422626]
 layout_mode = 2
 text = "20  / 20 HP"
 
-[node name="Divider" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+[node name="Divider" type="Label" parent="HBoxContainer/Defender/VBoxContainer" unique_id=1744842119]
 layout_mode = 2
 text = "..."
 
-[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer"]
+[node name="ExpectedHitPoints" type="Label" parent="HBoxContainer/Defender/VBoxContainer" unique_id=1464723746]
 layout_mode = 2
 text = "15 / 20 HP"
+
+[node name="HitChance" type="Label" parent="HBoxContainer/Defender/VBoxContainer" unique_id=1414502018]
+layout_mode = 2
+text = "50%"

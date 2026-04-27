@@ -16,9 +16,11 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
     [Export] public Label AttackerNameLabel = null!;
     [Export] public Label AttackerCurrentHitPointsLabel = null!;
     [Export] public Label AttackerExpectedHitPointsLabel = null!;
+    [Export] public Label AttackerHitChanceLabel = null!;
     [Export] public Label DefenderNameLabel = null!;
     [Export] public Label DefenderCurrentHitPointsLabel = null!;
     [Export] public Label DefenderExpectedHitPointsLabel = null!;
+    [Export] public Label DefenderHitChanceLabel = null!;
    
     private PrimaryActionType? hoveredAction;
     private PrimaryActionType? selectedAction;
@@ -37,9 +39,11 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
         Debug.Assert(AttackerNameLabel != null, "[UnitInfoPanel].  Not Initialized. AttackerNameLabel is required.");
         Debug.Assert(AttackerCurrentHitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. AttackerCurrentHitPointsLabel is required.");
         Debug.Assert(AttackerExpectedHitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. AttackerExpectedHitPointsLabel is required.");
+        Debug.Assert(AttackerHitChanceLabel != null, "[UnitInfoPanel].  Not Initialized. AttackerHitChanceLabel is required.");
         Debug.Assert(DefenderNameLabel != null, "[UnitInfoPanel].  Not Initialized. DefenderNameLabel is required.");
         Debug.Assert(DefenderCurrentHitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. DefenderCurrentHitPointsLabel is required.");
         Debug.Assert(DefenderExpectedHitPointsLabel != null, "[UnitInfoPanel].  Not Initialized. DefenderExpectedHitPointsLabel is required.");
+        Debug.Assert(DefenderHitChanceLabel != null, "[UnitInfoPanel].  Not Initialized. DefenderHitChanceLabel is required.");
         
         SetVisible(false);
     }
@@ -77,10 +81,13 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
         AttackerNameLabel.Text = combatPreview.Attacker.UnitName;
         AttackerCurrentHitPointsLabel.Text = FormatHitPointsString(combatPreview.Attacker.CurrentHitPoints, combatPreview.Attacker.MaxHitPoints);
         AttackerExpectedHitPointsLabel.Text = FormatHitPointsString(combatPreview.AttackerExpectedHitPoints, combatPreview.Attacker.MaxHitPoints);
+        AttackerHitChanceLabel.Text = FormatPercentString(combatPreview.AttackerHitChance);
         DefenderNameLabel.Text = combatPreview.Defender.UnitName;
         DefenderCurrentHitPointsLabel.Text = FormatHitPointsString(combatPreview.Defender.CurrentHitPoints, combatPreview.Defender.MaxHitPoints);
         DefenderExpectedHitPointsLabel.Text = FormatHitPointsString(combatPreview.DefenderExpectedHitPoints, combatPreview.Defender.MaxHitPoints);
+        DefenderHitChanceLabel.Text = FormatPercentString(combatPreview.DefenderHitChance);
     }
 
     private string FormatHitPointsString(int num, int denom) => $"{num} / {denom} HP";
+    private string FormatPercentString(int num) => num > 0 ? $"{num}%": "-";
 }

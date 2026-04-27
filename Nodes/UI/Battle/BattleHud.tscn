@@ -85,24 +85,26 @@ mouse_filter = 2
 
 [node name="Panel" type="Panel" parent="AdditionalElements" unique_id=2048627015]
 custom_minimum_size = Vector2(200, 24)
-layout_mode = 0
-offset_left = 952.0
-offset_top = 499.0
-offset_right = 1152.0
-offset_bottom = 523.0
-
-[node name="BattleControllerInputState" type="Label" parent="AdditionalElements/Panel" unique_id=1134733587]
 layout_mode = 1
-anchors_preset = -1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -200.0
-offset_top = -24.0
-offset_bottom = -1.0
+offset_top = -148.0
+offset_bottom = -124.0
 grow_horizontal = 0
 grow_vertical = 0
+
+[node name="BattleControllerInputState" type="Label" parent="AdditionalElements/Panel" unique_id=1134733587]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
 text = "Free Select"
 
 [node name="TurnPanel" type="Panel" parent="AdditionalElements" unique_id=742930937]

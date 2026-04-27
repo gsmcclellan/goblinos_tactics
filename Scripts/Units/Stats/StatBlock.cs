@@ -25,7 +25,7 @@ public class StatBlock
     
     /** Base Stats */
     public int Movement { get; private set; }
-    public int MaxHitPoints { get; private set; }
+    public int BaseHitPoints { get; private set; }
     public int Defense { get; private set; }
     public int Resistance { get; private set; }
     
@@ -46,7 +46,7 @@ public class StatBlock
         int presence,
         int luck,
         int movement,
-        int maxHitPoints,
+        int baseHitPoints,
         int defense,
         int resistance)
     {
@@ -58,7 +58,7 @@ public class StatBlock
         Luck = luck;
         
         Movement = movement;
-        MaxHitPoints = maxHitPoints;
+        BaseHitPoints = baseHitPoints;
         Defense = defense;
         Resistance = resistance;
     }
@@ -80,7 +80,7 @@ public class StatBlock
                 StatName.Presence => Presence,
                 StatName.Luck => Luck,
                 StatName.Movement => Movement,
-                StatName.MaxHitPoints => MaxHitPoints,
+                StatName.MaxHitPoints => BaseHitPoints,
                 StatName.Defense => Defense,
                 StatName.Resistance => Resistance,
                 _ => throw new ArgumentOutOfRangeException(nameof(statName), statName, null)
@@ -113,7 +113,7 @@ public class StatBlock
                     // Base
                     case StatName.Luck: Luck = value; break;
                     case StatName.Movement: Movement = value; break;
-                    case StatName.MaxHitPoints: MaxHitPoints = value; break;
+                    case StatName.MaxHitPoints: BaseHitPoints = value; break;
                     case StatName.Defense: Defense = value; break;
                     case StatName.Resistance: Resistance = value; break;
 
@@ -156,7 +156,7 @@ public class StatBlock
     public StatBlock Copy()
     {
         return new StatBlock(Might, Agility, Vitality, Mind, Presence, Luck,
-            Movement, MaxHitPoints, Defense, Resistance);
+            Movement, BaseHitPoints, Defense, Resistance);
     }
     
     public override string ToString()

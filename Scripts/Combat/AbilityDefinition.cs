@@ -13,6 +13,7 @@ public partial class AbilityDefinition: Resource
     public AbilityId Id = AbilityId.None;
     public AbilityType Type = AbilityType.None;
     public string DisplayName = "None";
+    public string Description = "";
     public AbilityTargetMode TargetMode = AbilityTargetMode.None;
     public int Magnitude = 1;
     public StatName? MagnitudeStat;
@@ -56,11 +57,14 @@ public static class AbilityDefinitionTemplates
     public static AbilityDefinition DisableMovement => new()
     {
         Id = AbilityId.DisableMovement,
-        Type = AbilityType.DisableMovement,
+        Type = AbilityType.StatModifier,
         DisplayName = "Disable",
+        Description = "Disable movement until next turn.",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
-        CanTargetEnemies = true
+        CanTargetEnemies = true,
+        Magnitude = -99,
+        CanTarget = (self, target) => !target.HasStatModifier("DisableMovement")
     };
     
     public static AbilityDefinition Push => new()
@@ -68,6 +72,7 @@ public static class AbilityDefinitionTemplates
         Id = AbilityId.Push,
         Type = AbilityType.Push,
         DisplayName = "Push",
+        Description = "Push target back one square.",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
         CanTargetFriends = true,
@@ -79,6 +84,7 @@ public static class AbilityDefinitionTemplates
         Id = AbilityId.Swap,
         Type = AbilityType.Swap,
         DisplayName = "Swap",
+        Description = "Swap positions with target.",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
         CanTargetFriends = true,
@@ -90,6 +96,7 @@ public static class AbilityDefinitionTemplates
         Id = AbilityId.Haste,
         Type = AbilityType.StatModifier,
         DisplayName = "Haste",
+        Description = "Increase target's movement range.",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
         CanTargetFriends = true,
@@ -106,6 +113,7 @@ public static class AbilityDefinitionTemplates
         Id = AbilityId.Heal,
         Type = AbilityType.Heal,
         DisplayName = "Heal",
+        Description = "Restore hit points",
         TargetMode = AbilityTargetMode.SingleTarget,
         Range = RangeBand.One,
         CanTargetFriends = true,

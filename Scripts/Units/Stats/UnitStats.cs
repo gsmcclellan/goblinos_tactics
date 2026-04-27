@@ -88,16 +88,8 @@ public sealed class UnitStats
                 StatName.Defense or
                 StatName.Resistance => BaseStats.Get(statName),
 
-            // Derived TODO - implement this
-            StatName.AttackSpeed => throw new NotImplementedException("AttackSpeed is derived and not stored directly."),
-            StatName.Accuracy => throw new NotImplementedException("Accuracy is derived and not stored directly."),
-            StatName.Evasion => throw new NotImplementedException("Evasion is derived and not stored directly."),
-            StatName.CritChance => throw new NotImplementedException("CritChance is derived and not stored directly."),
-            StatName.CritDefense => throw new NotImplementedException("CritDefense is derived and not stored directly."),
-            StatName.PhysicalProtection => throw new NotImplementedException("PhysicalProtection is derived and not stored directly."),
-            StatName.MagicProtection => throw new NotImplementedException("MagicProtection is derived and not stored directly."),
-            StatName.ArmorPierce => throw new NotImplementedException("ArmorPierce is derived and not stored directly."),
-            StatName.MagicPenetration => throw new NotImplementedException("MagicPenetration is derived and not stored directly."),
+            // Derived - accessed via DerivedStats class, not UnitStats
+            
 
             _ => throw new ArgumentOutOfRangeException(nameof(statName), statName, null)
         };

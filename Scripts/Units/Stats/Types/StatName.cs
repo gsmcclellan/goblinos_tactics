@@ -16,7 +16,8 @@ public enum StatName
     Resistance,
     /** Derived Stats */
     AttackSpeed,
-    Accuracy,
+    PhysicalAccuracy,
+    MagicAccuracy,
     Evasion,
     CritChance,
     CritDefense,

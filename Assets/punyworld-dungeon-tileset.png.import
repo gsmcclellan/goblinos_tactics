@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ba04ljt84x7m2"
-path="res://.godot/imported/basic_ground_tiles.png-7cba7a5d38c7bda0cc50254338eb4b24.ctex"
+uid="uid://bbol1jhrglfsf"
+path="res://.godot/imported/punyworld-dungeon-tileset.png-08f0123bab547edde7ad5a750e2d3121.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/basic_ground_tiles.png"
-dest_files=["res://.godot/imported/basic_ground_tiles.png-7cba7a5d38c7bda0cc50254338eb4b24.ctex"]
+source_file="res://Assets/punyworld-dungeon-tileset.png"
+dest_files=["res://.godot/imported/punyworld-dungeon-tileset.png-08f0123bab547edde7ad5a750e2d3121.ctex"]
 
 [params]
 

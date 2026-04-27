@@ -58,23 +58,27 @@ public partial class BattleUnit : Area2D
 
     public UnitActivationState State { get; private set; } = UnitActivationState.Ready;
     
-    /** Facade Properties */
-    public AbilityDefinition Ability => Unit.Ability;
-
-    public int AbilityMagnitude => Unit.AbilityMagnitude;
-    public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
+    /** Computed properties */
     public bool CanAct => State is UnitActivationState.Ready or UnitActivationState.Activated;
+    
+    /** Facade Properties */
     public String Id => Unit.Id;
-    public bool IsDefeated => CurrentHitPoints <= 0;
+    public string UnitName => Unit.UnitName;
+    public AbilityDefinition Ability => Unit.Ability;
+    public int AbilityMagnitude => Unit.Ability.MagnitudeStat.HasValue ? GetStat(Unit.Ability.MagnitudeStat.Value) : Ability.Magnitude;
+    public RangeBand AttackRange => Unit.AttackRange; // TODO - base on weapon.
     public bool IsFriendly => Unit.IsFriendly;
     public int Level => Unit.Level;
-    public int MaxHitPoints => Unit.Stats.BaseStats.MaxHitPoints;
-    public int Movement => (IsMovementDisabled) ? 0 : GetStat(StatName.Movement);
-    public UnitStats Stats => Unit.Stats;
-    public string UnitName => Unit.UnitName;
     
-    // Conditions
+    /** Conditions */
     public bool IsMovementDisabled => Conditions.Any(cond => cond.Type == CombatConditionType.DisableMovement);
+    public bool IsDefeated => CurrentHitPoints <= 0;
+    
+    /** Stats */
+    public DerivedStats Stats => DerivedStatsCalculator.Build(Unit.Stats, Level);
+    public int MaxHitPoints => Stats.MaxHitPoints;
+    public int Movement => (IsMovementDisabled) ? 0 : GetStat(StatName.Movement);
+
     
     // Realtime Properties
     private bool _isSelected = false;
@@ -132,7 +136,7 @@ public partial class BattleUnit : Area2D
         _logger.Log($"Bind " + unit.UnitName, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
 
         Unit = unit;
-        SetHitPoints(unit.Stats.BaseStats.MaxHitPoints);
+        SetHitPoints(Stats.MaxHitPoints);
         
         if (!IsFriendly)
             State = UnitActivationState.Dormant;
@@ -164,7 +168,7 @@ public partial class BattleUnit : Area2D
         if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
             return;
         SetHitPoints(CurrentHitPoints - damage);
-        await DisplayFloatingHitPointChange(damage);
+        // await DisplayFloatingHitPointChange(damage);
     }
     
     /// <summary>
@@ -287,7 +291,7 @@ public partial class BattleUnit : Area2D
         var floatingDamageText = _floatingTextScene.Instantiate<FloatingText>();
         AddChild(floatingDamageText);
         floatingDamageText.GlobalPosition = GlobalPosition;
-        await floatingDamageText.ShowValue(amount);
+        await floatingDamageText.ShowValue(GlobalPosition, amount);
     }
 
     private void Refresh()

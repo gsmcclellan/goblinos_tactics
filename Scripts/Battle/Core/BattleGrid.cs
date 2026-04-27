@@ -115,11 +115,10 @@ public partial class BattleGrid : Node2D
     }
 
     /// <summary>Clears preview data and overlay.</summary>
-    public void ClearPreviews()
+    public void ClearTurnPreviews()
     {
         _movementPreview = null;
         _actionPreview = null;
-        _hoveredThreatPreview = null;
     }
     
     /// <summary>Clears preview overlay. Use if you change lots of tiles at once.</summary>
@@ -212,35 +211,35 @@ public partial class BattleGrid : Node2D
     
     public void SetMovementPreview(IReadOnlySet<Vector2I> preview)
     {
-        ClearPreviews();
+        ClearTurnPreviews();
         _movementPreview = preview;
         RedrawOverlay();
     }
 
     public void SetActionPreview(IReadOnlySet<Vector2I> preview, PrimaryActionType actionType)
     {
-        ClearPreviews();
+        ClearTurnPreviews();
         _actionPreview = (preview, (int)PrimaryActionTypeToOverlayType(actionType));
         RedrawOverlay();
     }
     
     public void SetAttackPreview(IReadOnlySet<Vector2I> preview)
     {
-        ClearPreviews();
+        ClearTurnPreviews();
         _actionPreview = (preview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
     }
 
     public void SetHoveredThreatPreview(IReadOnlySet<Vector2I> preview)
     {
-        ClearPreviews();
+        ClearTurnPreviews();
         _hoveredThreatPreview = preview;
         RedrawOverlay();
     }
 
     public void SetUnitStartOfTurnPreviews(IReadOnlySet<Vector2I> movePreview, IReadOnlySet<Vector2I> attackPreview)
     {
-        ClearPreviews();
+        ClearTurnPreviews();
         _movementPreview = movePreview;
         _actionPreview = (attackPreview, (int)ActionOverlayType.Attack);
         RedrawOverlay();
