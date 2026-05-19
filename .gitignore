@@ -2,4 +2,28 @@
 .godot/
 /android/
 
+# Build output & exports
+data_Goblinos_windows_x86_64/
+*.exe
+*.console.exe
+*.pck
+*.dll
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# Windows temp/swap files (created during build)
+*~RF*.TMP
+*.tmp
+
+# JetBrains IDE (Rider)
 .idea/
+*.DotSettings
+*.DotSettings.user
+
+# Stale/backup files
+*.old
+
+# OS junk
+.DS_Store
+Thumbs.db
