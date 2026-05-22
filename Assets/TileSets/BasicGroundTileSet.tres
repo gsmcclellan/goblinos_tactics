@@ -1,0 +1,27 @@
+[gd_resource type="TileSet" format=3 uid="uid://3hhnqr6xpb22"]
+
+[ext_resource type="Texture2D" uid="uid://ba04ljt84x7m2" path="res://Assets/basic_ground_tiles.png" id="1_o5jtd"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_uu6xs"]
+resource_name = "BasicGroundTiles"
+texture = ExtResource("1_o5jtd")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/custom_data_0 = "wheat"
+1:0/0 = 0
+1:0/0/custom_data_0 = "grass"
+2:0/0 = 0
+2:0/0/custom_data_0 = "rock"
+3:0/0 = 0
+3:0/0/custom_data_0 = "swamp"
+4:0/0 = 0
+4:0/0/custom_data_0 = "wall"
+5:0/0 = 0
+5:0/0/custom_data_0 = "rock"
+
+[resource]
+tile_size = Vector2i(32, 32)
+uv_clipping = true
+custom_data_layer_0/name = "terrain_id"
+custom_data_layer_0/type = 4
+sources/0 = SubResource("TileSetAtlasSource_uu6xs")

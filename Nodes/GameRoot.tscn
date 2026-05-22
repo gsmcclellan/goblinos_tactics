@@ -3,15 +3,14 @@
 [ext_resource type="Script" uid="uid://c8v8jyhop66s3" path="res://Scripts/Core/GameRoot.cs" id="1_edgwi"]
 [ext_resource type="PackedScene" uid="uid://dovascosjfyoe" path="res://Nodes/UI/MainMenu.tscn" id="1_t2ty0"]
 
-[node name="GameRoot" type="Node" unique_id=986620689 node_paths=PackedStringArray("_mainMenu")]
+[node name="GameRoot" type="Node" unique_id=986620689 node_paths=PackedStringArray("_canvasLayer", "_mainMenu")]
 script = ExtResource("1_edgwi")
+_canvasLayer = NodePath("CanvasLayer")
 _mainMenu = NodePath("CanvasLayer/MainMenu")
 
 [node name="Systems" type="Node" parent="." unique_id=1588516965]
 
 [node name="UnitProgressionSystem" type="Node" parent="Systems" unique_id=1952958403]
-
-[node name="PresentationQueue" type="Node" parent="Systems" unique_id=745134669]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1300146859]
 

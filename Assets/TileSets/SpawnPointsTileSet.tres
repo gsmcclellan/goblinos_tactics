@@ -1,0 +1,31 @@
+[gd_resource type="TileSet" format=3 uid="uid://8oqe7hvvjky6"]
+
+[ext_resource type="Texture2D" uid="uid://bkawg5afmnem0" path="res://Assets/action_overlay_tiles.png" id="1_r53j6"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ttw4t"]
+texture = ExtResource("1_r53j6")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+9:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+8:1/0 = 0
+9:1/0 = 0
+
+[resource]
+tile_size = Vector2i(32, 32)
+sources/0 = SubResource("TileSetAtlasSource_ttw4t")

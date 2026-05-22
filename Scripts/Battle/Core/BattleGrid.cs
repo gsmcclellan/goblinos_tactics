@@ -422,7 +422,7 @@ public enum ActionOverlayType
     Attack = 1,
     Interact = 2,
     Warning = 3,
-    EnemyThreat
+    EnemyThreat = 4
 }
 
 public enum SpawnOverlayType

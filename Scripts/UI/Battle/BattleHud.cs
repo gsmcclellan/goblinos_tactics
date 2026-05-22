@@ -34,7 +34,6 @@ namespace Goblinos.Scripts.UI.Battle
         
         [Export] private Label _turnNumberLabel = null!;
         [Export] private Button _endTurnButton = null!;
-        [Export] private Control _leveledUpPanel = null!;
 
         private BattleController _battleController = null!;
         private GridCursor _cursor = null!;
@@ -126,10 +125,6 @@ namespace Goblinos.Scripts.UI.Battle
             _selectionController.SelectedUnitChanged += OnSelectedUnitChanged;
 
             _turnController.TurnStarted += OnTurnStarted;
-            
-            var closeButton = _leveledUpPanel.GetNode<Button>("VBoxContainer/HBoxContainer/CloseButton");
-            if (closeButton != null)
-                closeButton.Pressed += HideLeveledUpDetails;
         }
 
         private void _UnsubscribeFromEvents()
@@ -244,17 +239,6 @@ namespace Goblinos.Scripts.UI.Battle
             
             node.GlobalPosition = new Vector2(clampedX, clampedY);
         }
-
-        public void DisplayLeveledUpDetails(UnitLeveledUpEvent details)
-        {
-            _leveledUpPanel.GetNode<Label>("VBoxContainer/MarginContainer/Label").Text = details.ToString();
-            _leveledUpPanel.Show();
-        }
-
-        public void HideLeveledUpDetails()
-        {
-            _leveledUpPanel.Hide();
-        }
         
         // ---------------------------------------------------------------------
         // Signal / Event Callbacks
@@ -312,8 +296,6 @@ namespace Goblinos.Scripts.UI.Battle
             _logger.Log("OnSelectedUnitChanged", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
             if (selectedUnit != null && selectedUnit is not BattleUnit)
                 throw new InvalidCastException("Unit is wrong type, expect BattleUnit");
-            if (selectedUnit != null)
-                HideLeveledUpDetails();
             foreach (var panel in _panels)
                 panel.OnSelectedUnitChanged(selectedUnit as BattleUnit);
         }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Combat;
 using Godot;
+using ReallyGoodIdeas.Presentation;
 
 namespace Goblinos.Scripts.UI.Presentation;
 
@@ -12,13 +14,13 @@ public class ExperiencePresentable : IPresentable
     private readonly string _unitName;
     private readonly int _from;
     private readonly int _to;
-    private readonly PackedScene _scene;
+    private readonly PackedScene _scene = GD.Load<PackedScene>(GlobalSettings.ExperienceProgressDialogScenePath);
+        
     
     public PresentationLayer Layer => PresentationLayer.Ui;
 
-    public ExperiencePresentable(PackedScene scene, string unitName, int from, int to)
+    public ExperiencePresentable(string unitName, int from, int to)
     {
-        _scene = scene;
         _unitName = unitName;
         _from = from;
         _to = to;

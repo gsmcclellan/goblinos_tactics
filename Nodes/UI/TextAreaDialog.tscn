@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://6btinvwyk6c1"]
+
+[ext_resource type="Script" uid="uid://csoq1eldprwi" path="res://Scripts/UI/TextAreaDialog.cs" id="1_7ypfj"]
+
+[node name="LevelUpResults" type="PanelContainer" unique_id=130497474 node_paths=PackedStringArray("_contentLabel", "_titleLabel", "_closeButton")]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -141.5
+offset_top = -183.5
+offset_right = 141.5
+offset_bottom = 183.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7ypfj")
+_contentLabel = NodePath("VBoxContainer/MarginContainer/Content")
+_titleLabel = NodePath("VBoxContainer/HBoxContainer/Title")
+_closeButton = NodePath("VBoxContainer/HBoxContainer/CloseButton")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=653222139]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=932805135]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=955329631]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Level Up:"
+
+[node name="CloseButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=489124705]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+text = "✕"
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer" unique_id=1330134662]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="Label" parent="VBoxContainer/MarginContainer" unique_id=851911145]
+layout_mode = 2
+text = "Goblin Stabber 2 -> 3
+  Stats:
+    Might: 11 -> 12
+    Agility: 7 -> 7
+    Vitality: 6 -> 6
+    Mind: 2 -> 3
+    Presence: 2 -> 2
+    Luck: 4 -> 4
+    Movement: 5 -> 5
+    MaxHitPoints: 23 -> 24
+    Defense: 4 -> 4
+    Resistance: 2 -> 2"

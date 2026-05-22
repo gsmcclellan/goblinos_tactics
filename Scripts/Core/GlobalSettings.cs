@@ -14,7 +14,7 @@ public partial class GlobalSettings : Node
     public const string BattleResultsScreenScenePath = "res://Nodes/BattleResultsScreen.tscn";
     public const string FloatingTextScenePath = "res://Nodes/UI/Battle/FloatingText.tscn";
     public const string ExperienceProgressDialogScenePath = "res://Nodes/UI/Combat/ExperienceProgress.tscn";
-    public const string LevelUpResultsPanelScenePath = "res://Nodes/UI/Battle/LevelUpResults.tscn";
+    public const string TextAreaDialogScenePath = "res://Nodes/UI/TextAreaDialog.tscn";
     
     public const string InputRouterPath = "/root/InputRouter";
     public const string BattlePath = "/root/GameRoot/Battle";

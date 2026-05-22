@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
-using Goblinos.Scripts.UI.Presentation;
 using Goblinos.Scripts.Units;
 using Godot;
+using ReallyGoodIdeas.Presentation;
 
 namespace Goblinos.Scripts.Core;
 
@@ -14,11 +14,11 @@ public partial class GameRoot : Node
 
     [Export] private CanvasLayer _canvasLayer = null!;
     [Export] private MainMenu _mainMenu = null!;
-    [Export] private PresentationQueue _presentationQueue = null!;
     
     private RandomNumberGenerator _combatRng;
     private RandomNumberGenerator _progressionRng;
-
+    
+    private PresentationQueue _presentationQueue;
     private UnitProgression _unitProgression;
     
     // ---------------------------------------------------------------------
@@ -29,11 +29,11 @@ public partial class GameRoot : Node
         _combatRng = new RandomNumberGenerator();
         _progressionRng = new RandomNumberGenerator();
 
+        _presentationQueue = new PresentationQueue();
         _unitProgression = new UnitProgression(_progressionRng);
         
         Debug.Assert(_canvasLayer != null, $"{nameof(GameRoot)}, {nameof(CanvasLayer)} not bound.");
         Debug.Assert(_mainMenu != null, $"{nameof(GameRoot)}, {nameof(MainMenu)} not bound.");
-        Debug.Assert(_presentationQueue != null, $"{nameof(GameRoot)}, {nameof(PresentationQueue)} not bound.");
 
         DisplayMainMenu();
     }

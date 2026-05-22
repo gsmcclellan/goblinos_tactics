@@ -173,7 +173,6 @@ public partial class BattleController
 
     private void OnTurnEnded(BattleSide activeSide, int turnNumber)
     {
-        _hud.HideLeveledUpDetails();
         ClearPreviews();
         
         // TODO - move to child controller. Unit state controller.

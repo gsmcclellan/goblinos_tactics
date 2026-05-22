@@ -54,9 +54,7 @@ public partial class BattleController : Node
     private MoveRangeService _moveRangeService;
     private PrimaryActionTargetingService _primaryActionTargetingService;
     private TargetRangeService _targetRangeService;
-
-    private PackedScene _levelUpResultsPanelScene = GD.Load<PackedScene>(GlobalSettings.LevelUpResultsPanelScenePath);
-
+    
     private PackedScene _experienceProgressDialogScene =
         GD.Load<PackedScene>(GlobalSettings.ExperienceProgressDialogScenePath);
     

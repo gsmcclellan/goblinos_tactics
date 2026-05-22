@@ -13,6 +13,7 @@ using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Combat;
+using Goblinos.Scripts.UI.Presentation;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -490,7 +491,7 @@ public partial class BattleController
         await _abilityResolver.Resolve(activation);
 
         if (activation.Unit.IsFriendly)
-            await AddExperience(activation.Unit.Unit, 15);
+            await AddExperience(activation.Unit.Unit, 250);
         // Assign exp - 
         return;
     }
@@ -540,41 +541,38 @@ public partial class BattleController
         }
     }
 
-    private async Task AddExperience(Unit unit, int amount)
+    private Task AddExperience(Unit unit, int amount)
     {
         var expEvent = _context.UnitProgression.AddExperience(unit, amount);
-        await PlayExperienceSequence(unit.UnitName, expEvent.ExpBefore, expEvent.LevelUps.Count > 0 ? 100: expEvent.ExpAfter);
+        PlayExperienceSequence(unit.UnitName, expEvent.ExpBefore, expEvent.LevelUps.Count > 0 ? 100: expEvent.ExpAfter);
 
         if (expEvent.LevelUps.Count == 0)
-            return;
+            _context.PresentationQueue.WaitForDrain();
 
-        for (int i = 0; i < expEvent.LevelUps.Count; i++)
+        for (var i = 0; i < expEvent.LevelUps.Count; i++)
         {
             var levelUp = expEvent.LevelUps[i];
             HandleLevelUpResults(levelUp);
-            await PlayExperienceSequence(unit.UnitName, 0, expEvent.LevelUps.Count > i + 1 ? 100 : expEvent.ExpAfter);
+            PlayExperienceSequence(unit.UnitName, 0, expEvent.LevelUps.Count > i + 1 ? 100 : expEvent.ExpAfter);
         }
 
-        return;
+        return _context.PresentationQueue.WaitForDrain();
     }
 
-    private async Task PlayExperienceSequence(string unitName, int before, int after)
+    private void PlayExperienceSequence(string unitName, int before, int after)
     {
-        var experienceDialog = _experienceProgressDialogScene.Instantiate<ExperienceProgress>();
-        _battle.AddChild(experienceDialog);
-        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); // let node settle
-        await experienceDialog.Show(unitName, before, after);
-        // return Task.CompletedTask;
+        var experiencePresentable = new ExperiencePresentable(unitName, before, after);
+        _context.PresentationQueue.Enqueue(experiencePresentable);
     }
 
-    private void HandleLevelUpResults(UnitLeveledUpEvent levelUpResults)
+    private Task HandleLevelUpResults(UnitLeveledUpEvent levelUpResults)
     {
         // var panel = _levelUpResultsPanelScene.Instantiate<LevelUpResultsPanel>();
         // panel.Bind(levelUpResults);
         // _hud.AddChild(panel);
         // panel.Visible = true;
-
-        _hud.DisplayLeveledUpDetails(levelUpResults);
+        var pres = new LevelUpPresentable(levelUpResults);
+        return _context.PresentationQueue.EnqueueAndWait(pres);
     }
 
     

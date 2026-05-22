@@ -5,6 +5,9 @@
 - [x] Primary action menu cut off if too close to bot edge of screen. Need to clamp in camera bounds.
 - [x] Terrain preview blocks cell selection near bottom right of map. Likely same with unit preview on bot left.
 - [ ] Primary Action menu should clear battle hud previews.
+- [ ] Heal can target unit with no damage
+- [ ] Unit can't be healed after leveling up - 
+  - hp bar shows damage correctly, unit preview does not.
 - [x] enemy preview shows able to attack move only target 
   - STR:
       1. disable archer
