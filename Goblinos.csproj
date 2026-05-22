@@ -14,6 +14,7 @@
     <Content Include=".gitignore" />
     <Content Include="BATTLE_INPUT_FLOW.md" />
     <Content Include="BUGS.md" />
+    <Content Include="External\presentation-queue\.gitignore" />
     <Content Include="NOTES.md" />
     <Content Include="README.md" />
     <Content Include="STYLE_GUIDE.md" />
