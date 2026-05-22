@@ -295,6 +295,7 @@ public partial class BattleCameraController : Node, IInputHandler
     /// </summary>
     private bool HandleDragPan(InputEventMouseMotion mouseMotionEvent)
     {
+        // TODO - slow this down based on zoom
         _logger.Log("HandleDragPan", GobLogSeverity.Extra, GobLogCategory.Input);
         if (!_isDragPanning)
             return false;
@@ -325,12 +326,29 @@ public partial class BattleCameraController : Node, IInputHandler
         // *** FIX: Snap logical position into valid bounds so there's no dead travel ***
         Vector2 viewportSize    = _camera.GetViewportRect().Size;
         Vector2 visibleWorldSize = viewportSize / _camera.Zoom;
+
+        var minCameraX = _camera.LimitLeft + visibleWorldSize.X * 0.5f;
+        var maxCameraX = _camera.LimitRight - visibleWorldSize.X * 0.5f;
+        var minCameraY = _camera.LimitTop + visibleWorldSize.Y * 0.5f;
+        var maxCameraY = _camera.LimitBottom - visibleWorldSize.Y * 0.5f;
+
+        if (minCameraX > maxCameraX)
+        {
+            float centerX = (_camera.LimitLeft + _camera.LimitRight) * 0.5f;
+            minCameraX = centerX;
+            maxCameraX = centerX;
+        }
+        
+        if (minCameraY > maxCameraY)
+        {
+            float centerY = (_camera.LimitTop + _camera.LimitBottom) * 0.5f;
+            minCameraY = centerY;
+            maxCameraY = centerY;
+        }
         
         _camera.GlobalPosition = new Vector2(
-            Math.Clamp(_camera.GlobalPosition.X, _camera.LimitLeft   + visibleWorldSize.X * 0.5f,
-                _camera.LimitRight  - visibleWorldSize.X * 0.5f),
-            Math.Clamp(_camera.GlobalPosition.Y, _camera.LimitTop    + visibleWorldSize.Y * 0.5f,
-                _camera.LimitBottom - visibleWorldSize.Y * 0.5f)
+            Math.Clamp(_camera.GlobalPosition.X, minCameraX, maxCameraX),
+            Math.Clamp(_camera.GlobalPosition.Y, minCameraY, maxCameraY)
         );
     }
 
@@ -341,14 +359,19 @@ public partial class BattleCameraController : Node, IInputHandler
     {
         Vector2 viewportSize = _camera.GetViewportRect().Size;
 
-        float minZoomX = viewportSize.X / _cameraWorldBounds.Size.X;
-        float minZoomY = viewportSize.Y / _cameraWorldBounds.Size.Y;
+        float minZoomX = Math.Min(viewportSize.X / _cameraWorldBounds.Size.X, _maxZoom.X);
+        float minZoomY = Math.Min(viewportSize.Y / _cameraWorldBounds.Size.Y, _maxZoom.Y);
 
+        var minZoom = Math.Min(minZoomX, minZoomY);
+        
         float safeZoom = Math.Max(minZoomX, minZoomY);
 
         _camera.Zoom = new Vector2(
-            Math.Clamp(targetZoom.X, minZoomX, _maxZoom.X),
-            Math.Clamp(targetZoom.Y, minZoomY, _maxZoom.Y)
+            Math.Clamp(targetZoom.X, minZoom, _maxZoom.X),
+            Math.Clamp(targetZoom.Y, minZoom, _maxZoom.Y)
         );
+        
+        // TODO - make sure aspect ratio stays the same here
+        // TODO - apply when changing window size
     }
 }

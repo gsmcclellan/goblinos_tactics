@@ -80,6 +80,8 @@ public partial class BattleController: IInputHandler
     {
         _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", GobLogSeverity.Extra, GobLogCategory.Input);
 
+        if (InputState == BattleInputState.Resolving) return false;
+        
         // If user presses arrow / move buttons handle cursor action
         if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up, e); }
         if (e.IsActionPressed("ui_right"))    { return HandleDirection(InputDirection.Right, e); }
@@ -113,8 +115,8 @@ public partial class BattleController: IInputHandler
                 _cursor.TryMoveToGlobalPosition(_cursor.GetGlobalMousePosition(), GridCursorFocusSource.Mouse);
                 return HandleAcceptAtFocusedCell(e);
             }
-            if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
-                return HandleCancel(e);
+            // if (mbe.ButtonIndex == MouseButton.Right && mbe.Pressed)
+            //     return HandleCancel(e); // Enable right click to cancel
         }
         
         // Mouse - Motion
@@ -373,6 +375,7 @@ public partial class BattleController: IInputHandler
                 if (_selectionController.TrySelectNextUnit(reverse))
                 {
                     _cameraController.CenterOnCell(SelectedCell.Value);
+                    _cursor.TryMoveToCell(SelectedCell.Value, GridCursorFocusSource.Programmatic);
                     EnterMoveTargetingMode(SelectedUnit!);
                 }
                     

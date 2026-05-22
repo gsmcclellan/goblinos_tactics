@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://k7hf6mqnyx0j"]
+
+[ext_resource type="Script" uid="uid://ck6suo52l2grv" path="res://Scripts/UI/Combat/ExperienceProgress.cs" id="1_llhp7"]
+
+[node name="ExperienceProgress" type="Panel" unique_id=175735247 node_paths=PackedStringArray("_progressBar", "_titleLabel", "_expValueLabel")]
+z_index = 11
+custom_minimum_size = Vector2(136, 80)
+script = ExtResource("1_llhp7")
+_progressBar = NodePath("MarginContainer/VBoxContainer/ProgressBar")
+_titleLabel = NodePath("MarginContainer/VBoxContainer/Title")
+_expValueLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ExpVal")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=598804221]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=170927458]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1711840416]
+layout_mode = 2
+text = "Name"
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer" unique_id=109236559]
+custom_minimum_size = Vector2(120, 10)
+layout_mode = 2
+step = 1.0
+value = 100.0
+rounded = true
+show_percentage = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1341055577]
+layout_mode = 2
+
+[node name="ExpText" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=716985209]
+layout_mode = 2
+text = "Exp:"
+
+[node name="ExpVal" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=776700128]
+layout_mode = 2
+text = "99"

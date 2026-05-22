@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle;
 using Goblinos.Scripts.Battle.Core;
-using Goblinos.Scripts.Battle.Core.Types;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Terrain;
 using Goblinos.Scripts.Battle.Types;
@@ -49,6 +48,9 @@ namespace Goblinos.Scripts.UI.Battle
         
         /** Fields */
         private readonly List<IBattleHudPanel> _panels = new();
+
+        private int _dialogBufferX = 220;
+        private int _dialogBufferY = 160;
 
         /** Properties */
         public bool IsPrimaryActionSelectMenuActive => _primaryActionSelect.Visible;
@@ -230,14 +232,14 @@ namespace Goblinos.Scripts.UI.Battle
             // Clamp position so the menu stays fully inside the screen
             float clampedX = Mathf.Clamp(
                 screenPosition.X,
-                viewportRect.Position.X,
-                viewportRect.End.X - menuSize.X
+                viewportRect.Position.X + _dialogBufferX,
+                viewportRect.End.X - menuSize.X - _dialogBufferX
             );
 
             float clampedY = Mathf.Clamp(
                 screenPosition.Y,
-                viewportRect.Position.Y,
-                viewportRect.End.Y - menuSize.Y
+                viewportRect.Position.Y + _dialogBufferX,
+                viewportRect.End.Y - menuSize.Y - _dialogBufferY
             );
             
             node.GlobalPosition = new Vector2(clampedX, clampedY);

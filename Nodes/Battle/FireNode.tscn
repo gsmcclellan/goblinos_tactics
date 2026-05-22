@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://nujq8xcyetlk"]
+
+[ext_resource type="Script" uid="uid://cwpcri15jtlxv" path="res://Scripts/Battle/Terrain/FireNode.cs" id="1_1huny"]
+[ext_resource type="Texture2D" uid="uid://bsnxdhsbj4he8" path="res://Assets/Images/Fire.png" id="1_srbvv"]
+
+[node name="FireNode" type="Node2D" unique_id=1644754298]
+script = ExtResource("1_1huny")
+
+[node name="Sprite" type="Sprite2D" parent="." unique_id=1235892703]
+texture = ExtResource("1_srbvv")

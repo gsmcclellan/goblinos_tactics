@@ -1,11 +1,9 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
-using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
@@ -28,9 +26,10 @@ public sealed class EnemyActionPlanningService
         _grid = grid;
         _unitRegistry = unitRegistry;
         
-        Debug.Assert(_grid != null, $"[{nameof(EnemyTurnController)}] BattleGrid must be set.");
-        Debug.Assert(_unitRegistry != null, $"[{nameof(EnemyTurnController)}] UnitRegistry must be set.");
+        Debug.Assert(_grid != null, $"[{nameof(EnemyTurnController)}] {nameof(BattleGrid)} must be set.");
+        Debug.Assert(_unitRegistry != null, $"[{nameof(EnemyTurnController)}] {nameof(UnitRegistry)} must be set.");
 
+        
         _moveRangeService = new MoveRangeService(grid, unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(grid, unitRegistry);
         _unitActivationPreviewService = new UnitActivationPreviewService(grid, unitRegistry);
@@ -65,17 +64,28 @@ public sealed class EnemyActionPlanningService
         // if exists, move & attack.
 
         Vector2I targetCell = default;
+        Vector2I moveTarget = default;
         BattleUnit? targetUnit = null;
         var hasTarget = attackPreview.TargetCells.Any(potentialTargetCell =>
         {
             targetCell = potentialTargetCell;
-            return _unitRegistry.TryGetUnitAtCell(potentialTargetCell, out targetUnit) && targetUnit.IsFriendly != actingUnit.IsFriendly;
+            var hasTargetUnit = _unitRegistry.TryGetUnitAtCell(potentialTargetCell, out targetUnit) && targetUnit!.IsFriendly != actingUnit.IsFriendly;
+            if (!hasTargetUnit)
+                return false;
+            
+            var moveTargetOptions = attackPreview.AttackOriginsByTargetCell[targetCell]
+                .Where(cell =>
+                    !_unitRegistry.TryGetUnitAtCell(cell, out var existingUnit) || // Unoccupied
+                    existingUnit == actingUnit) // No movement required
+                .ToList();
+            moveTarget = moveTargetOptions.FirstOrDefault();
+            return moveTargetOptions.Count != 0;
         });
         
         if (!hasTarget)
             return BuildMoveCloserPlan(actingUnit, originCell);
 
-        var moveTarget = attackPreview.AttackOriginsByTargetCell[targetCell].FirstOrDefault();
+        // var moveTarget = attackPreview.AttackOriginsByTargetCell[targetCell].FirstOrDefault();
         
         return new EnemyActionPlan(
             actingUnit, 
@@ -94,7 +104,9 @@ public sealed class EnemyActionPlanningService
     {
         _logger.Log("Building move closer plan.", GobLogSeverity.Trace, GobLogCategory.AiDecision);
         // if can't move return / do something else
-        var reachableCells = _moveRangeService.GetMovementPreview(originCell, unit).Cells;
+        var reachableCells = _moveRangeService.GetMovementPreview(originCell, unit).Cells
+            .Where(cell => !_unitRegistry.TryGetUnitAtCell(cell))
+            .ToList();
         if (reachableCells.Count == 0)
             return BuildWaitPlan(unit, originCell);
         

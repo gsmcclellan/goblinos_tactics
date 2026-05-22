@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Test;
 using Goblinos.Scripts.Units;
-using Goblinos.Scripts.Util;
 using Godot;
 
 namespace Goblinos.Scripts.Battle;
@@ -75,24 +72,33 @@ public partial class BattleController
             (new Vector2I(24, 5), "hum_guard"),
             (new Vector2I(26, 5), "hum_spear"),
             (new Vector2I(24, 7), "hum_guard"),
-            (new Vector2I(25, 6), "hum_captain"),
             (new Vector2I(21, 6), "hum_crossbow"),
             (new Vector2I(21, 10), "hum_crossbow"),
         ];
 
+        var bossEnemyId = "hum_captain";
 
+
+        var friendlySpawnCells = _grid.FriendlySpawnPoints.GetEnumerator();
         foreach (var unitSpawnInfo in playerUnitsToSpawn)
         {
             var playerUnit = CreateTestUnit(unitSpawnInfo.TemplateId);
             playerUnit.IsFriendly = true;
-            Spawn(playerUnit, unitSpawnInfo.Cell);
+            if (friendlySpawnCells.MoveNext())
+                Spawn(playerUnit, friendlySpawnCells.Current);
         }
 
+        var enemySpawnCells = _grid.EnemySpawnPoints.GetEnumerator();
         foreach (var enemySpawnInfo in enemiesToSpawn)
         {
             var enemyUnit = CreateTestUnit(enemySpawnInfo.TemplateId);
-            Spawn(enemyUnit, enemySpawnInfo.Cell);
+            if (enemySpawnCells.MoveNext())
+                Spawn(enemyUnit, enemySpawnCells.Current);
         }
+
+        var bossEnemy = CreateTestUnit(bossEnemyId);
+        if (_grid.BossEnemySpawnPoint != Vector2I.Zero)
+            Spawn(bossEnemy, _grid.BossEnemySpawnPoint);
         
         _registerExistingBattleUnitNodes();
     }

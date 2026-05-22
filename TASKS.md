@@ -1,5 +1,7 @@
 ﻿# Tasks
 
+- [x] when tab selecting, move hovered cell to unit in addition to selecting.
+
 ## Units
 ### passive abilities:
 1. stabber - fights dirty. Maybe hits twice for less damage, or gets stronger when adjacent to allies (mob mentality)

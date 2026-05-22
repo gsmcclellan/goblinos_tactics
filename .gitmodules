@@ -1,3 +1,6 @@
-[submodule "External/goblinos-logging"]
-	path = External/goblinos-logging
-	url = https://github.com/ReallyGoodIdeas/goblinos-logging
+[submodule "goblogger"]
+	path = External/goblogger
+	url = git@github.com:ReallyGoodIdeas/goblogger.git
+[submodule "presentation-queue"]
+	path = External/presentation-queue
+	url = git@github.com:ReallyGoodIdeas/presentation-queue.git

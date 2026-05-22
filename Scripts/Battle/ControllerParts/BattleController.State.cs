@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core.Types;
@@ -11,6 +12,7 @@ using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Core;
+using Goblinos.Scripts.UI.Combat;
 using Goblinos.Scripts.Units;
 using Goblinos.Scripts.Util;
 using Godot;
@@ -422,6 +424,10 @@ public partial class BattleController
     /// with shared interface containing TryExecute.
     public async void CommitUnitActivation(IUnitActionPlan activation)
     {
+        if (InputState == BattleInputState.Resolving)
+            return;
+        InputState = BattleInputState.Resolving;
+        
         // commit move
         if (activation.HasMove)
             _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
@@ -482,6 +488,11 @@ public partial class BattleController
             return;
 
         await _abilityResolver.Resolve(activation);
+
+        if (activation.Unit.IsFriendly)
+            await AddExperience(activation.Unit.Unit, 15);
+        // Assign exp - 
+        return;
     }
 
     public async void ResolveCombat(IUnitActionPlan activation)
@@ -494,10 +505,10 @@ public partial class BattleController
         
         
         var results = await _combatResolver.Resolve(activation);
-        HandleCombatResults(results);
+        await HandleCombatResults(results);
     }
 
-    public void HandleCombatResults(CombatResult results)
+    public async Task HandleCombatResults(CombatResult results)
     {
         var attackerGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Attacker.Cell);
         var defenderGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Defender.Cell);
@@ -509,17 +520,51 @@ public partial class BattleController
             var text = strike.HitResult == HitResult.Miss ? "MISS" : strike.Damage.ToString();
             _animationController.DisplayFloatingText(_grid.GetGlobalCenterPositionForCell(damageTarget.Cell), text);
         }
-        
+        var attacker = _unitRegistry.GetUnitById(results.Attacker.UnitId);
+
         if (results.AttackerDied)
             _unitRegistry.DestroyUnit(results.Attacker.UnitId);
         if (results.DefenderDied)
         {
             _unitRegistry.DestroyUnit(results.Defender.UnitId);
             // Level up attacker - TODO - change this to provide exp in all cases
-            var attacker = _unitRegistry.GetUnitById(results.Attacker.UnitId);
-            var levelUpResults = _context.UnitProgression.LevelUp(attacker.Unit);
-            HandleLevelUpResults(levelUpResults);
+            
+            // var levelUpResults = _context.UnitProgression.LevelUp(attacker.Unit);
+            // HandleLevelUpResults(levelUpResults);
         }
+
+        if (attacker.IsFriendly)
+        {
+            var exp = results.DefenderDied ? 35 : 15;
+            await AddExperience(attacker.Unit, exp);
+        }
+    }
+
+    private async Task AddExperience(Unit unit, int amount)
+    {
+        var expEvent = _context.UnitProgression.AddExperience(unit, amount);
+        await PlayExperienceSequence(unit.UnitName, expEvent.ExpBefore, expEvent.LevelUps.Count > 0 ? 100: expEvent.ExpAfter);
+
+        if (expEvent.LevelUps.Count == 0)
+            return;
+
+        for (int i = 0; i < expEvent.LevelUps.Count; i++)
+        {
+            var levelUp = expEvent.LevelUps[i];
+            HandleLevelUpResults(levelUp);
+            await PlayExperienceSequence(unit.UnitName, 0, expEvent.LevelUps.Count > i + 1 ? 100 : expEvent.ExpAfter);
+        }
+
+        return;
+    }
+
+    private async Task PlayExperienceSequence(string unitName, int before, int after)
+    {
+        var experienceDialog = _experienceProgressDialogScene.Instantiate<ExperienceProgress>();
+        _battle.AddChild(experienceDialog);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); // let node settle
+        await experienceDialog.Show(unitName, before, after);
+        // return Task.CompletedTask;
     }
 
     private void HandleLevelUpResults(UnitLeveledUpEvent levelUpResults)

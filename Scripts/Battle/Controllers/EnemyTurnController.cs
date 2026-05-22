@@ -34,7 +34,7 @@ public sealed partial class EnemyTurnController : Node
 
     private const float DelayBetweenEnemyActionsSeconds = .5f;
 
-    private const int AwakenNeighborDistance = 5; // If unit becomes awakened, also awakens teammates in an area.
+    private const int AwakenNeighborDistance = 4; // If unit becomes awakened, also awakens teammates in an area.
 
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -125,11 +125,13 @@ public sealed partial class EnemyTurnController : Node
     /// </summary>
     private void AwakenUnits()
     {
-        _logger.Log($"{nameof(AwakenUnits)}", GobLogSeverity.Info, GobLogCategory.AiDecision);
+        
         var enemyDormantUnits =
             _unitRegistry.GetUnitsWhere(unit => !unit.IsFriendly && unit.State == UnitActivationState.Dormant)
                 .ToList();
-        
+        var awakenedCount = 0;
+        List<Vector2I> cellsOfAwakers = new();
+        Dictionary<Vector2I, List<Vector2I>> awakenChains = new();
         // Awaken if in move range of enemy
         enemyDormantUnits.ForEach(actingUnit =>
         {
@@ -152,20 +154,30 @@ public sealed partial class EnemyTurnController : Node
             if (!shouldAwaken) return;
             
             actingUnit.SetActivationState(UnitActivationState.Ready);
+            awakenedCount++;
         
             // TODO - awake neighbors also.
+            var neighborCells = new List<Vector2I>();
             var dormantNeighbors = enemyDormantUnits.Where(unit =>
                 _unitRegistry.TryGetCell(unit, out var unitCell) &&
                 ManhattanRangeService.GetDistance(unitActivationPreview.OriginCell, unitCell) <= AwakenNeighborDistance);
-            // 
+            
             foreach (var dormantNeighbor in dormantNeighbors)
+            {
                 dormantNeighbor.SetActivationState(UnitActivationState.Ready);
+                awakenedCount++;
+                _unitRegistry.TryGetCell(dormantNeighbor, out var neighborCell);
+                neighborCells.Add(neighborCell);
+            }
+            cellsOfAwakers.Add(unitActivationPreview.OriginCell);
+            awakenChains.Add(unitActivationPreview.OriginCell, neighborCells);
+                
             // Not cascading - can change if that's desired..
         });
         
         
         
-        GD.Print("Units: ", enemyDormantUnits);
+        _logger.Log($"{nameof(AwakenUnits)} - awakened {awakenedCount} / {enemyDormantUnits.Count} units.", GobLogSeverity.Info, GobLogCategory.AiDecision);
         return;
     }
 

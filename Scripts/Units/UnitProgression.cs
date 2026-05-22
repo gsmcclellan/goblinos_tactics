@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using Goblinos.Logging;
-using Goblinos.Scripts.Core;
 using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Units.Stats.Types;
 using Godot;
@@ -11,8 +11,11 @@ public class UnitProgression(RandomNumberGenerator rng)
 {
     /** Events */
     public event Action<UnitLeveledUpEvent> UnitLeveledUp;
-    
+    public event Action<ExperienceGainedEvent> ExperienceGained;
+
     /** Components */
+    private PackedScene _experienceProgressDialogPackedScene;
+    
     private readonly GobLogger _logger = GobLogManager.For<UnitProgression>();
     private readonly RandomNumberGenerator _rng = rng;
     
@@ -37,6 +40,33 @@ public class UnitProgression(RandomNumberGenerator rng)
         
         _logger.Log(e.ToString(), GobLogSeverity.Info, GobLogCategory.UnitStats);
         UnitLeveledUp?.Invoke(e);
+        return e;
+    }
+
+    public ExperienceGainedEvent AddExperience(Unit unit, int expToAdd)
+    {
+        var expBefore = unit.Experience;
+        var levelUps = new List<UnitLeveledUpEvent>();
+        
+        unit.Experience += expToAdd;
+
+        while (unit.Experience >= 100)
+        {
+            unit.Experience -= 100;
+            levelUps.Add(LevelUp(unit));
+        }
+        
+        var e = new ExperienceGainedEvent
+        {
+            Unit = unit,
+            ExpBefore = expBefore,
+            ExpGained = expToAdd,
+            LevelUps = levelUps,
+            ExpAfter = unit.Experience,
+        };
+        
+        _logger.Log($"{nameof(AddExperience)} unit={unit.UnitName} {e}", GobLogSeverity.Info, GobLogCategory.UnitStats);
+        ExperienceGained?.Invoke(e);
         return e;
     }
     
@@ -64,6 +94,15 @@ public class UnitProgression(RandomNumberGenerator rng)
         _logger.Log($"{nameof(LevelUpStats)} - Added Stats: \n{addedStats}", GobLogSeverity.Info, GobLogCategory.UnitStats);
         stats.Add(addedStats);
     }
+}
+
+public class ExperienceGainedEvent
+{
+    public Unit Unit;
+    public int ExpBefore;       // e.g. 80
+    public int ExpGained;       // e.g. 40
+    public List<UnitLeveledUpEvent> LevelUps; // 0, 1, or more
+    public int ExpAfter;        // e.g. 20 (after level-up resets to 0)
 }
 
 public class UnitLeveledUpEvent

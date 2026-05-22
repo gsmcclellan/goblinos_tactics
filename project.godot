@@ -24,6 +24,10 @@ config/icon="res://icon.svg"
 GlobalSettings="*res://Scripts/Core/GlobalSettings.cs"
 InputRouter="*res://Scripts/Core/InputRouter.cs"
 
+[display]
+
+window/size/viewport_height=768
+
 [dotnet]
 
 project/assembly_name="Goblinos"

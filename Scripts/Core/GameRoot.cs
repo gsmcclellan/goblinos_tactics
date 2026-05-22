@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Core;
+using Goblinos.Scripts.UI.Presentation;
 using Goblinos.Scripts.Units;
 using Godot;
 
@@ -11,7 +12,9 @@ public partial class GameRoot : Node
     /** Components */
     private readonly GobLogger _logger = GobLogManager.For<GameRoot>();
 
+    [Export] private CanvasLayer _canvasLayer = null!;
     [Export] private MainMenu _mainMenu = null!;
+    [Export] private PresentationQueue _presentationQueue = null!;
     
     private RandomNumberGenerator _combatRng;
     private RandomNumberGenerator _progressionRng;
@@ -28,7 +31,9 @@ public partial class GameRoot : Node
 
         _unitProgression = new UnitProgression(_progressionRng);
         
+        Debug.Assert(_canvasLayer != null, $"{nameof(GameRoot)}, {nameof(CanvasLayer)} not bound.");
         Debug.Assert(_mainMenu != null, $"{nameof(GameRoot)}, {nameof(MainMenu)} not bound.");
+        Debug.Assert(_presentationQueue != null, $"{nameof(GameRoot)}, {nameof(PresentationQueue)} not bound.");
 
         DisplayMainMenu();
     }
@@ -78,10 +83,12 @@ public partial class GameRoot : Node
     
     private void StartBattle()
     {
-        var battleContext = new BattleContext(_combatRng, _unitProgression);
+        var battleContext = new BattleContext(_combatRng, _unitProgression, _presentationQueue);
 
         var battleNodeScene = GD.Load<PackedScene>(GlobalSettings.BattleScenePath);
         var battle = battleNodeScene.Instantiate<BattleNode>();
+
+        _presentationQueue.Bind(_canvasLayer, battle);
 
         HideMainMenu();
         

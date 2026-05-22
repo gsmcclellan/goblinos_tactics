@@ -17,7 +17,9 @@ public partial class BattleGrid : Node2D
     [ExportGroup("Tiles")]
     [Export] private TileMapLayer _terrainLayer = null!;
     [Export] private TileMapLayer _actionPreviewLayer = null!;
-    [Export] private Godot.Collections.Array<TerrainType> _terrainResources = new();    
+    [Export] private Godot.Collections.Array<TerrainType> _terrainResources = new();
+
+    [Export] private PackedScene _map = null!;
 
     private readonly GobLogger _logger = GobLogManager.For<BattleGrid>();
     
@@ -37,8 +39,11 @@ public partial class BattleGrid : Node2D
     private IReadOnlySet<Vector2I>? _hoveredThreatPreview;
     // private HashSet<Vector2I> _interactCells = new();
     private static readonly HashSet<Vector2I> EmptyCells = new();
-    
+
     /** Properties */
+    public HashSet<Vector2I> EnemySpawnPoints = new();
+    public Vector2I BossEnemySpawnPoint = new();
+    public HashSet<Vector2I> FriendlySpawnPoints = new();
     
     // ---------------------------------------------------------------------
     // Lifecycle / Setup Methods
@@ -50,6 +55,7 @@ public partial class BattleGrid : Node2D
         Debug.Assert(_actionPreviewLayer != null, "[BattleGrid] Action Preview Layer not initialized");
 
         ClearOverlays();
+        _loadMap();
         _loadTerrainDb();
         
         // Pick a default: either explicit ID (recommended) or first loaded
@@ -58,6 +64,38 @@ public partial class BattleGrid : Node2D
         
         GD.Print($"[BattleGrid] Terrain DB loaded count={_terrainById.Count}");
         _logger.Log("Ready", GobLogSeverity.Info, GobLogCategory.Initialization);
+    }
+
+    private void _loadMap()
+    {
+        var bossSpawnAtlasCoord = new Vector2I(3, 0);
+        var enemySpawnAtlasCoord = new Vector2I(1, 0);
+        var friendSpawnAtlasCoord = new Vector2I(2, 0);
+        
+        Node map = _map.Instantiate();
+        var terrain = map.GetNode<TileMapLayer>("TerrainLayer");
+        var spawnPointsLayer = map.GetNode<TileMapLayer>("SpawnPoints");
+        var spawnPoints = spawnPointsLayer.GetUsedCells();
+        foreach (var cell in spawnPoints)
+        {
+            var overlayType = (SpawnOverlayType)spawnPointsLayer.GetCellAtlasCoords(cell).X;
+            switch (overlayType)
+            {
+                case SpawnOverlayType.Friend:
+                    FriendlySpawnPoints.Add(cell);
+                    break;
+                case SpawnOverlayType.Enemy:
+                    EnemySpawnPoints.Add(cell);
+                    break;
+                case SpawnOverlayType.Boss:
+                    BossEnemySpawnPoint = cell;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(overlayType), overlayType, "Cannot resolve overlay type used.");
+            }
+        }
+        
+        _terrainLayer.TileMapData = terrain.TileMapData;
     }
     
     /// <summary>
@@ -385,4 +423,13 @@ public enum ActionOverlayType
     Interact = 2,
     Warning = 3,
     EnemyThreat
+}
+
+public enum SpawnOverlayType
+{
+    None = 0,
+    Enemy = 1,
+    Friend = 2,
+    Neutral = 3,
+    Boss = 4
 }

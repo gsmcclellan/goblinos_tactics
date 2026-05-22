@@ -155,12 +155,12 @@ public sealed class MoveRangeService
             foreach (var neighbor in GridNavigationUtil.GetCardinalNeighbors(cell))
             {
                 // skip if no terrain or terrain blocks movement
-                if (!_grid.TryGetTerrainAtCell(neighbor, out var terrain) || terrain.BlocksMovement)
+                if (!_grid.TryGetTerrainAtCell(neighbor, out var terrain) || terrain!.BlocksMovement)
                     continue;
                 
                 // Skip if enemy unit.
                 if (_unitRegistry.TryGetUnitAtCell(neighbor, out var existingUnit) &&
-                    existingUnit.IsFriendly != actingUnit.IsFriendly)
+                    existingUnit!.IsFriendly != actingUnit.IsFriendly)
                     continue;
                 
                 // add step cost to costSoFar, if less than movePoints
@@ -180,12 +180,14 @@ public sealed class MoveRangeService
             }
         }
         
+        var cells = new HashSet<Vector2I>(bestCost.Keys);
+        
         // if not player unit, filter out occupied cells.
-        var cells = (actingUnit.IsFriendly)
-            ? new HashSet<Vector2I>(bestCost.Keys)
-            : new HashSet<Vector2I>(
-                bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit) // Prevent enemies from going on top of each other.
-                );
+        // var cells = (actingUnit.IsFriendly)
+        //     ? new HashSet<Vector2I>(bestCost.Keys)
+        //     : new HashSet<Vector2I>(
+        //         bestCost.Keys.Where(cell => !_unitRegistry.TryGetUnitAtCell(cell, out var unitAtCell) || unitAtCell == actingUnit) // Prevent enemies from going on top of each other.
+        //         );
         
         _logger.Log($"GetReachableCells Count={bestCost.Count}", GobLogSeverity.Trace, GobLogCategory.UiNavigation);
         

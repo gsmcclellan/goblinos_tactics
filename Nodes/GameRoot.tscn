@@ -11,6 +11,8 @@ _mainMenu = NodePath("CanvasLayer/MainMenu")
 
 [node name="UnitProgressionSystem" type="Node" parent="Systems" unique_id=1952958403]
 
+[node name="PresentationQueue" type="Node" parent="Systems" unique_id=745134669]
+
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1300146859]
 
 [node name="MainMenu" parent="CanvasLayer" unique_id=92687621 instance=ExtResource("1_t2ty0")]

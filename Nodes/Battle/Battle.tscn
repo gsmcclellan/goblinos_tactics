@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://co1falo38b0cg" path="res://Scripts/Battle/Controllers/EnemyTurnController.cs" id="7_b0ckj"]
 [ext_resource type="Script" uid="uid://dryqgj6imgfhh" path="res://Scripts/Battle/Controllers/MovementController.cs" id="7_sl1sn"]
 [ext_resource type="Script" uid="uid://eeyiw1om67uj" path="res://Scripts/Battle/Controllers/SelectionController.cs" id="8_b0ckj"]
+[ext_resource type="Script" uid="uid://bqt03s725dr11" path="res://Scripts/Battle/Controllers/EnvironmentController.cs" id="8_hqpjs"]
 [ext_resource type="Script" uid="uid://sjmd2hgvxjkl" path="res://Scripts/Battle/Controllers/TurnController.cs" id="9_m63d6"]
 [ext_resource type="Script" uid="uid://buma5x8hhjarx" path="res://Scripts/Battle/Units/UnitRegistry.cs" id="10_hqpjs"]
 [ext_resource type="Script" uid="uid://ctqkaobtbddak" path="res://Scripts/Battle/Controllers/BattleCameraController.cs" id="12_m63d6"]
@@ -42,6 +43,7 @@ _cursorPath = NodePath("../../Overlays/GridCursor")
 _gridPath = NodePath("../../BattleGrid")
 _hudPath = NodePath("../../Overlays/BattleHud")
 _enemyTurnControllerPath = NodePath("../EnemyTurnController")
+_environmentControllerPath = NodePath("../EnvironmentController")
 _movementControllerPath = NodePath("../MovementController")
 _selectionControllerPath = NodePath("../SelectionController")
 _turnControllerPath = NodePath("../TurnController")
@@ -51,6 +53,9 @@ _unitsRootPath = NodePath("../../Units")
 
 [node name="EnemyTurnController" type="Node" parent="Controllers" unique_id=1092721682]
 script = ExtResource("7_b0ckj")
+
+[node name="EnvironmentController" type="Node" parent="Controllers" unique_id=1650093265]
+script = ExtResource("8_hqpjs")
 
 [node name="MovementController" type="Node" parent="Controllers" unique_id=1214754044]
 script = ExtResource("7_sl1sn")

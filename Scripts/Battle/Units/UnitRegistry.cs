@@ -269,6 +269,8 @@ public partial class UnitRegistry: Node
         unit = existingUnit;
         return hasUnit;
     }
+
+    public bool TryGetUnitAtCell(Vector2I cell) => TryGetUnitAtCell(cell, out _);
     
     // ---------------------------------------------------------------------
     // Updates / Set Unit Values - Maybe move to separate UnitController

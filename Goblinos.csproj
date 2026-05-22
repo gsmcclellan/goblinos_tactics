@@ -11,9 +11,11 @@
     <Folder Include="Nodes" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="BATTLE_INPUT_FLOW.md" />
     <Content Include="BUGS.md" />
     <Content Include="NOTES.md" />
+    <Content Include="README.md" />
     <Content Include="STYLE_GUIDE.md" />
     <Content Include="TASKS.md" />
     <Content Include="planning\*" />

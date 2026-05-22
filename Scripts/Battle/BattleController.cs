@@ -28,6 +28,7 @@ public partial class BattleController : Node
     [Export] private NodePath _gridPath;
     [Export] private NodePath _hudPath;
     [Export] private NodePath _enemyTurnControllerPath;
+    [Export] private NodePath _environmentControllerPath;
     [Export] private NodePath _movementControllerPath;
     [Export] private NodePath _selectionControllerPath;
     [Export] private NodePath _turnControllerPath;
@@ -41,6 +42,7 @@ public partial class BattleController : Node
 
     private AnimationController _animationController;
     private EnemyTurnController _enemyTurnController;
+    private EnvironmentController _environmentController;
     private MovementController _movementController;
     private SelectionController _selectionController;
     private TurnController _turnController;
@@ -54,6 +56,9 @@ public partial class BattleController : Node
     private TargetRangeService _targetRangeService;
 
     private PackedScene _levelUpResultsPanelScene = GD.Load<PackedScene>(GlobalSettings.LevelUpResultsPanelScenePath);
+
+    private PackedScene _experienceProgressDialogScene =
+        GD.Load<PackedScene>(GlobalSettings.ExperienceProgressDialogScenePath);
     
     #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
@@ -109,6 +114,7 @@ public partial class BattleController : Node
 
         _animationController = new AnimationController(_battle);
         _enemyTurnController = GetNode<EnemyTurnController>(_enemyTurnControllerPath);
+        _environmentController = GetNode<EnvironmentController>(_environmentControllerPath);
         _movementController = GetNode<MovementController>(_movementControllerPath);
         _selectionController = GetNode<SelectionController>(_selectionControllerPath);
         _turnController = GetNode<TurnController>(_turnControllerPath);
@@ -119,6 +125,7 @@ public partial class BattleController : Node
         Debug.Assert(_grid != null, "[BattleController] BattleGrid must be initialized.");
         Debug.Assert(_hud != null, "[BattleController] BattleHud must be initialized.");
         Debug.Assert(_enemyTurnController != null, "[BattleController] EnemyTurnController must be initialized.");
+        Debug.Assert(_environmentController != null, "[BattleController] EnvironmentController must be initialized.");
         Debug.Assert(_movementController != null, "[BattleController] MovementController must be initialized.");
         Debug.Assert(_selectionController != null, "[BattleController] SelectionController must be initialized.");
         Debug.Assert(_turnController != null, "[BattleController] TurnController must be initialized.");
@@ -141,6 +148,7 @@ public partial class BattleController : Node
         _cameraController.Bind(_grid, _cursor);
         _hud.Bind(this, _cursor, _selectionController, _turnController);
         _enemyTurnController.Bind(this, _grid, _enemyActionPlanningService, _unitRegistry);
+        _environmentController.Bind(_grid);
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);
         _turnController.Bind(_unitRegistry, _enemyTurnController);
