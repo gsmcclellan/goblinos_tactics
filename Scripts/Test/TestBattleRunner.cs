@@ -154,7 +154,7 @@ namespace Goblinos.Scripts.Test
             var defense = defender.Unit.Stats.BaseStats.Defense;
             var damage = Math.Max(0, attackPower - defense);
 
-            _ = defender.ApplyDamage(damage);
+            defender.ApplyDamage(damage);
 
             _logger.Log("Hit for " + damage + " (HP now " + defender.CurrentHitPoints + ")",
                 GobLogSeverity.Info,

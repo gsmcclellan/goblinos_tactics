@@ -231,6 +231,10 @@ public class PrimaryActionTargetingService
                 return unit.AttackRange;
             case PrimaryActionType.Ability:
                 return unit.Ability.Range;
+            case PrimaryActionType.Item:
+                return default;
+            case PrimaryActionType.Trade:
+                return RangeBand.One;
             default:
                 _logger.Warn($"[{nameof(PrimaryActionTargetingService)}].{nameof(GetRange)} - No case for PrimaryActionType={actionType}.");
                 return new RangeBand(0, 0);

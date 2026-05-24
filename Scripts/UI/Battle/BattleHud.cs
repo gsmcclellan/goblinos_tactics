@@ -246,6 +246,7 @@ namespace Goblinos.Scripts.UI.Battle
 
         private void OnBattleControllerInputStateChanged(int s)
         {
+            // DEBUG only node
             var state = (BattleInputState) s;
             _logger.Log($"OnBattleControllerInputStateChanged - state={state.ToString()}", GobLogSeverity.Info, GobLogCategory.UiNavigation);
             

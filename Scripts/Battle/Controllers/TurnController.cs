@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Diagnostics;
+using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
@@ -108,8 +109,11 @@ public partial class TurnController : Node
 
         ActiveSide = BattleSide.Player;
         SetPhase(TurnPhase.PlayerInput);
-
-        _unitRegistry.SetFriendlyUnitsActivationState(UnitActivationState.Ready);
+        var nonDormantUnits = _unitRegistry.GetUnitsWhere(unit => unit.State != UnitActivationState.Dormant).ToList();
+        foreach (var battleUnit in _unitRegistry.GetUnitsWhere(unit => unit.State != UnitActivationState.Dormant))
+        {
+            battleUnit.SetActivationState(UnitActivationState.Ready);
+        }
 
         EmitSignal(SignalName.TurnStarted, (int)ActiveSide, TurnNumber);
         _logger.Log($"BeginPlayerTurn turn={TurnNumber}", GobLogSeverity.Info, GobLogCategory.BattleState);

@@ -4,15 +4,16 @@
 - [x] haste doesn't expire after turn
 - [x] Primary action menu cut off if too close to bot edge of screen. Need to clamp in camera bounds.
 - [x] Terrain preview blocks cell selection near bottom right of map. Likely same with unit preview on bot left.
-- [ ] Primary Action menu should clear battle hud previews.
-- [ ] Heal can target unit with no damage
-- [ ] Unit can't be healed after leveling up - 
+- [x] Primary Action menu should clear battle hud previews.
+- [x] Unit can't be healed after leveling up - 
   - hp bar shows damage correctly, unit preview does not.
 - [x] enemy preview shows able to attack move only target 
   - STR:
       1. disable archer
       2. hover preview the archer
+- [ ] HP bar updates before level up page shows
 - [ ] Attacking enemy should wake it up - maybe wake up enemy if they are in friend's attack range.
+- [ ] Primary action target overlay should go away after confirm
 - [ ] Attack preview shouldn't cover target cell
 - [ ] Primary Action confirm panel and battle preview both show when select target for attack.
 - [x] wall should block attack preview

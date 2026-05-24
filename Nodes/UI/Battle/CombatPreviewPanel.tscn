@@ -7,6 +7,7 @@ offset_left = 876.0
 offset_top = 210.0
 offset_right = 1154.0
 offset_bottom = 371.0
+mouse_filter = 2
 script = ExtResource("1_p6dn5")
 AttackerNameLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/Name")
 AttackerCurrentHitPointsLabel = NodePath("HBoxContainer/Attacker/VBoxContainer/CurrentHitPoints")

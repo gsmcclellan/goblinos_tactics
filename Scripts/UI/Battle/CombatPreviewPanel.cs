@@ -21,9 +21,6 @@ public partial class CombatPreviewPanel : Panel, IBattleHudPanel
     [Export] public Label DefenderCurrentHitPointsLabel = null!;
     [Export] public Label DefenderExpectedHitPointsLabel = null!;
     [Export] public Label DefenderHitChanceLabel = null!;
-   
-    private PrimaryActionType? hoveredAction;
-    private PrimaryActionType? selectedAction;
     
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;

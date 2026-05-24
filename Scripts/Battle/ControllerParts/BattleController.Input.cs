@@ -281,7 +281,7 @@ public partial class BattleController: IInputHandler
         }
         
         // TODO - if click target or press enter (or controller confirm button) resolve, else Exit.
-        
+        ClearPreviews();
         CommitUnitActivation();
         return true;
     }

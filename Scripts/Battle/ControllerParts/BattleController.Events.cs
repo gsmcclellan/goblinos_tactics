@@ -188,14 +188,13 @@ public partial class BattleController
         _moveRangeService.InvalidateCache();
         _turnController.HandleUnitExhausted(unit);
         ClearActivationAndUi();
-        EnterFreeSelectMode();
         AbortActivationToFreeSelect();
     }
 
     private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)
     {
         _moveRangeService.InvalidateCache();
-        _selectionController.UpdateHovered();
+        _selectionController.UpdateHovered(); // TODO - put in sequence
     }
 
     private void OnUnitRegistered(BattleUnit unit, Vector2I cell)
@@ -206,8 +205,8 @@ public partial class BattleController
     private void OnUnitUnregistered(BattleUnit unit, Vector2I cell, bool isUnitDeath)
     {
         _moveRangeService.InvalidateCache();
-        _enemyThreatPreviewUnits.Remove(unit);
-        ResetPreviews();
+        // _enemyThreatPreviewUnits.Remove(unit); // TODO - needs to happen in sequence (after presentations)
+        // ResetPreviews();
     }
     
     // ---------------------------------------------------------------------

@@ -1,14 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://dr6d1tddeftk2"]
+[gd_scene format=3 uid="uid://dr6d1tddeftk2"]
 
 [ext_resource type="Script" uid="uid://dsjuqvu241b1d" path="res://Scripts/UI/Battle/PrimaryActionConfirm.cs" id="1_tyjm8"]
 
-[node name="PrimaryActionConfirmation" type="Panel" node_paths=PackedStringArray("_label")]
+[node name="PrimaryActionConfirmation" type="Panel" unique_id=459183202 node_paths=PackedStringArray("_label")]
 offset_right = 200.0
 offset_bottom = 101.0
+mouse_filter = 2
 script = ExtResource("1_tyjm8")
 _label = NodePath("PrimaryActionConfirmationLabel")
 
-[node name="PrimaryActionConfirmationLabel" type="Label" parent="."]
+[node name="PrimaryActionConfirmationLabel" type="Label" parent="." unique_id=127960177]
 layout_mode = 0
 offset_right = 200.0
 offset_bottom = 100.0

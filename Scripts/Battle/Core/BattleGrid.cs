@@ -157,6 +157,7 @@ public partial class BattleGrid : Node2D
     {
         _movementPreview = null;
         _actionPreview = null;
+        RedrawOverlay();
     }
     
     /// <summary>Clears preview overlay. Use if you change lots of tiles at once.</summary>

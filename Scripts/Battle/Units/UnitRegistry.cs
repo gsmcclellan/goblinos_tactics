@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Goblinos.Logging;
 using Goblinos.Scripts.Battle.Preview;
@@ -119,15 +120,8 @@ public partial class UnitRegistry: Node
         EmitSignal(SignalName.UnitUnregistered, unit, cell, isDeath);
     }
 
-    public void DestroyUnit(BattleUnit unit)
-    {
-        _logger.Log("DestroyUnit " + unit, GobLogSeverity.Trace, GobLogCategory.UnitLifecycle);
-        UnregisterUnit(unit, true);
-        unit.QueueFree();
-    }
-
-    public void DestroyUnit(string unitId) => DestroyUnit(GetUnitById(unitId));
-
+    public void UnregisterUnit(string unitId) => UnregisterUnit(GetUnitById(unitId));
+    
     /// <summary>
     /// Clears all registered units. Intended for battle teardown.
     /// </summary>
@@ -256,7 +250,7 @@ public partial class UnitRegistry: Node
     /// <param name="cell"></param>
     /// <param name="unit"></param>
     /// <returns>true if cell is occupied</returns>
-    public bool TryGetUnitAtCell(Vector2I cell, out BattleUnit? unit)
+    public bool TryGetUnitAtCell(Vector2I cell, [NotNullWhen(true)] out BattleUnit? unit)
     {
         bool hasUnit;
         BattleUnit? existingUnit = null;

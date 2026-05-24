@@ -11,6 +11,7 @@ using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Units.Stats;
 using Goblinos.Scripts.Units.Types;
 using Goblinos.Scripts.Util;
+using ReallyGoodIdeas.Presentation;
 
 namespace Goblinos.Scripts.Combat;
 
@@ -24,19 +25,23 @@ public class CombatResolver
     
     private readonly HitCalculator _hitCalculator;
     private readonly DamageCalculator _damageCalculator;
+
+    private readonly PresentationQueue _presentationQueue;
     // private readonly StatusEffectResolver _statusEffectResolver;
 
-    public CombatResolver(DamageCalculator damageCalculator, HitCalculator hitCalculator)
+    public CombatResolver(DamageCalculator damageCalculator, HitCalculator hitCalculator, PresentationQueue presentationQueue)
     {
         _damageCalculator = damageCalculator;
         _hitCalculator = hitCalculator;
+        _presentationQueue = presentationQueue;
         
         Debug.Assert(_damageCalculator != null, $"[{nameof(AbilityResolver)}] {nameof(DamageCalculator)} must be initialized.");
         Debug.Assert(_hitCalculator != null, $"[{nameof(AbilityResolver)}] {nameof(HitCalculator)} must be initialized.");
+        Debug.Assert(_presentationQueue != null, $"[{nameof(AbilityResolver)}] {nameof(PresentationQueue)} must be initialized.");
         _logger.Log("Constructed.", GobLogSeverity.Trace, GobLogCategory.Initialization);
     }
 
-    public async Task<CombatResult> Resolve(IUnitActionPlan activationContext)
+    public CombatResult Resolve(IUnitActionPlan activationContext)
     {
         
         // Simplified combat resolution - change later. 
@@ -71,7 +76,7 @@ public class CombatResolver
             _ => 0
         };
         
-        await defender.ApplyDamage(attackerDamage);
+        defender.ApplyDamage(attackerDamage);
         
         crb.AddStrike(
             attackerId: attacker.Id,
@@ -98,7 +103,7 @@ public class CombatResolver
             };
             // defenderDamage = _damageCalculator.ComputeDamage(defender.Stats, attacker.Stats);
 
-            await attacker.ApplyDamage(defenderDamage);
+            attacker.ApplyDamage(defenderDamage);
             
             crb.AddStrike(
                 attackerId: defender.Id,

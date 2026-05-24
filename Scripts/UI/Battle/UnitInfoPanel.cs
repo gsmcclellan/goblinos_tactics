@@ -24,6 +24,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
     [Export] public Label DefenseLabel = null!;
     [Export] public Label ResistanceLabel = null!;
     [Export] public Label MovementLabel = null!;
+    [Export] public Label StateLabel = null!;
 
     private BattleUnit? _hoveredUnit;
     private BattleUnit? _selectedUnit;
@@ -49,6 +50,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         Debug.Assert(DefenseLabel != null, "[UnitInfoPanel].  Not Initialized. DefenseLabel is required.");
         Debug.Assert(ResistanceLabel != null, "[UnitInfoPanel].  Not Initialized. ResistanceLabel is required.");
         Debug.Assert(MovementLabel != null, "[UnitInfoPanel].  Not Initialized. MovementLabel is required.");
+        Debug.Assert(StateLabel != null, "[UnitInfoPanel].  Not Initialized. StateLabel is required.");
         
         SetVisible();
     }
@@ -100,6 +102,7 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         UpdateIsFriendlyLabel(Unit);
         UpdateHitPointsLabel(Unit);
         UpdateLevelLabel(Unit);
+        UpdateStateLabel(Unit);
         
         foreach(var statName in StatNameInfo.Stats)
             UpdateStatLabel(Unit, statName);
@@ -112,6 +115,14 @@ public partial class UnitInfoPanel : Panel, IBattleHudPanel
         if (unit != null)
             text = $"Lv. {unit.Level}";
         LevelLabel.Text = text;
+    }
+    
+    private void UpdateStateLabel(BattleUnit? unit)
+    {
+        var text = "";
+        if (unit != null)
+            text = unit.State.ToString();
+        StateLabel.Text = text;
     }
 
     private void UpdateNameLabel(BattleUnit? unit)

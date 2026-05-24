@@ -52,6 +52,7 @@ offset_right = 0.0
 offset_bottom = 80.5
 grow_horizontal = 0
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="PrimaryActionConfirmationPanel" parent="BattleHudPanels" unique_id=1717147687 instance=ExtResource("4_kr30i")]
 layout_mode = 1
@@ -66,6 +67,7 @@ offset_right = 0.0
 offset_bottom = 75.0
 grow_horizontal = 0
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="AdditionalElements" type="Control" parent="." unique_id=1998663696]
 layout_mode = 3

@@ -5,7 +5,7 @@
 [sub_resource type="Theme" id="Theme_oq75t"]
 default_font_size = 12
 
-[node name="UnitInfo" type="Panel" unique_id=1182139438 node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LevelLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel", "MovementLabel")]
+[node name="UnitInfo" type="Panel" unique_id=1182139438 node_paths=PackedStringArray("UnitNameLabel", "IsFriendlyLabel", "HitPointsLabel", "MightLabel", "AgilityLabel", "VitalityLabel", "MindLabel", "PresenceLabel", "LevelLabel", "LuckLabel", "DefenseLabel", "ResistanceLabel", "MovementLabel", "StateLabel")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -28,6 +28,7 @@ LuckLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Luck")
 DefenseLabel = NodePath("MarginContainer/HBoxContainer/Column1/Defense")
 ResistanceLabel = NodePath("MarginContainer/HBoxContainer/Column2/Resistance")
 MovementLabel = NodePath("MarginContainer/HBoxContainer/Col 3/Movement")
+StateLabel = NodePath("MarginContainer/HBoxContainer/Column1/State")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1858155792]
 layout_mode = 0
@@ -60,6 +61,10 @@ text = "Mnd: 10"
 [node name="Defense" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=1368477522]
 layout_mode = 2
 text = "Def: 4"
+
+[node name="State" type="Label" parent="MarginContainer/HBoxContainer/Column1" unique_id=1192245067]
+layout_mode = 2
+text = "Skipped"
 
 [node name="Column2" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=800569042]
 custom_minimum_size = Vector2(60, 0)

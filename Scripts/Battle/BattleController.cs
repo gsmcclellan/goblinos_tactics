@@ -131,7 +131,7 @@ public partial class BattleController : Node
 
         // Non-Node Components
         _abilityResolver = new AbilityResolver(_movementController, _unitRegistry);
-        _combatResolver = new CombatResolver(new DamageCalculator(), new HitCalculator(_context.CombatRng));
+        _combatResolver = new CombatResolver(new DamageCalculator(), new HitCalculator(_context.CombatRng), _context.PresentationQueue);
         _enemyActionPlanningService = new EnemyActionPlanningService(_grid, _unitRegistry);
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);
         _primaryActionTargetingService = new PrimaryActionTargetingService(_grid, _unitRegistry);
@@ -145,7 +145,7 @@ public partial class BattleController : Node
         
         _cameraController.Bind(_grid, _cursor);
         _hud.Bind(this, _cursor, _selectionController, _turnController);
-        _enemyTurnController.Bind(this, _grid, _enemyActionPlanningService, _unitRegistry);
+        _enemyTurnController.Bind(this, _grid, _enemyActionPlanningService, _context.PresentationQueue, _unitRegistry);
         _environmentController.Bind(_grid);
         _movementController.Bind(_grid, _unitRegistry);
         _selectionController.Bind(_cursor, _grid, _unitRegistry);

@@ -14,6 +14,9 @@ cleanse
 link - connect hp pools
 summon
 
+- Add dialog service
+  - add more methods of closing level up dialog.
+
 aoe attacks - cone, line, radius/blast, cross/plus (friendly fire?)
 weapons with stats and types
 - sword

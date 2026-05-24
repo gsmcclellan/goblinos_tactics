@@ -1,5 +1,7 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Threading.Tasks;
+using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Combat;
 using Goblinos.Scripts.Units;
@@ -15,11 +17,13 @@ public class LevelUpPresentable : IPresentable
     private readonly PackedScene _scene = GD.Load<PackedScene>(GlobalSettings.TextAreaDialogScenePath);
     private TextAreaDialog _node;
     private TaskCompletionSource _tcs;
+    private readonly BattleUnit? _battleUnit;
     public PresentationLayer Layer => PresentationLayer.Ui;
     
-    public LevelUpPresentable(UnitLeveledUpEvent leveledUpEvent)
+    public LevelUpPresentable(UnitLeveledUpEvent leveledUpEvent, BattleUnit? battleUnit)
     {
         _leveledUpEvent = leveledUpEvent;
+        _battleUnit = battleUnit;
     }
     
     public Task Present(Node parent)
@@ -31,9 +35,9 @@ public class LevelUpPresentable : IPresentable
 
         _tcs = new TaskCompletionSource();
         
-        var closeButton = _node.GetNode<Button>("VBoxContainer/HBoxContainer/CloseButton");
         _node.Closed += () =>
-            {
+        {
+                _battleUnit?.SyncDisplay();
                 _node.QueueFree();
                 OnComplete?.Invoke();
                 _tcs.SetResult();
@@ -44,6 +48,7 @@ public class LevelUpPresentable : IPresentable
 
     public Task Skip(Node parent)
     {
+        OnComplete?.Invoke();
         return Task.CompletedTask;
     }
 }

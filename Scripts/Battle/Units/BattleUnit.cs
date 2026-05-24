@@ -27,15 +27,25 @@ public partial class BattleUnit : Area2D
     /** Components */
     private readonly GobLogger _logger = GobLogManager.For<BattleUnit>();
 
+    [ExportGroup("Components")]
     [Export] private Sprite2D _imageSprite;
     [Export] private ProgressBar _hpBar;
     [Export] private PackedScene _floatingTextScene;
+    [ExportGroup("Constants")] 
+    [Export] private float _hpChangeDuration = 1.0f;
+    [Export] private float _flashDuration = 0.5f;
     
     private Sprite2D _isSelectedNode;
     
     /** Fields */
     private int _currentHitPoints;
     private Unit _unit;
+    
+    private static readonly HashSet<StatName> _hpRelevantStats = new()
+    {
+        StatName.MaxHitPoints,
+        StatName.Vitality
+    };
     
     // UnitData class - TODO
     /** Properties */
@@ -117,12 +127,12 @@ public partial class BattleUnit : Area2D
 
     private void SubscribeToEvents()
     {
-        HitPointsChanged += OnCurrentHitPointsChanged;
+        // HitPointsChanged += OnCurrentHitPointsChanged;
     }
     
     private void UnsubscribeFromEvents()
     {
-        HitPointsChanged -= OnCurrentHitPointsChanged;
+        // HitPointsChanged -= OnCurrentHitPointsChanged;
         
         if (Unit != null)
             Unit.Stats.StatsChanged -= OnStatsChanged;
@@ -152,7 +162,7 @@ public partial class BattleUnit : Area2D
 
         _imageSprite.Texture = texture;
         
-        Refresh();
+        SyncDisplay();
     }
     
     // ---------------------------------------------------------------------
@@ -162,13 +172,12 @@ public partial class BattleUnit : Area2D
     /// <summary>
     /// Applies damage to CurrentHitpoints.
     /// </summary>
-    public async Task ApplyDamage(int damage)
+    public void ApplyDamage(int damage)
     {
         _logger.Log("[BattleUnit] ApplyDamage " + damage, GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         if (!DebugUtil.Require(damage >= 0, "Battle Calculation error - negative damage"))
             return;
         SetHitPoints(CurrentHitPoints - damage);
-        // await DisplayFloatingHitPointChange(damage);
     }
     
     /// <summary>
@@ -182,7 +191,7 @@ public partial class BattleUnit : Area2D
         healAmount = Math.Clamp(healAmount, 0, MaxHitPoints - CurrentHitPoints);
         
         SetHitPoints(CurrentHitPoints + healAmount);
-        await DisplayFloatingHitPointChange(healAmount);
+        // TODO - add floating text
     }
 
     public void ApplyCondition(CombatCondition condition)
@@ -239,6 +248,12 @@ public partial class BattleUnit : Area2D
         UpdateSelectionUi();
     }
     
+    public Task SyncDisplay()
+    {
+        // Called explicitly when you want the visuals to catch up
+        return AnimateHealthBarTo(CurrentHitPoints, MaxHitPoints);
+    }
+    
     // ---------------------------------------------------------------------
     // Signal / Event Handlers
     // ---------------------------------------------------------------------
@@ -258,55 +273,72 @@ public partial class BattleUnit : Area2D
         var delta = newValue - oldValue;
         _logger.Log("OnHitPointsChanged delta=" + delta, GobLogSeverity.Info, GobLogCategory.UnitStats);
 
-        _updateHitPointsBar();
+        // _updateHitPointsBar();
     }
 
     private void OnStatsChanged(IReadOnlyList<StatName> updatedStats)
     {
-        if (updatedStats.Contains(StatName.MaxHitPoints))
-            _updateHitPointsBar();
+        // if (updatedStats.Any(_hpRelevantStats.Contains))
+        //     _updateHitPointsBar();
+    }
+    
+    // ---------------------------------------------------------------------
+    // Animations
+    // ---------------------------------------------------------------------
+    private Task AnimateHealthBarTo(int current = -1, int max = -1)
+    {
+        if (current == -1)
+            current = CurrentHitPoints;
+        if (max == -1)
+            max = MaxHitPoints;
+
+        var tween = GetTree().CreateTween();
+    
+        // Animate the progress bar value
+        tween.TweenProperty(_hpBar, "value", current, _hpChangeDuration)
+            .SetEase(Tween.EaseType.Out)
+            .SetTrans(Tween.TransitionType.Quad);
+        
+        tween.Parallel().TweenProperty(_hpBar, "max_value", max, _hpChangeDuration)
+            .SetEase(Tween.EaseType.Out)
+            .SetTrans(Tween.TransitionType.Quad);
+        
+        var tcs = new TaskCompletionSource();
+        tween.Finished += () => tcs.SetResult();
+        return tcs.Task;
+    }
+
+    public Task PlayAttackingAnimation()
+    {
+        var tween = CreateTween();
+        tween.TweenProperty(this, "rotation_degrees", 25, _flashDuration/2)
+            .SetEase(Tween.EaseType.In)
+            .SetTrans(Tween.TransitionType.Quad);
+        tween.TweenProperty(this, "rotation_degrees", 0, _flashDuration/2)
+            .SetEase(Tween.EaseType.Out)
+            .SetTrans(Tween.TransitionType.Quad);
+        
+        var tcs = new TaskCompletionSource();
+        tween.Finished += () => tcs.SetResult();
+        return tcs.Task;
+    }
+
+    public Task Flash()
+    {
+        var tween = CreateTween();
+        var original = Modulate;
+        tween.TweenProperty(this, "modulate", Colors.Red, _flashDuration/2);
+        tween.TweenProperty(this, "modulate", original, _flashDuration/2);
+        
+        var tcs = new TaskCompletionSource();
+        tween.Finished += () => tcs.SetResult();
+        return tcs.Task;
     }
     
     // ---------------------------------------------------------------------
     // Private Methods
     // ---------------------------------------------------------------------
 
-    private void _updateHitPointsBar()
-    {
-        if (!DebugUtil.Require(_hpBar != null, "HP Bar missing."))
-            return;
-
-        _hpBar.Value = CurrentHitPoints;
-        _hpBar.MaxValue = MaxHitPoints;
-    }
-
-    private async Task DisplayFloatingHitPointChange(int amount) 
-        // TODO - move to battle or UI so not reliant on unit existing / color
-        // TODO - add color change for healing.
-    {
-        _logger.Log($"{nameof(DisplayFloatingHitPointChange)} amount={amount}", GobLogSeverity.Trace, GobLogCategory.CombatResolution);
-        if (!DebugUtil.Require(_floatingTextScene != null, "Floating HitPoints Label scene not instantiated."))
-            return;
-
-        var floatingDamageText = _floatingTextScene.Instantiate<FloatingText>();
-        AddChild(floatingDamageText);
-        floatingDamageText.GlobalPosition = GlobalPosition;
-        await floatingDamageText.ShowValue(GlobalPosition, amount);
-    }
-
-    private void Refresh()
-    {
-        if (!DebugUtil.Require(Unit != null, "Refresh failed. Null unit.") ||
-            !DebugUtil.Require(_hpBar != null, "Refresh failed. Null HP Bar.")
-           )
-            return;
-        
-        _logger.Log("Refresh", GobLogSeverity.Trace, GobLogCategory.UnitStats);
-
-        _hpBar.MaxValue = MaxHitPoints;
-        _hpBar.Value = CurrentHitPoints;
-    }
-    
     private void SetExhaustedVisual(bool exhausted)
     {
         Modulate = exhausted 

@@ -44,10 +44,10 @@ public partial class BattleController
             (new Vector2I(3, 3), "gob_stab"),
             (new Vector2I(3, 5), "gob_stab"),
             (new Vector2I(3, 1), "gob_shield"),
-            (new Vector2I(3, 7), "gob_shield"),
+            // (new Vector2I(3, 7), "gob_shield"),
             (new Vector2I(1, 1), "gob_hag"),
             (new Vector2I(1, 7), "gob_sneak"),
-            (new Vector2I(1, 3), "gob_snipe"),
+            // (new Vector2I(1, 3), "gob_snipe"),
             (new Vector2I(1, 5), "gob_snipe"),
         ];
         
