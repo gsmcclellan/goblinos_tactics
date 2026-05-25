@@ -7,8 +7,10 @@ using Goblinos.Scripts.Combat;
 using Goblinos.Scripts.Combat.Types;
 using Goblinos.Scripts.Core;
 using Goblinos.Scripts.UI.Battle;
+using Goblinos.Scripts.UI.Presentation;
 using Goblinos.Scripts.Util;
 using Godot;
+using ReallyGoodIdeas.Presentation;
 
 namespace Goblinos.Scripts.Battle.Controllers;
 
@@ -17,48 +19,41 @@ public class AnimationController
     /** Components */
     private readonly GobLogger _logger = GobLogManager.For<AnimationController>();
 
-    private BattleNode _battle;
-
+    private PresentationQueue _presentationQueue;
+    
     private PackedScene _floatingTextScene = GD.Load<PackedScene>(GlobalSettings.FloatingTextScenePath);
 
-    public AnimationController(BattleNode battle)
+    public AnimationController(PresentationQueue presentationQueue)
     {
-        _battle = battle;
+        _presentationQueue = presentationQueue;
         
-        if (!DebugUtil.Require(_battle != null, $"[{nameof(AnimationController)}] - Initialization failed, {nameof(BattleNode)} required."))
+        if (!DebugUtil.Require(_presentationQueue != null, $"[{nameof(AnimationController)}] - Initialization failed, {nameof(PresentationQueue)} required."))
         
         _logger.Log($"Constructed ", GobLogSeverity.Info, GobLogCategory.Initialization);
     }
 
-    public void DisplayFloatingText(Vector2 globalPosition, string message)
+    public Task DisplayFloatingText(Vector2 globalPosition, string message)
     {
         _logger.Log($"{nameof(DisplayFloatingText)} message={message}", GobLogSeverity.Trace, GobLogCategory.CombatResolution);
 
-        var floatingText = _floatingTextScene.Instantiate<FloatingText>();
-        _battle.AddChild(floatingText);
-        floatingText.GlobalPosition = globalPosition;
-        // floatingText.Scale = Vector2.One * 3f; // adjust to match previous inherited scale
-        floatingText.Activate(globalPosition, message);
+        var floatingTextPresentable = new FloatingTextPresentable(globalPosition, message);
+        return _presentationQueue.PresentOutOfQueue(floatingTextPresentable);
     }
 
-    public async Task PlayCombatAnimation(CombatResult result, IEnumerable<BattleUnit> units)
+    public async Task PlayCombatAnimation(CombatResult result)
     {
-        Dictionary<string, BattleUnit> unitsById = new();
-        foreach (var unit in units)
-            unitsById.Add(unit.Id, unit);
         
         foreach (var strike in result.Strikes)
         {
-            var attacker = strike.AttackerId;
-            var defender = strike.DefenderId;
+            var attacker = result.Participant(strike.AttackerId);
+            var defender = result.Participant(strike.DefenderId);
             
-            
-            await unitsById[strike.AttackerId].PlayAttackingAnimation(); // flash attacker
+            await attacker.PlayAttackingAnimation(); // flash attacker
             if (strike.HitResult != HitResult.Miss) 
-                await unitsById[strike.DefenderId].Flash(); // flash defender
+                await defender.Flash(); // flash defender
             
-            DisplayFloatingText(unitsById[strike.DefenderId].GlobalPosition, strike.HitResult == HitResult.Miss ? "MISS": strike.Damage.ToString());
-            await unitsById[strike.DefenderId].SyncDisplay();
+            _ = DisplayFloatingText(defender.GlobalPosition, strike.HitResult == HitResult.Miss ? "MISS": strike.Damage.ToString());
+            await defender.SyncDisplayAnimated();
         }
             
     }

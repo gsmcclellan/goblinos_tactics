@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Goblinos.Logging;
@@ -27,6 +28,8 @@ public partial class BattleController
     
     private PrimaryActionValidTargetsPreview? _primaryActionPreviews;
     private CombatPreview? _combatPreview;
+
+    private bool _resolvingUnitActivation;
     
     /** Properties */
     public UnitActivationContext? UnitActivation;
@@ -426,20 +429,30 @@ public partial class BattleController
     /// with shared interface containing TryExecute.
     public async Task CommitUnitActivation(IUnitActionPlan activation)
     {
+        if (_resolvingUnitActivation)
+            throw new Exception("Already resolving unit activation");
+        _resolvingUnitActivation = true;
         // commit move
         if (activation.HasMove)
             _movementController.CommitMove(activation.Unit, activation.OriginCell, activation.MoveTargetCell!.Value);
-        
+
+        bool unitDied = false;
         // Handle attack / other action. TODO
         switch (activation.PrimaryAction)
         {
             case PrimaryActionType.Attack:
+            {
                 var results = ResolveCombat(activation);
                 PresentCombatResults(results);
+                unitDied = results.AttackerDied;
                 break;
+            }
             case PrimaryActionType.Ability:
-                ResolveAbility(activation);
+            {
+                var results = await ResolveAbility(activation);
+                PresentAbilityResults(results);
                 break;
+            }
             case PrimaryActionType.Item:
                 _logger.Warn($"{nameof(CommitUnitActivation)} - Item not implemented.");
                 break;
@@ -456,14 +469,15 @@ public partial class BattleController
 
         await _context.PresentationQueue.WaitForDrain();
 
-        var unit = activation.Unit;
-        if (IsPlayerTurn)
-        {
-            unit.SetActivationState(UnitActivationState.Exhausted);
-        }
+        var unit = unitDied ? null: activation.Unit;
+
+        unit?.SetActivationState(UnitActivationState.Exhausted);
+        
+        
         // Log Snapshot class for logs / after battle stats. TODO
-        EmitSignal(nameof(UnitActionsResolved), unit);
-        _turnController.HandleUnitExhausted(unit);
+        _resolvingUnitActivation = false;
+        EmitSignal(nameof(UnitActionsResolved));
+        _turnController.HandleUnitExhausted();
     }
 
     private async Task CommitUnitActivation()
@@ -477,18 +491,17 @@ public partial class BattleController
         await CommitUnitActivation(UnitActivation);
     }
 
-    public void ResolveAbility(IUnitActionPlan activation) // TODO - return results, remove animation related actions.
+    public Task<AbilityResult> ResolveAbility(IUnitActionPlan activation) // TODO - return results, remove animation related actions.
     {
         _logger.Log("ResolveAbility", GobLogSeverity.Info, GobLogCategory.CombatResolution);
         // TODO - check units are in range
         if (!DebugUtil.Require(activation != null,
                 $"[{nameof(BattleController)}].ResolveUnitActions - No UnitActivationContext"))
-            return;
+            return Task.FromResult(
+                    AbilityResult.Failed()
+                );
 
-        _abilityResolver.Resolve(activation);
-
-        if (activation.Unit.IsFriendly)
-            AddExperience(activation.Unit, 15);
+        return _abilityResolver.Resolve(activation);
     }
 
     public CombatResult ResolveCombat(IUnitActionPlan activation)
@@ -501,41 +514,65 @@ public partial class BattleController
         var results = _combatResolver.Resolve(activation);
         
         if (results.AttackerDied)
-            _unitRegistry.UnregisterUnit(results.Attacker.UnitId);
+            _unitRegistry.UnregisterUnit(results.Attacker.Id);
         if (results.DefenderDied)
-            _unitRegistry.UnregisterUnit(results.Defender.UnitId);
+            _unitRegistry.UnregisterUnit(results.Defender.Id);
 
         return results;
     }
 
+    public void PresentAbilityResults(AbilityResult results)
+    {
+        switch (results.AbilityType)
+        {
+            case AbilityType.Heal:
+                _context.PresentationQueue.Enqueue(new SyncUnitDisplayPresentable(results.Target));
+                Debug.Assert(results.Target != null, "results.Target != null");
+                _context.PresentationQueue.PresentOutOfQueue(new FloatingTextPresentable(
+                    results.Target.GlobalPosition, 
+                    results.AmountHealed.ToString())); // no ambiguity about what this number means
+                break;
+            case AbilityType.Push:
+                // result.TargetDestination tells you where they ended up
+                break;
+        }
+        
+        if (results.Actor.IsFriendly)
+            AddExperience(results.Actor, 15);
+    }
+
     public void PresentCombatResults(CombatResult results)
     {
-        var attackerGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Attacker.Cell);
-        var defenderGlobalPos = _grid.GetGlobalCenterPositionForCell(results.Defender.Cell);
-
-        var units = _unitRegistry.GetUnitsWhere(unit =>
-            unit.Id == results.Attacker.UnitId || unit.Id == results.Defender.UnitId);
+        var strikes = results.Strikes;
+        var strikeCount = strikes.Count;
+        List<BattleUnit> units = [results.Attacker, results.Defender];
 
         var pres = new CombatAnimationPresentable(_animationController, results, units);
         _context.PresentationQueue.Enqueue(pres);
-        // foreach (var strike in results.Strikes)
-        // {
-        //     GD.Print("strike: ", strike);
-        //     
-        //     // var damageTarget = results.Participant(strike.DefenderId);
-        //     // var text = strike.HitResult == HitResult.Miss ? "MISS" : strike.Damage.ToString();
-        //     // _animationController.DisplayFloatingText(_grid.GetGlobalCenterPositionForCell(damageTarget.Cell), text);
-        // }
-        
-        var attacker = _unitRegistry.GetUnitById(results.Attacker.UnitId);
 
-        // TODO - death animation and queuefree
+        if (results.AttackerDied)
+        {
+            var deathPres = new DeathPresentable(results.Attacker);
+            _context.PresentationQueue.Enqueue(deathPres);
+        }
 
-        // TODO - add experience in logic sequence, this is for animations only.
-        if (attacker.IsFriendly) // TODO - this should happen in all combats, need only find which is friendly.
+        if (results.DefenderDied)
+        {
+            var deathPres = new DeathPresentable(results.Defender);
+            _context.PresentationQueue.Enqueue(deathPres);
+        }
+
+        if
+            (results.Attacker.IsFriendly && !results.AttackerDied)
         {
             var exp = results.DefenderDied ? 35 : 15;
-            AddExperience(attacker, exp);
+            AddExperience(results.Attacker, exp);
+        }
+
+        if (results.Defender.IsFriendly && !results.DefenderDied)
+        {
+            var exp = results.AttackerDied ? 35 : 15;
+            AddExperience(results.Defender, exp);
         }
     }
 

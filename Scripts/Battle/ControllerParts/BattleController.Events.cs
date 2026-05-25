@@ -22,7 +22,7 @@ public partial class BattleController
     public delegate void InputStateChangedEventHandler(int state);
     // Units
     [Signal]
-    public delegate void UnitActionsResolvedEventHandler(BattleUnit unit); // TODO - put unit context snapshot here.
+    public delegate void UnitActionsResolvedEventHandler(); // TODO - put unit context snapshot here.
     [Signal]
     public delegate void CombatPreviewUpdatedEventHandler(CombatPreview? combatPreview);
 
@@ -183,12 +183,15 @@ public partial class BattleController
         }
     }
 
-    private void OnUnitActionsResolved(BattleUnit unit)
+    private void OnUnitActionsResolved()
     {
         _moveRangeService.InvalidateCache();
-        _turnController.HandleUnitExhausted(unit);
+
+        if (!IsPlayerTurn) return;
+        
         ClearActivationAndUi();
         AbortActivationToFreeSelect();
+
     }
 
     private void OnUnitMoveResolved(BattleUnit unit, Vector2I fromCell, Vector2I toCell)

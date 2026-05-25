@@ -10,6 +10,31 @@ namespace Goblinos.Scripts.Combat.Types;
 /// Result of a single resolved attack, suitable for logging and UI.
 /// </summary>
 public readonly struct CombatResult(
+    BattleUnit attacker,
+    BattleUnit defender,
+    bool attackerDied,
+    bool defenderDied,
+    IReadOnlyList<CombatStrike> strikes)
+{
+    public readonly BattleUnit Attacker = attacker;
+    public readonly BattleUnit Defender = defender;
+
+    public readonly bool AttackerDied = attackerDied;
+    public readonly bool DefenderDied = defenderDied;
+
+    public readonly IReadOnlyList<CombatStrike> Strikes = strikes;
+    
+    public BattleUnit Participant(string id)
+    {
+        if (id == Attacker.Id)
+            return Attacker;
+       if (id == Defender.Id)
+            return Defender;
+       throw new ArgumentException("Id does not match attacker or defender.");
+    }
+}
+
+public readonly struct CombatResultSnapshot(
     UnitSnapshot attacker,
     UnitSnapshot defender,
     bool attackerDied,
@@ -28,9 +53,9 @@ public readonly struct CombatResult(
     {
         if (id == Attacker.UnitId)
             return Attacker;
-       if (id == Defender.UnitId)
+        if (id == Defender.UnitId)
             return Defender;
-       throw new ArgumentException("Id does not match attacker or defender.");
+        throw new ArgumentException("Id does not match attacker or defender.");
     }
 }
 
@@ -82,9 +107,14 @@ public class CombatResultBuilder(BattleUnit attacker, BattleUnit defender, Vecto
 
     public CombatResult Results()
     {
+        return new CombatResult(_attacker, _defender, _attackerDied, _defenderDied, Strikes);
+    }
+
+    public CombatResultSnapshot ResultsSnapshot()
+    {
         var attackerSnapshot = new UnitSnapshot(_attacker.Id, _attacker.UnitName, _attackerCell);
         var defenderSnapshot = new UnitSnapshot(_defender.Id, _defender.UnitName, _defenderCell);
         
-        return new CombatResult(attackerSnapshot, defenderSnapshot, _attackerDied, _defenderDied, Strikes);
+        return new CombatResultSnapshot(attackerSnapshot, defenderSnapshot, _attackerDied, _defenderDied, Strikes);
     }
 }

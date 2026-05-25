@@ -79,8 +79,6 @@ public partial class BattleController: IInputHandler
     public bool HandleRoutedInput(InputEvent e)
     {
         _logger.Log($"Handle {e.GetType().Name} :: {e.AsText()}", GobLogSeverity.Extra, GobLogCategory.Input);
-
-        if (InputState == BattleInputState.Resolving) return false;
         
         // If user presses arrow / move buttons handle cursor action
         if (e.IsActionPressed("ui_up"))    { return HandleDirection(InputDirection.Up, e); }

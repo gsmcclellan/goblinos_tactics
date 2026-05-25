@@ -22,7 +22,7 @@ public class CombatAnimationPresentable(
 
     public async Task Present(Node parent)
     {
-        await animationController.PlayCombatAnimation(combatResult, battleUnits);
+        await animationController.PlayCombatAnimation(combatResult);
         OnComplete?.Invoke();
     }
 

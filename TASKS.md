@@ -1,8 +1,16 @@
 ﻿# Tasks
 
 - [x] when tab selecting, move hovered cell to unit in addition to selecting.
+- [ ] Move animation
 - [ ] make a debug info nodes (replaces input state + more info)
 - [ ] when in movement mode, if you select a valid enemy target, move to that enemy and go to primary select
+- [ ] redo abilities using presentation queue
+  - [ ] heal
+  - [ ] push
+  - [ ] swap
+  - [ ] haste
+  - [ ] disable
+
 ## Units
 ### passive abilities:
 1. stabber - fights dirty. Maybe hits twice for less damage, or gets stronger when adjacent to allies (mob mentality)

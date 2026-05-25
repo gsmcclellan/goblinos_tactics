@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using Goblinos.Logging;
-using Goblinos.Scripts.Battle.Preview;
 using Goblinos.Scripts.Battle.Types;
 using Goblinos.Scripts.Battle.Units;
 using Goblinos.Scripts.Util;
@@ -50,9 +49,9 @@ public partial class TurnController : Node
     // Public Methods
     // ---------------------------------------------------------------------
 
-    public void HandleUnitExhausted(BattleUnit unit)
+    public void HandleUnitExhausted()
     {
-        _logger.Log($"NotifyUnitExhausted unit={unit.UnitName}", GobLogSeverity.Trace, GobLogCategory.BattleState);
+        _logger.Log($"NotifyUnitExhausted ActiveSide={ActiveSide}", GobLogSeverity.Trace, GobLogCategory.BattleState);
 
         if (ActiveSide != BattleSide.Player)
             return;

@@ -6,6 +6,5 @@ public enum BattleInputState
     MoveTargeting,
     PrimaryActionSelect,
     PrimaryActionTargeting,
-    PrimaryActionConfirm,
-    Resolving
+    PrimaryActionConfirm
 }

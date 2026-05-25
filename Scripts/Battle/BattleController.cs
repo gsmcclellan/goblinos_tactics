@@ -110,7 +110,7 @@ public partial class BattleController : Node
         _grid = GetNode<BattleGrid>(_gridPath);
         _hud = GetNode<BattleHud>(_hudPath);
 
-        _animationController = new AnimationController(_battle);
+        _animationController = new AnimationController(_context.PresentationQueue);
         _enemyTurnController = GetNode<EnemyTurnController>(_enemyTurnControllerPath);
         _environmentController = GetNode<EnvironmentController>(_environmentControllerPath);
         _movementController = GetNode<MovementController>(_movementControllerPath);
@@ -130,7 +130,7 @@ public partial class BattleController : Node
         Debug.Assert(_unitRegistry != null, "[BattleController] UnitRegistry must be initialized.");
 
         // Non-Node Components
-        _abilityResolver = new AbilityResolver(_movementController, _unitRegistry);
+        _abilityResolver = new AbilityResolver(_movementController, _context.PresentationQueue, _unitRegistry);
         _combatResolver = new CombatResolver(new DamageCalculator(), new HitCalculator(_context.CombatRng), _context.PresentationQueue);
         _enemyActionPlanningService = new EnemyActionPlanningService(_grid, _unitRegistry);
         _moveRangeService = new MoveRangeService(_grid, _unitRegistry);

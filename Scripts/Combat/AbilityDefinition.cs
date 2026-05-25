@@ -17,6 +17,7 @@ public partial class AbilityDefinition: Resource
     public AbilityTargetMode TargetMode = AbilityTargetMode.None;
     public int Magnitude = 1;
     public StatName? MagnitudeStat;
+    public StatName? TargetStat;
     public CombatConditionId? CombatConditionId;
     
     public bool CanTargetSelf;
@@ -101,6 +102,7 @@ public static class AbilityDefinitionTemplates
         Range = RangeBand.One,
         CanTargetFriends = true,
         Magnitude = 2,
+        TargetStat = StatName.Movement,
         CanTarget = (self, target) =>
         {
             var can = target.CanAct && !target.HasStatModifier("Haste");

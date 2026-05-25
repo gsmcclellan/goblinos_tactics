@@ -34,6 +34,7 @@ public partial class BattleUnit : Area2D
     [ExportGroup("Constants")] 
     [Export] private float _hpChangeDuration = 1.0f;
     [Export] private float _flashDuration = 0.5f;
+    [Export] private float _deathDuration = 1f;
     
     private Sprite2D _isSelectedNode;
     
@@ -183,7 +184,7 @@ public partial class BattleUnit : Area2D
     /// <summary>
     /// Applies healing to CurrentHitpoints.
     /// </summary>
-    public async Task ApplyHealing(int healAmount)
+    public int ApplyHealing(int healAmount)
     {
         _logger.Log($"{nameof(ApplyDamage)} amount={healAmount}", GobLogSeverity.Info, GobLogCategory.UnitLifecycle);
         DebugUtil.Require(healAmount >= 0, "Battle Calculation error - negative healing");
@@ -191,7 +192,7 @@ public partial class BattleUnit : Area2D
         healAmount = Math.Clamp(healAmount, 0, MaxHitPoints - CurrentHitPoints);
         
         SetHitPoints(CurrentHitPoints + healAmount);
-        // TODO - add floating text
+        return healAmount;
     }
 
     public void ApplyCondition(CombatCondition condition)
@@ -248,10 +249,15 @@ public partial class BattleUnit : Area2D
         UpdateSelectionUi();
     }
     
-    public Task SyncDisplay()
+    public Task SyncDisplayAnimated()
     {
         // Called explicitly when you want the visuals to catch up
         return AnimateHealthBarTo(CurrentHitPoints, MaxHitPoints);
+    }
+
+    public void SyncDisplay()
+    {
+        _updateHpBar();
     }
     
     // ---------------------------------------------------------------------
@@ -279,7 +285,6 @@ public partial class BattleUnit : Area2D
     private void OnStatsChanged(IReadOnlyList<StatName> updatedStats)
     {
         // if (updatedStats.Any(_hpRelevantStats.Contains))
-        //     _updateHitPointsBar();
     }
     
     // ---------------------------------------------------------------------
@@ -311,10 +316,10 @@ public partial class BattleUnit : Area2D
     public Task PlayAttackingAnimation()
     {
         var tween = CreateTween();
-        tween.TweenProperty(this, "rotation_degrees", 25, _flashDuration/2)
+        tween.TweenProperty(_imageSprite, "rotation_degrees", 25, _flashDuration/2)
             .SetEase(Tween.EaseType.In)
             .SetTrans(Tween.TransitionType.Quad);
-        tween.TweenProperty(this, "rotation_degrees", 0, _flashDuration/2)
+        tween.TweenProperty(_imageSprite, "rotation_degrees", 0, _flashDuration/2)
             .SetEase(Tween.EaseType.Out)
             .SetTrans(Tween.TransitionType.Quad);
         
@@ -327,8 +332,25 @@ public partial class BattleUnit : Area2D
     {
         var tween = CreateTween();
         var original = Modulate;
-        tween.TweenProperty(this, "modulate", Colors.Red, _flashDuration/2);
-        tween.TweenProperty(this, "modulate", original, _flashDuration/2);
+        tween.TweenProperty(_imageSprite, "modulate", Colors.Red, _flashDuration/2);
+        tween.TweenProperty(_imageSprite, "modulate", original, _flashDuration/2);
+        
+        var tcs = new TaskCompletionSource();
+        tween.Finished += () => tcs.SetResult();
+        return tcs.Task;
+    }
+
+    public Task PlayDeathAnimation()
+    {
+        var tween = CreateTween();
+        var original = Modulate;
+        var numFlashes = 8;
+
+        for (var i = 0; i < numFlashes; i++)
+        {
+            tween.TweenProperty(_imageSprite, "modulate", Colors.Red, _flashDuration/numFlashes);
+            tween.TweenProperty(_imageSprite, "modulate", original, _flashDuration/numFlashes);
+        }
         
         var tcs = new TaskCompletionSource();
         tween.Finished += () => tcs.SetResult();
@@ -341,7 +363,8 @@ public partial class BattleUnit : Area2D
 
     private void SetExhaustedVisual(bool exhausted)
     {
-        Modulate = exhausted 
+        _logger.Log($"{nameof(SetExhaustedVisual)} unit={UnitName} exhausted={exhausted}", GobLogSeverity.Extra, GobLogCategory.UnitLifecycle);
+        _imageSprite.Modulate = exhausted 
             ? new Color(0.6f, 0.6f, 0.6f)
             : Colors.White;
     }
@@ -366,7 +389,11 @@ public partial class BattleUnit : Area2D
     {
         _isSelectedNode.Visible = _isSelected;
     }
-    
-    
+
+    private void _updateHpBar()
+    {
+        _hpBar.Value = CurrentHitPoints;
+        _hpBar.MaxValue = MaxHitPoints;
+    }
 }
 
